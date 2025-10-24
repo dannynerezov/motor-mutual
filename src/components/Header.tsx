@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/mcm-logo-new.png";
 
 export const Header = () => {
   return (
@@ -6,7 +7,7 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <img 
-            src="/src/assets/mcm-logo.png" 
+            src={logo} 
             alt="Motor Cover Mutual" 
             className="h-12 w-auto"
           />

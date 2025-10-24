@@ -2,7 +2,6 @@ import { QuoteForm } from "@/components/QuoteForm";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Shield, Car, FileText, Users, Navigation, Clock, DollarSign } from "lucide-react";
-import logo from "@/assets/mcm-logo.png";
 import heroBg from "@/assets/rideshare-hero.jpg";
 import rideshareDriver from "@/assets/rideshare-driver.png";
 import rideshareProtection from "@/assets/rideshare-protection.png";
@@ -28,7 +27,7 @@ const Index = () => {
 
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-5xl md:text-7xl font-bold mb-6 text-primary-foreground">
+            <h2 className="text-5xl md:text-7xl font-bold mb-6 text-primary-foreground animate-fade-in [animation-delay:200ms] [animation-duration:800ms]">
               Cover Built for Rideshare Drivers
             </h2>
             <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto">

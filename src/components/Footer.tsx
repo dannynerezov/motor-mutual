@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
+import logo from "@/assets/mcm-logo-new.png";
 
 export const Footer = () => {
   return (
@@ -8,7 +9,7 @@ export const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8">
           <div>
             <img 
-              src="/src/assets/mcm-logo.png" 
+              src={logo} 
               alt="Motor Cover Mutual" 
               className="h-12 w-auto mb-4 brightness-0 invert"
             />
