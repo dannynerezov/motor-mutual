@@ -2,13 +2,52 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Shield, Car, MapPin, Calculator } from "lucide-react";
+import { Shield, Car, Calculator, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const AUSTRALIAN_STATES = [
+  { code: 'NSW', name: 'New South Wales' },
+  { code: 'VIC', name: 'Victoria' },
+  { code: 'QLD', name: 'Queensland' },
+  { code: 'TAS', name: 'Tasmania' },
+  { code: 'WA', name: 'Western Australia' },
+  { code: 'SA', name: 'South Australia' },
+  { code: 'ACT', name: 'Australian Capital Territory' },
+  { code: 'NT', name: 'Northern Territory' },
+];
+
+interface VehicleDetails {
+  year: number;
+  make: string;
+  family: string;
+  variant: string;
+  series: string;
+  nvic: string;
+  bodyStyle: string;
+  doors: number;
+  transmissionDescription: string;
+  fuelType: string;
+}
+
+interface VehicleValueInfo {
+  marketValue: number;
+  retailPrice: number;
+  tradePrice: number;
+  kilometers: number;
+}
+
+interface VehicleData {
+  vehicleDetails: VehicleDetails;
+  vehicleValueInfo: VehicleValueInfo;
+}
 
 export const QuoteForm = () => {
   const [registration, setRegistration] = useState("");
-  const [address, setAddress] = useState("");
-  const [vehicleValue, setVehicleValue] = useState<number | null>(null);
+  const [selectedState, setSelectedState] = useState("");
+  const [vinNumber, setVinNumber] = useState("");
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [membershipPrice, setMembershipPrice] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,32 +65,51 @@ export const QuoteForm = () => {
     }
   };
 
-  const handleGetQuote = async () => {
-    if (!registration || !address) {
-      toast.error("Please fill in all fields");
+  const handleFindVehicle = async () => {
+    if (!registration || !selectedState) {
+      toast.error("Please enter registration number and select a state");
       return;
     }
 
     setIsLoading(true);
+    setVehicleData(null);
+    setMembershipPrice(null);
 
     try {
-      // TODO: Integrate Suncorp API for vehicle lookup
-      // For now, simulate with mock data
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock vehicle value for demonstration
-      const mockVehicleValue = 45000;
-      const calculatedPrice = calculateMembershipPrice(mockVehicleValue);
+      const { data, error } = await supabase.functions.invoke('vehicle-lookup', {
+        body: {
+          registrationNumber: registration.toUpperCase(),
+          state: selectedState,
+        }
+      });
 
-      setVehicleValue(mockVehicleValue);
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setVehicleData(data);
+      const calculatedPrice = calculateMembershipPrice(data.vehicleValueInfo.marketValue);
       setMembershipPrice(calculatedPrice);
 
-      toast.success("Quote calculated successfully!");
-    } catch (error) {
-      toast.error("Failed to generate quote. Please try again.");
+      toast.success("Vehicle found successfully!");
+    } catch (error: any) {
+      console.error('Vehicle lookup error:', error);
+      toast.error(error.message || "Failed to find vehicle. Try manual entry with VIN.");
+      setShowManualEntry(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleManualEntry = () => {
+    if (!vinNumber) {
+      toast.error("Please enter a VIN number");
+      return;
+    }
+    toast.info("Manual VIN entry will be processed by our team");
+    // TODO: Implement manual VIN processing workflow
   };
 
   return (
@@ -69,75 +127,168 @@ export const QuoteForm = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium">
               <Car className="w-4 h-4 text-accent" />
-              Vehicle Registration
+              Vehicle Registration Number
             </label>
             <Input
               placeholder="e.g., ABC123"
               value={registration}
               onChange={(e) => setRegistration(e.target.value.toUpperCase())}
-              className="border-border/50 bg-background/50"
+              className="border-border/50 bg-background/50 text-center font-mono text-lg tracking-wider"
+              maxLength={8}
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <label className="flex items-center gap-2 text-sm font-medium">
-              <MapPin className="w-4 h-4 text-accent" />
-              Your Address
+              State of Registration
             </label>
-            <Input
-              placeholder="Start typing your address..."
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="border-border/50 bg-background/50"
-            />
-          </div>
-        </div>
-
-        <Button
-          onClick={handleGetQuote}
-          disabled={isLoading}
-          className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg transition-all hover:shadow-glow"
-        >
-          {isLoading ? (
-            <span className="flex items-center gap-2">
-              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              Calculating...
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Get My Quote
-            </span>
-          )}
-        </Button>
-
-        {vehicleValue !== null && membershipPrice !== null && (
-          <Card className="p-6 bg-gradient-to-br from-accent/10 to-primary/10 border-accent/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
-                <Shield className="w-6 h-6 text-accent" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Your Quote is Ready!</h3>
-                <p className="text-sm text-muted-foreground">
-                  Vehicle value: ${vehicleValue.toLocaleString()}
-                </p>
-              </div>
+            <div className="grid grid-cols-4 gap-2">
+              {AUSTRALIAN_STATES.map((state) => (
+                <Button
+                  key={state.code}
+                  type="button"
+                  variant={selectedState === state.code ? "default" : "outline"}
+                  className={selectedState === state.code 
+                    ? "bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                    : "hover:border-accent/50"
+                  }
+                  onClick={() => setSelectedState(state.code)}
+                >
+                  {state.code}
+                </Button>
+              ))}
             </div>
-            <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
-              <div className="flex items-baseline justify-between">
-                <span className="text-muted-foreground">Annual Membership Price:</span>
-                <div className="text-right">
-                  <span className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    ${membershipPrice.toFixed(2)}
-                  </span>
-                  <span className="text-sm text-muted-foreground ml-2">per year</span>
+          </div>
+
+          <Button
+            onClick={handleFindVehicle}
+            disabled={isLoading || !registration || !selectedState}
+            className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg transition-all hover:shadow-glow"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                Finding your car...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Car className="w-5 h-5" />
+                Find My Car
+              </span>
+            )}
+          </Button>
+
+          {showManualEntry && (
+            <Card className="p-4 bg-muted/50 border-muted-foreground/20 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-accent mt-0.5" />
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h4 className="font-semibold text-sm">Can't find your vehicle?</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enter your VIN number for manual processing
+                    </p>
+                  </div>
+                  <Input
+                    placeholder="Enter VIN number"
+                    value={vinNumber}
+                    onChange={(e) => setVinNumber(e.target.value.toUpperCase())}
+                    className="text-sm"
+                    maxLength={17}
+                  />
+                  <Button
+                    onClick={handleManualEntry}
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Submit VIN for Manual Processing
+                  </Button>
                 </div>
               </div>
+            </Card>
+          )}
+        </div>
+
+        {vehicleData && membershipPrice !== null && (
+          <Card className="p-6 bg-gradient-to-br from-accent/10 to-primary/10 border-accent/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-4">
+              <div className="text-center pb-4 border-b border-border/30">
+                <h3 className="text-2xl font-bold">
+                  {vehicleData.vehicleDetails.year} {vehicleData.vehicleDetails.make} {vehicleData.vehicleDetails.family}
+                </h3>
+                <p className="text-muted-foreground mt-1">
+                  {vehicleData.vehicleDetails.variant} • {vehicleData.vehicleDetails.series}
+                </p>
+                <div className="inline-block mt-2 px-3 py-1 bg-accent/20 rounded-full">
+                  <span className="text-xs font-semibold text-accent">NVIC: {vehicleData.vehicleDetails.nvic}</span>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
+                  <h4 className="text-sm font-semibold text-accent mb-3">Vehicle Details</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Body Style:</span>
+                      <span className="font-medium">{vehicleData.vehicleDetails.bodyStyle}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Doors:</span>
+                      <span className="font-medium">{vehicleData.vehicleDetails.doors}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Transmission:</span>
+                      <span className="font-medium">{vehicleData.vehicleDetails.transmissionDescription}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Fuel:</span>
+                      <span className="font-medium">{vehicleData.vehicleDetails.fuelType}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
+                  <h4 className="text-sm font-semibold text-accent mb-3">Value Information</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Market Value:</span>
+                      <span className="font-medium">${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Retail Price:</span>
+                      <span className="font-medium">${vehicleData.vehicleValueInfo.retailPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Trade Price:</span>
+                      <span className="font-medium">${vehicleData.vehicleValueInfo.tradePrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Kilometers:</span>
+                      <span className="font-medium">{vehicleData.vehicleValueInfo.kilometers.toLocaleString()} km</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg p-6 text-center backdrop-blur-sm border border-accent/30">
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">Your Annual Membership Price</h4>
+                <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  ${membershipPrice.toFixed(2)}
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">Based on market value of ${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</p>
+              </div>
+
+              <Button
+                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg"
+              >
+                <Shield className="w-5 h-5 mr-2" />
+                Continue to Purchase
+              </Button>
             </div>
           </Card>
         )}
