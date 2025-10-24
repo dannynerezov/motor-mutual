@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Shield, Car, Calculator, AlertCircle } from "lucide-react";
+import { Shield, Car, Calculator, AlertCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -47,6 +48,7 @@ interface VehicleData {
 }
 
 export const QuoteForm = () => {
+  const navigate = useNavigate();
   const [registration, setRegistration] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [vinNumber, setVinNumber] = useState("");
@@ -56,6 +58,7 @@ export const QuoteForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedValue, setSelectedValue] = useState<number | null>(null);
   const [percentageChange, setPercentageChange] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const calculateMembershipPrice = (value: number): number => {
     if (value <= 10000) {
@@ -138,6 +141,75 @@ export const QuoteForm = () => {
     // Recalculate membership price
     const newPrice = calculateMembershipPrice(newValue);
     setMembershipPrice(newPrice);
+  };
+
+  const handleSeePrice = async () => {
+    if (!vehicleData || !selectedValue || !membershipPrice) {
+      toast.error("Please complete the vehicle information");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create customer (simplified - in production you'd collect this info)
+      const { data: customerData, error: customerError } = await supabase
+        .from("customers")
+        .insert({
+          first_name: "Guest",
+          last_name: "User",
+          email: "guest@example.com",
+          phone: "0000000000",
+          address_line1: "TBD",
+          city: "TBD",
+          state: selectedState,
+          postcode: "0000",
+        })
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      // Create quote
+      const { data: quoteData, error: quoteError } = await supabase
+        .from("quotes")
+        .insert({
+          customer_id: customerData.id,
+          total_base_price: membershipPrice,
+          total_final_price: membershipPrice,
+          status: "pending",
+        } as any)
+        .select()
+        .single();
+
+      if (quoteError) throw quoteError;
+
+      // Insert vehicle
+      const { error: vehicleError } = await supabase
+        .from("quote_vehicles")
+        .insert({
+          quote_id: quoteData.id,
+          registration_number: registration.toUpperCase(),
+          vehicle_make: vehicleData.vehicleDetails.make,
+          vehicle_model: vehicleData.vehicleDetails.family,
+          vehicle_year: vehicleData.vehicleDetails.year,
+          vehicle_nvic: vehicleData.vehicleDetails.nvic,
+          vehicle_value: vehicleData.vehicleValueInfo.marketValue,
+          selected_coverage_value: selectedValue,
+          vehicle_image_url: vehicleData.imageUrl || null,
+          base_price: membershipPrice,
+        });
+
+      if (vehicleError) throw vehicleError;
+
+      toast.success("Quote created successfully!");
+      navigate(`/quote/${quoteData.id}`);
+    } catch (error: any) {
+      console.error("Error creating quote:", error);
+      toast.error(error.message || "Failed to create quote. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -406,26 +478,46 @@ export const QuoteForm = () => {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg p-6 text-center backdrop-blur-sm border border-accent/30">
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Your Annual Membership Price</h4>
-                <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  ${membershipPrice.toFixed(2)}
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Based on selected coverage of ${selectedValue?.toLocaleString() || '0'}
-                  {percentageChange !== 0 && (
-                    <span className={percentageChange > 0 ? 'text-green-600' : 'text-orange-600'}>
-                      {' '}({percentageChange > 0 ? '+' : ''}{percentageChange.toFixed(1)}% from market value)
-                    </span>
-                  )}
-                </p>
+              {/* Add Another Vehicle Button */}
+              <div className="flex justify-center mt-4">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-muted-foreground"
+                        onClick={() => {
+                          toast.info("Multi-vehicle support coming soon! You'll be able to add up to 20 vehicles.");
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Another Vehicle
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Mutual provides fleet coverage for up to 20 vehicles with discounts for bulk memberships</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               <Button
                 className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg"
+                onClick={handleSeePrice}
+                disabled={isSubmitting}
               >
-                <Shield className="w-5 h-5 mr-2" />
-                Continue to Purchase
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Creating quote...
+                  </span>
+                ) : (
+                  <>
+                    <Shield className="w-5 h-5 mr-2" />
+                    See Your Price
+                  </>
+                )}
               </Button>
             </div>
           </Card>
