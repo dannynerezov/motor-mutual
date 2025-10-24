@@ -433,27 +433,7 @@ export const QuoteForm = () => {
               ))}
             </div>
 
-            {/* Pricing Summary */}
-            <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-accent/30">
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total Base Price:</span>
-                  <span className="font-semibold">${getTotalBasePrice().toFixed(2)}</span>
-                </div>
-                {discountPercentage > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Fleet Discount ({discountPercentage}%):</span>
-                    <span className="font-semibold">-${getFleetDiscountAmount().toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-lg font-bold pt-3 border-t border-border/50">
-                  <span>Your Total Annual Price:</span>
-                  <span className="text-accent">${getTotalWithDiscount().toFixed(2)}</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* See Your Price Button */}
+            {/* Continue Button */}
             <Button
               className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg"
               onClick={handleSeePrice}
@@ -465,10 +445,7 @@ export const QuoteForm = () => {
                   Creating quote...
                 </span>
               ) : (
-                <>
-                  <Shield className="w-5 h-5 mr-2" />
-                  See Your Price
-                </>
+                "Continue"
               )}
             </Button>
           </div>

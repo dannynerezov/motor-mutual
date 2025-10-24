@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Info, Plus } from "lucide-react";
+import { AlertCircle, Info, Plus, ArrowLeft } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DriverCard } from "@/components/DriverCard";
 import { useToast } from "@/hooks/use-toast";
 
@@ -229,6 +230,16 @@ const QuotePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Back Navigation */}
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate("/")} 
+              className="mb-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Vehicle Selection
+            </Button>
+
             {/* Quote Number Header */}
             <Card>
               <CardHeader>
@@ -243,6 +254,15 @@ const QuotePage = () => {
                 </div>
               </CardHeader>
             </Card>
+
+            {/* Welcome Alert */}
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Complete Your Quote</AlertTitle>
+              <AlertDescription>
+                Add named drivers below to finalize your quote. Your pricing will update based on claims history.
+              </AlertDescription>
+            </Alert>
 
             {/* Vehicle Details */}
             <Card>
@@ -298,30 +318,47 @@ const QuotePage = () => {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {namedDrivers.map((driver) => (
-                  <DriverCard
-                    key={driver.id}
-                    driver={driver}
-                    onUpdate={handleDriverUpdate}
-                    onRemove={handleDriverRemove}
-                  />
-                ))}
+                {namedDrivers.length === 0 ? (
+                  <div className="text-center py-8 border-2 border-dashed rounded-lg bg-muted/20">
+                    <Plus className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold text-lg mb-2">Add Named Drivers</h3>
+                    <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+                      Include drivers to avoid penalty excess. All valid licence holders are covered, 
+                      but unnamed drivers incur additional excess.
+                    </p>
+                    <Button onClick={handleAddDriver} size="lg">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Your First Driver
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {namedDrivers.map((driver) => (
+                      <DriverCard
+                        key={driver.id}
+                        driver={driver}
+                        onUpdate={handleDriverUpdate}
+                        onRemove={handleDriverRemove}
+                      />
+                    ))}
 
-                {showClaimsError && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Unable to Provide Cover</AlertTitle>
-                    <AlertDescription>
-                      Memberships cannot be offered to drivers with 4 or more
-                      claims in the last 3 years.
-                    </AlertDescription>
-                  </Alert>
+                    {showClaimsError && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Unable to Provide Cover</AlertTitle>
+                        <AlertDescription>
+                          Memberships cannot be offered to drivers with 4 or more
+                          claims in the last 3 years.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <Button variant="outline" onClick={handleAddDriver}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Another Driver
+                    </Button>
+                  </>
                 )}
-
-                <Button variant="outline" onClick={handleAddDriver}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Named Driver
-                </Button>
 
                 <Alert>
                   <Info className="h-4 w-4" />
@@ -350,10 +387,22 @@ const QuotePage = () => {
 
                 {totalClaimsCount > 0 && (
                   <div className="border-t pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      Claims Loading ({totalClaimsCount}{" "}
-                      {totalClaimsCount === 1 ? "claim" : "claims"})
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        Claims Loading ({totalClaimsCount}{" "}
+                        {totalClaimsCount === 1 ? "claim" : "claims"})
+                      </p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">Each claim adds 30% to base price (maximum 3 claims counted)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <p className="text-lg font-semibold text-orange-600">
                       +$
                       {(
