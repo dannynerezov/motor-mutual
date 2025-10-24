@@ -31,9 +31,10 @@ interface VehicleDetails {
 }
 
 interface VehicleValueInfo {
-  marketValue: number;
-  retailPrice: number;
-  tradePrice: number;
+  tradeLowPrice: number;    // Lower trade-in value
+  tradePrice: number;       // Standard trade-in value
+  retailPrice: number;      // Retail asking price
+  marketValue: number;      // Current market value
   kilometers: number;
 }
 
@@ -255,6 +256,10 @@ export const QuoteForm = () => {
                 <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
                   <h4 className="text-sm font-semibold text-accent mb-3">Value Information</h4>
                   <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Trade Low Price:</span>
+                      <span className="font-medium">${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Market Value:</span>
                       <span className="font-medium">${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</span>

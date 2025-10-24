@@ -59,6 +59,7 @@ serve(async (req) => {
 
     const vehicleData = await response.json();
     console.log('Vehicle data retrieved successfully');
+    console.log('Full vehicle valuation data:', JSON.stringify(vehicleData.vehicleValueInfo, null, 2));
 
     return new Response(JSON.stringify(vehicleData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
