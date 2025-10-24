@@ -9,6 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { AlertCircle, Info, Plus, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DriverCard } from "@/components/DriverCard";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ContactBrokerDialog } from "@/components/ContactBrokerDialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface Quote {
@@ -31,7 +34,10 @@ interface Vehicle {
 
 interface NamedDriver {
   id: string;
-  driver_name: string;
+  driver_name?: string;
+  first_name: string;
+  last_name: string;
+  gender: string;
   date_of_birth: string;
   claims_count: number;
 }
@@ -40,6 +46,7 @@ const QuotePage = () => {
   const { quoteId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showContactDialog, setShowContactDialog] = useState(false);
   
   const [quote, setQuote] = useState<Quote | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -131,8 +138,10 @@ const QuotePage = () => {
         .from("named_drivers")
         .insert({
           quote_id: quoteId,
-          driver_name: "",
-          date_of_birth: new Date().toISOString().split("T")[0],
+          first_name: "",
+          last_name: "",
+          gender: "",
+          date_of_birth: "",
           claims_count: 0,
         })
         .select()
@@ -226,6 +235,7 @@ const QuotePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -429,9 +439,9 @@ const QuotePage = () => {
                   className="w-full"
                   size="lg"
                   disabled={showClaimsError}
-                  onClick={handleProceedToPayment}
+                  onClick={() => setShowContactDialog(true)}
                 >
-                  Proceed to Payment
+                  Contact broker to buy
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center">
@@ -443,6 +453,13 @@ const QuotePage = () => {
           </div>
         </div>
       </div>
+      
+      <ContactBrokerDialog 
+        open={showContactDialog} 
+        onOpenChange={setShowContactDialog} 
+      />
+      
+      <Footer />
     </div>
   );
 };

@@ -118,24 +118,33 @@ export type Database = {
           claims_count: number
           created_at: string
           date_of_birth: string
-          driver_name: string
+          driver_name: string | null
+          first_name: string | null
+          gender: string | null
           id: string
+          last_name: string | null
           quote_id: string
         }
         Insert: {
           claims_count?: number
           created_at?: string
           date_of_birth: string
-          driver_name: string
+          driver_name?: string | null
+          first_name?: string | null
+          gender?: string | null
           id?: string
+          last_name?: string | null
           quote_id: string
         }
         Update: {
           claims_count?: number
           created_at?: string
           date_of_birth?: string
-          driver_name?: string
+          driver_name?: string | null
+          first_name?: string | null
+          gender?: string | null
           id?: string
+          last_name?: string | null
           quote_id?: string
         }
         Relationships: [
