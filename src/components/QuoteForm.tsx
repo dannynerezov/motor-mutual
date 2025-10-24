@@ -192,80 +192,142 @@ export const QuoteForm = () => {
         localStorage.setItem("guestEmail", guestEmail);
       }
 
-      // Upsert customer (create or reuse existing)
-      const { data: customerData, error: customerError } = await supabase
-        .from("customers")
-        .upsert({
-          first_name: "Guest",
-          last_name: "User",
-          email: guestEmail,
-          phone: "0000000000",
-          address_line1: "TBD",
-          city: "TBD",
-          state: vehicles[0].state,
-          postcode: "0000",
-        }, {
-          onConflict: "email"
-        })
-        .select()
-        .single();
+      const customerPayload = {
+        first_name: "Guest",
+        last_name: "User",
+        email: guestEmail,
+        phone: "0000000000",
+        address_line1: "TBD",
+        city: "TBD",
+        state: vehicles[0].state,
+        postcode: "0000",
+      };
 
-      if (customerError) {
-        console.error("Customer error:", customerError);
-        throw customerError;
+      // Try client-side flow first
+      let customerId;
+      let quoteId;
+
+      try {
+        // Find existing customer by email
+        const { data: existingCustomer, error: selectError } = await supabase
+          .from("customers")
+          .select('*')
+          .eq('email', guestEmail)
+          .maybeSingle();
+
+        if (selectError) throw selectError;
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+        } else {
+          // Create new customer
+          const { data: newCustomer, error: insertError } = await supabase
+            .from("customers")
+            .insert([customerPayload])
+            .select()
+            .single();
+
+          if (insertError) throw insertError;
+          customerId = newCustomer.id;
+        }
+
+        const totalBase = getTotalBasePrice();
+        const totalFinal = getTotalWithDiscount();
+        const firstVehicle = vehicles[0];
+
+        // Create quote
+        const { data: quoteData, error: quoteError } = await supabase
+          .from("quotes")
+          .insert({
+            customer_id: customerId,
+            quote_reference: `QT-${Date.now()}`,
+            registration_number: firstVehicle.registration,
+            vehicle_make: firstVehicle.vehicleData.vehicleDetails.make,
+            vehicle_model: firstVehicle.vehicleData.vehicleDetails.family,
+            vehicle_year: firstVehicle.vehicleData.vehicleDetails.year,
+            vehicle_nvic: firstVehicle.vehicleData.vehicleDetails.nvic || null,
+            vehicle_value: firstVehicle.vehicleData.vehicleValueInfo.marketValue,
+            membership_price: firstVehicle.membershipPrice,
+            total_base_price: totalBase,
+            total_final_price: totalFinal,
+            status: "pending",
+          } as any)
+          .select()
+          .single();
+
+        if (quoteError) throw quoteError;
+        quoteId = quoteData.id;
+
+        // Insert all vehicles
+        const vehicleInserts = vehicles.map(v => ({
+          quote_id: quoteId,
+          registration_number: v.registration,
+          vehicle_make: v.vehicleData.vehicleDetails.make,
+          vehicle_model: v.vehicleData.vehicleDetails.family,
+          vehicle_year: v.vehicleData.vehicleDetails.year,
+          vehicle_nvic: v.vehicleData.vehicleDetails.nvic || null,
+          vehicle_value: v.vehicleData.vehicleValueInfo.marketValue,
+          selected_coverage_value: v.selectedValue,
+          vehicle_image_url: v.vehicleData.imageUrl || null,
+          base_price: v.membershipPrice,
+        }));
+
+        const { error: vehicleError } = await supabase
+          .from("quote_vehicles")
+          .insert(vehicleInserts);
+
+        if (vehicleError) throw vehicleError;
+
+      } catch (clientError: any) {
+        console.error("Client-side quote creation failed, using backend fallback:", clientError);
+        
+        // Fallback to backend function
+        const totalBase = getTotalBasePrice();
+        const totalFinal = getTotalWithDiscount();
+        const firstVehicle = vehicles[0];
+
+        const { data, error: functionError } = await supabase.functions.invoke('create-quote', {
+          body: {
+            customer: customerPayload,
+            vehicles: vehicles.map(v => ({
+              registration: v.registration,
+              make: v.vehicleData.vehicleDetails.make,
+              model: v.vehicleData.vehicleDetails.family,
+              year: v.vehicleData.vehicleDetails.year,
+              nvic: v.vehicleData.vehicleDetails.nvic || null,
+              value: v.vehicleData.vehicleValueInfo.marketValue,
+              selectedValue: v.selectedValue,
+              imageUrl: v.vehicleData.imageUrl || null,
+              membershipPrice: v.membershipPrice,
+            })),
+            totals: {
+              base: totalBase,
+              final: totalFinal,
+            },
+            firstVehicle: {
+              registration: firstVehicle.registration,
+              make: firstVehicle.vehicleData.vehicleDetails.make,
+              model: firstVehicle.vehicleData.vehicleDetails.family,
+              year: firstVehicle.vehicleData.vehicleDetails.year,
+              nvic: firstVehicle.vehicleData.vehicleDetails.nvic || null,
+              value: firstVehicle.vehicleData.vehicleValueInfo.marketValue,
+              membershipPrice: firstVehicle.membershipPrice,
+            },
+          }
+        });
+
+        if (functionError || !data?.success) {
+          throw new Error(data?.error || functionError?.message || 'Backend fallback failed');
+        }
+
+        quoteId = data.quoteId;
       }
 
-      const totalBase = getTotalBasePrice();
-      const totalFinal = getTotalWithDiscount();
-      const firstVehicle = vehicles[0];
-
-      // Create quote with all required fields
-      const { data: quoteData, error: quoteError } = await supabase
-        .from("quotes")
-        .insert({
-          customer_id: customerData.id,
-          quote_reference: `QT-${Date.now()}`,
-          registration_number: firstVehicle.registration,
-          vehicle_make: firstVehicle.vehicleData.vehicleDetails.make,
-          vehicle_model: firstVehicle.vehicleData.vehicleDetails.family,
-          vehicle_year: firstVehicle.vehicleData.vehicleDetails.year,
-          vehicle_nvic: firstVehicle.vehicleData.vehicleDetails.nvic || null,
-          vehicle_value: firstVehicle.vehicleData.vehicleValueInfo.marketValue,
-          membership_price: firstVehicle.membershipPrice,
-          total_base_price: totalBase,
-          total_final_price: totalFinal,
-          status: "pending",
-        } as any)
-        .select()
-        .single();
-
-      if (quoteError) throw quoteError;
-
-      // Insert all vehicles
-      const vehicleInserts = vehicles.map(v => ({
-        quote_id: quoteData.id,
-        registration_number: v.registration,
-        vehicle_make: v.vehicleData.vehicleDetails.make,
-        vehicle_model: v.vehicleData.vehicleDetails.family,
-        vehicle_year: v.vehicleData.vehicleDetails.year,
-        vehicle_nvic: v.vehicleData.vehicleDetails.nvic || null,
-        vehicle_value: v.vehicleData.vehicleValueInfo.marketValue,
-        selected_coverage_value: v.selectedValue,
-        vehicle_image_url: v.vehicleData.imageUrl || null,
-        base_price: v.membershipPrice,
-      }));
-
-      const { error: vehicleError } = await supabase
-        .from("quote_vehicles")
-        .insert(vehicleInserts);
-
-      if (vehicleError) throw vehicleError;
-
       toast.success("Quote created successfully!");
-      navigate(`/quote/${quoteData.id}`);
+      navigate(`/quote/${quoteId}`);
     } catch (error: any) {
       console.error("Error creating quote:", error);
-      toast.error(error.message || "Failed to create quote. Please try again.");
+      toast.error("Unable to create quote at this time. Please try again shortly.");
     } finally {
       setIsSubmitting(false);
     }
