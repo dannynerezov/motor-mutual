@@ -1,7 +1,9 @@
 import { QuoteForm } from "@/components/QuoteForm";
-import { Shield, Car, FileText, Users } from "lucide-react";
+import { Shield, Car, FileText, Users, Navigation, Clock, DollarSign } from "lucide-react";
 import logo from "@/assets/mcm-logo.png";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBg from "@/assets/rideshare-hero.jpg";
+import rideshareDriver from "@/assets/rideshare-driver.png";
+import rideshareProtection from "@/assets/rideshare-protection.png";
 
 const Index = () => {
   return (
@@ -49,13 +51,13 @@ const Index = () => {
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-5xl md:text-7xl font-bold mb-6 text-primary-foreground">
-              Protect Your Journey
+              Cover Built for Rideshare Drivers
             </h2>
             <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto">
-              Comprehensive vehicle protection starting from just $500 per year
+              Protection designed for Uber, Ola, and rideshare drivers from just $500/year
             </p>
             <p className="text-lg text-primary-foreground/70 max-w-2xl mx-auto">
-              Get instant quotes based on your vehicle's value with our innovative membership cover program
+              Your car is your business - protect it with coverage that understands the rideshare economy
             </p>
           </div>
 
@@ -67,9 +69,9 @@ const Index = () => {
       <section id="coverage" className="py-20 bg-card">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold mb-4">Why Choose Motor Cover Mutual?</h3>
+            <h3 className="text-4xl font-bold mb-4">Why Rideshare Drivers Choose Us</h3>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive protection designed for Australian drivers
+              Coverage that understands your unique needs on the road
             </p>
           </div>
 
@@ -78,39 +80,39 @@ const Index = () => {
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Shield className="w-7 h-7 text-accent" />
               </div>
-              <h4 className="text-xl font-semibold mb-3">Comprehensive Coverage</h4>
+              <h4 className="text-xl font-semibold mb-3">Rideshare-Specific</h4>
               <p className="text-muted-foreground">
-                Full protection for vehicle damage with transparent pricing based on vehicle value
+                Coverage designed for the unique risks of driving for Uber, Ola, and other platforms
               </p>
             </div>
 
             <div className="group p-6 rounded-2xl border border-border/50 bg-background/50 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/10 hover:border-accent/30 transition-all duration-300 hover:shadow-medium">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Car className="w-7 h-7 text-accent" />
+                <Clock className="w-7 h-7 text-accent" />
               </div>
-              <h4 className="text-xl font-semibold mb-3">Instant Quotes</h4>
+              <h4 className="text-xl font-semibold mb-3">Always On</h4>
               <p className="text-muted-foreground">
-                Get your quote in seconds using just your vehicle registration number
+                24/7 coverage whether you're between rides or actively driving passengers
               </p>
             </div>
 
             <div className="group p-6 rounded-2xl border border-border/50 bg-background/50 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/10 hover:border-accent/30 transition-all duration-300 hover:shadow-medium">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <FileText className="w-7 h-7 text-accent" />
+                <DollarSign className="w-7 h-7 text-accent" />
               </div>
-              <h4 className="text-xl font-semibold mb-3">Easy Claims</h4>
+              <h4 className="text-xl font-semibold mb-3">Value-Based Pricing</h4>
               <p className="text-muted-foreground">
-                Simple and straightforward claims process when you need it most
+                Fair pricing from $500-$2,500 based on your vehicle's value, not inflated premiums
               </p>
             </div>
 
             <div className="group p-6 rounded-2xl border border-border/50 bg-background/50 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/10 hover:border-accent/30 transition-all duration-300 hover:shadow-medium">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-7 h-7 text-accent" />
+                <Navigation className="w-7 h-7 text-accent" />
               </div>
-              <h4 className="text-xl font-semibold mb-3">Mutual Trust</h4>
+              <h4 className="text-xl font-semibold mb-3">Quick Quotes</h4>
               <p className="text-muted-foreground">
-                A community of members protecting each other on the road
+                Get back on the road fast with instant quotes using just your rego number
               </p>
             </div>
           </div>
@@ -121,48 +123,58 @@ const Index = () => {
       <section id="how-it-works" className="py-20 bg-background">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold mb-4">How It Works</h3>
+            <h3 className="text-4xl font-bold mb-4">How It Works for Rideshare Drivers</h3>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get protected in three simple steps
+              Get protected in three simple steps - no complicated insurance jargon
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            <div className="space-y-8">
-              <div className="flex gap-6 items-start group">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
-                  1
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+              <div className="space-y-8">
+                <div className="flex gap-6 items-start group">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
+                    1
+                  </div>
+                  <div className="flex-grow pt-3">
+                    <h4 className="text-2xl font-semibold mb-2">Enter Your Rego</h4>
+                    <p className="text-muted-foreground text-lg">
+                      Just your vehicle registration and address - we automatically fetch your car details and value
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-grow pt-3">
-                  <h4 className="text-2xl font-semibold mb-2">Enter Your Details</h4>
-                  <p className="text-muted-foreground text-lg">
-                    Provide your vehicle registration and address. We'll automatically retrieve your vehicle information.
-                  </p>
+
+                <div className="flex gap-6 items-start group">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
+                    2
+                  </div>
+                  <div className="flex-grow pt-3">
+                    <h4 className="text-2xl font-semibold mb-2">Instant Quote</h4>
+                    <p className="text-muted-foreground text-lg">
+                      Get your membership price immediately - fair pricing from $500 to $2,500 based on vehicle value
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-6 items-start group">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
+                    3
+                  </div>
+                  <div className="flex-grow pt-3">
+                    <h4 className="text-2xl font-semibold mb-2">Drive & Earn Protected</h4>
+                    <p className="text-muted-foreground text-lg">
+                      Focus on your passengers and earnings - we've got your vehicle covered
+                    </p>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex gap-6 items-start group">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
-                  2
-                </div>
-                <div className="flex-grow pt-3">
-                  <h4 className="text-2xl font-semibold mb-2">Get Your Quote</h4>
-                  <p className="text-muted-foreground text-lg">
-                    Receive an instant quote based on your vehicle's value. Prices from $500 to $2,500 per year.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-6 items-start group">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
-                  3
-                </div>
-                <div className="flex-grow pt-3">
-                  <h4 className="text-2xl font-semibold mb-2">Drive Protected</h4>
-                  <p className="text-muted-foreground text-lg">
-                    Once approved, you're covered. File claims easily through our platform whenever needed.
-                  </p>
-                </div>
+              
+              <div className="relative">
+                <img 
+                  src={rideshareDriver} 
+                  alt="Happy rideshare driver" 
+                  className="w-full h-auto rounded-2xl shadow-strong"
+                />
               </div>
             </div>
           </div>
@@ -179,7 +191,7 @@ const Index = () => {
                 <span className="font-bold text-lg text-primary-foreground">Motor Cover Mutual</span>
               </div>
               <p className="text-primary-foreground/70">
-                Protecting Australian drivers with transparent, value-based coverage.
+                Protecting Australian rideshare drivers with transparent, value-based coverage.
               </p>
             </div>
             <div>

@@ -62,10 +62,10 @@ export const QuoteForm = () => {
             <Calculator className="w-8 h-8 text-primary-foreground" />
           </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Get Your Quote
+            Get Your Rideshare Quote
           </h2>
           <p className="text-muted-foreground mt-2">
-            Protect your vehicle with our comprehensive membership cover
+            Protect your business on wheels with coverage built for rideshare drivers
           </p>
         </div>
 
