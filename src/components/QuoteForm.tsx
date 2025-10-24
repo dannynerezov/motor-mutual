@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Shield, Car, Calculator, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +54,8 @@ export const QuoteForm = () => {
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [membershipPrice, setMembershipPrice] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedValue, setSelectedValue] = useState<number | null>(null);
+  const [percentageChange, setPercentageChange] = useState<number>(0);
 
   const calculateMembershipPrice = (value: number): number => {
     if (value <= 10000) {
@@ -92,7 +96,13 @@ export const QuoteForm = () => {
       }
 
       setVehicleData(data);
-      const calculatedPrice = calculateMembershipPrice(data.vehicleValueInfo.marketValue);
+      
+      // Initialize selected value to market value
+      const initialValue = data.vehicleValueInfo.marketValue;
+      setSelectedValue(initialValue);
+      setPercentageChange(0);
+      
+      const calculatedPrice = calculateMembershipPrice(initialValue);
       setMembershipPrice(calculatedPrice);
 
       toast.success("Vehicle found successfully!");
@@ -112,6 +122,22 @@ export const QuoteForm = () => {
     }
     toast.info("Manual VIN entry will be processed by our team");
     // TODO: Implement manual VIN processing workflow
+  };
+
+  const handleValueChange = (value: number[]) => {
+    if (!vehicleData) return;
+    
+    const newValue = value[0];
+    setSelectedValue(newValue);
+    
+    // Calculate percentage change from market value
+    const marketValue = vehicleData.vehicleValueInfo.marketValue;
+    const change = ((newValue - marketValue) / marketValue) * 100;
+    setPercentageChange(change);
+    
+    // Recalculate membership price
+    const newPrice = calculateMembershipPrice(newValue);
+    setMembershipPrice(newPrice);
   };
 
   return (
@@ -293,30 +319,90 @@ export const QuoteForm = () => {
                 </div>
               )}
 
-              {/* Value Information */}
-              <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
-                <h4 className="text-sm font-semibold text-accent mb-3">Value Information</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Trade Low Price:</span>
-                    <span className="font-medium">${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</span>
+              {/* Select Your Value Covered - Interactive Slider */}
+              <div className="bg-card/50 rounded-lg p-6 backdrop-blur-sm space-y-6">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-lg font-semibold text-accent">Select Your Value Covered</h4>
+                  {vehicleData.vehicleValueInfo.retailPrice > 99999.99 && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                            <AlertCircle className="w-4 h-4" />
+                            Coverage Limit
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">Mutual only covers vehicles up to $100,000</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+
+                {/* Reference Values Display */}
+                <div className="grid grid-cols-3 gap-4 text-xs">
+                  <div className="text-center p-2 bg-muted/30 rounded">
+                    <p className="text-muted-foreground mb-1">Trade Low</p>
+                    <p className="font-semibold">${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Market Value:</span>
-                    <span className="font-medium">${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</span>
+                  <div className="text-center p-2 bg-primary/10 rounded border border-primary/30">
+                    <p className="text-muted-foreground mb-1">Market Value</p>
+                    <p className="font-semibold text-primary">${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Retail Price:</span>
-                    <span className="font-medium">${vehicleData.vehicleValueInfo.retailPrice.toLocaleString()}</span>
+                  <div className="text-center p-2 bg-muted/30 rounded">
+                    <p className="text-muted-foreground mb-1">Retail Price</p>
+                    <p className="font-semibold">${Math.min(vehicleData.vehicleValueInfo.retailPrice, 99999.99).toLocaleString()}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Trade Price:</span>
-                    <span className="font-medium">${vehicleData.vehicleValueInfo.tradePrice.toLocaleString()}</span>
+                </div>
+
+                {/* Current Selection Display with Percentage Change */}
+                <div className="text-center py-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-accent/20">
+                  <p className="text-sm text-muted-foreground mb-1">Your Selected Coverage</p>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    ${selectedValue?.toLocaleString() || '0'}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Kilometers:</span>
-                    <span className="font-medium">{vehicleData.vehicleValueInfo.kilometers.toLocaleString()} km</span>
+                  {percentageChange !== 0 && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className={`text-sm mt-2 cursor-help ${percentageChange > 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                            {percentageChange > 0 ? '↑' : '↓'} {Math.abs(percentageChange).toFixed(1)}% from market value
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>This will {percentageChange > 0 ? 'increase' : 'decrease'} your premium by approximately {Math.abs(percentageChange).toFixed(1)}%</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+
+                {/* Interactive Slider */}
+                <div className="px-2 py-4">
+                  <Slider
+                    value={[selectedValue || vehicleData.vehicleValueInfo.marketValue]}
+                    onValueChange={handleValueChange}
+                    min={vehicleData.vehicleValueInfo.tradeLowPrice}
+                    max={Math.min(vehicleData.vehicleValueInfo.retailPrice, 99999.99)}
+                    step={100}
+                    className="cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                    <span>${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</span>
+                    <span>${Math.min(vehicleData.vehicleValueInfo.retailPrice, 99999.99).toLocaleString()}</span>
                   </div>
+                </div>
+
+                {/* Additional Context */}
+                <div className="text-xs text-muted-foreground bg-muted/20 p-3 rounded">
+                  <p className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>
+                      Selecting a lower value reduces your premium but means you'll receive less in a total loss claim. 
+                      Selecting a higher value increases protection but costs more.
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -325,7 +411,14 @@ export const QuoteForm = () => {
                 <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   ${membershipPrice.toFixed(2)}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Based on market value of ${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Based on selected coverage of ${selectedValue?.toLocaleString() || '0'}
+                  {percentageChange !== 0 && (
+                    <span className={percentageChange > 0 ? 'text-green-600' : 'text-orange-600'}>
+                      {' '}({percentageChange > 0 ? '+' : ''}{percentageChange.toFixed(1)}% from market value)
+                    </span>
+                  )}
+                </p>
               </div>
 
               <Button
