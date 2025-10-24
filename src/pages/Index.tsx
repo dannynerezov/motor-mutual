@@ -27,13 +27,13 @@ const Index = () => {
 
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-5xl md:text-7xl font-bold mb-6 text-primary-foreground animate-fade-in [animation-delay:200ms] [animation-duration:800ms]">
+            <h2 className="text-5xl md:text-7xl font-bold mb-6 text-primary-foreground opacity-0 animate-fade-up [animation-delay:300ms]">
               Cover Built for Rideshare Drivers
             </h2>
-            <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto opacity-0 animate-fade-up [animation-delay:600ms]">
               Protection designed for Uber, Ola, and rideshare drivers from just $500/year
             </p>
-            <p className="text-lg text-primary-foreground/70 max-w-2xl mx-auto">
+            <p className="text-lg text-primary-foreground/70 max-w-2xl mx-auto opacity-0 animate-fade-up [animation-delay:900ms]">
               Your car is your business - protect it with coverage that understands the rideshare economy
             </p>
           </div>
