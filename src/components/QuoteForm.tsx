@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Shield, Car, Calculator, AlertCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { VehicleCard, Vehicle } from "./VehicleCard";
 
 const AUSTRALIAN_STATES = [
   { code: 'NSW', name: 'New South Wales' },
@@ -34,10 +34,10 @@ interface VehicleDetails {
 }
 
 interface VehicleValueInfo {
-  tradeLowPrice: number;    // Lower trade-in value
-  tradePrice: number;       // Standard trade-in value
-  retailPrice: number;      // Retail asking price
-  marketValue: number;      // Current market value
+  tradeLowPrice: number;
+  tradePrice: number;
+  retailPrice: number;
+  marketValue: number;
   kilometers: number;
 }
 
@@ -53,12 +53,10 @@ export const QuoteForm = () => {
   const [selectedState, setSelectedState] = useState("");
   const [vinNumber, setVinNumber] = useState("");
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
-  const [membershipPrice, setMembershipPrice] = useState<number | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedValue, setSelectedValue] = useState<number | null>(null);
-  const [percentageChange, setPercentageChange] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAddVehicle, setShowAddVehicle] = useState(false);
 
   const calculateMembershipPrice = (value: number): number => {
     if (value <= 10000) {
@@ -66,12 +64,33 @@ export const QuoteForm = () => {
     } else if (value >= 100000) {
       return 2500;
     } else {
-      // Linear calculation between $10,000 and $100,000
       const range = 100000 - 10000;
       const priceRange = 2500 - 500;
       const valueAboveMin = value - 10000;
       return 500 + (valueAboveMin / range) * priceRange;
     }
+  };
+
+  const calculateFleetDiscount = (vehicleCount: number): number => {
+    if (vehicleCount === 1) return 0;
+    if (vehicleCount >= 2 && vehicleCount <= 4) return 0.05;
+    if (vehicleCount >= 5 && vehicleCount <= 9) return 0.10;
+    if (vehicleCount >= 10 && vehicleCount <= 20) return 0.15;
+    return 0;
+  };
+
+  const getTotalBasePrice = (): number => {
+    return vehicles.reduce((sum, v) => sum + v.membershipPrice, 0);
+  };
+
+  const getFleetDiscountAmount = (): number => {
+    const basePrice = getTotalBasePrice();
+    const discount = calculateFleetDiscount(vehicles.length);
+    return basePrice * discount;
+  };
+
+  const getTotalWithDiscount = (): number => {
+    return getTotalBasePrice() - getFleetDiscountAmount();
   };
 
   const handleFindVehicle = async () => {
@@ -80,9 +99,19 @@ export const QuoteForm = () => {
       return;
     }
 
+    // Check for duplicate registration
+    if (vehicles.some(v => v.registration === registration.toUpperCase())) {
+      toast.error("This vehicle has already been added");
+      return;
+    }
+
+    // Check vehicle limit
+    if (vehicles.length >= 20) {
+      toast.error("Maximum 20 vehicles allowed per quote");
+      return;
+    }
+
     setIsLoading(true);
-    setVehicleData(null);
-    setMembershipPrice(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('vehicle-lookup', {
@@ -93,22 +122,24 @@ export const QuoteForm = () => {
       });
 
       if (error) throw error;
+      if (data.error) throw new Error(data.error);
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setVehicleData(data);
-      
-      // Initialize selected value to market value
       const initialValue = data.vehicleValueInfo.marketValue;
-      setSelectedValue(initialValue);
-      setPercentageChange(0);
-      
       const calculatedPrice = calculateMembershipPrice(initialValue);
-      setMembershipPrice(calculatedPrice);
 
-      toast.success("Vehicle found successfully!");
+      const newVehicle: Vehicle = {
+        id: `${Date.now()}-${Math.random()}`,
+        registration: registration.toUpperCase(),
+        state: selectedState,
+        vehicleData: data,
+        selectedValue: initialValue,
+        membershipPrice: calculatedPrice,
+      };
+
+      setVehicles([...vehicles, newVehicle]);
+      setRegistration("");
+      setShowAddVehicle(false);
+      toast.success("Vehicle added successfully!");
     } catch (error: any) {
       console.error('Vehicle lookup error:', error);
       toast.error(error.message || "Failed to find vehicle. Try manual entry with VIN.");
@@ -124,35 +155,37 @@ export const QuoteForm = () => {
       return;
     }
     toast.info("Manual VIN entry will be processed by our team");
-    // TODO: Implement manual VIN processing workflow
   };
 
-  const handleValueChange = (value: number[]) => {
-    if (!vehicleData) return;
-    
-    const newValue = value[0];
-    setSelectedValue(newValue);
-    
-    // Calculate percentage change from market value
-    const marketValue = vehicleData.vehicleValueInfo.marketValue;
-    const change = ((newValue - marketValue) / marketValue) * 100;
-    setPercentageChange(change);
-    
-    // Recalculate membership price
-    const newPrice = calculateMembershipPrice(newValue);
-    setMembershipPrice(newPrice);
+  const handleValueChange = (id: string, newValue: number) => {
+    setVehicles(vehicles.map(v => {
+      if (v.id === id) {
+        const newPrice = calculateMembershipPrice(newValue);
+        return { ...v, selectedValue: newValue, membershipPrice: newPrice };
+      }
+      return v;
+    }));
+  };
+
+  const handleRemoveVehicle = (id: string) => {
+    if (vehicles.length === 1) {
+      toast.error("You must have at least one vehicle");
+      return;
+    }
+    setVehicles(vehicles.filter(v => v.id !== id));
+    toast.success("Vehicle removed");
   };
 
   const handleSeePrice = async () => {
-    if (!vehicleData || !selectedValue || !membershipPrice) {
-      toast.error("Please complete the vehicle information");
+    if (vehicles.length === 0) {
+      toast.error("Please add at least one vehicle");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Create customer (simplified - in production you'd collect this info)
+      // Create customer
       const { data: customerData, error: customerError } = await supabase
         .from("customers")
         .insert({
@@ -162,7 +195,7 @@ export const QuoteForm = () => {
           phone: "0000000000",
           address_line1: "TBD",
           city: "TBD",
-          state: selectedState,
+          state: vehicles[0].state,
           postcode: "0000",
         })
         .select()
@@ -170,13 +203,25 @@ export const QuoteForm = () => {
 
       if (customerError) throw customerError;
 
-      // Create quote
+      const totalBase = getTotalBasePrice();
+      const totalFinal = getTotalWithDiscount();
+      const firstVehicle = vehicles[0];
+
+      // Create quote with all required fields
       const { data: quoteData, error: quoteError } = await supabase
         .from("quotes")
         .insert({
           customer_id: customerData.id,
-          total_base_price: membershipPrice,
-          total_final_price: membershipPrice,
+          quote_reference: `QT-${Date.now()}`,
+          registration_number: firstVehicle.registration,
+          vehicle_make: firstVehicle.vehicleData.vehicleDetails.make,
+          vehicle_model: firstVehicle.vehicleData.vehicleDetails.family,
+          vehicle_year: firstVehicle.vehicleData.vehicleDetails.year,
+          vehicle_nvic: firstVehicle.vehicleData.vehicleDetails.nvic || null,
+          vehicle_value: firstVehicle.vehicleData.vehicleValueInfo.marketValue,
+          membership_price: firstVehicle.membershipPrice,
+          total_base_price: totalBase,
+          total_final_price: totalFinal,
           status: "pending",
         } as any)
         .select()
@@ -184,21 +229,23 @@ export const QuoteForm = () => {
 
       if (quoteError) throw quoteError;
 
-      // Insert vehicle
+      // Insert all vehicles
+      const vehicleInserts = vehicles.map(v => ({
+        quote_id: quoteData.id,
+        registration_number: v.registration,
+        vehicle_make: v.vehicleData.vehicleDetails.make,
+        vehicle_model: v.vehicleData.vehicleDetails.family,
+        vehicle_year: v.vehicleData.vehicleDetails.year,
+        vehicle_nvic: v.vehicleData.vehicleDetails.nvic || null,
+        vehicle_value: v.vehicleData.vehicleValueInfo.marketValue,
+        selected_coverage_value: v.selectedValue,
+        vehicle_image_url: v.vehicleData.imageUrl || null,
+        base_price: v.membershipPrice,
+      }));
+
       const { error: vehicleError } = await supabase
         .from("quote_vehicles")
-        .insert({
-          quote_id: quoteData.id,
-          registration_number: registration.toUpperCase(),
-          vehicle_make: vehicleData.vehicleDetails.make,
-          vehicle_model: vehicleData.vehicleDetails.family,
-          vehicle_year: vehicleData.vehicleDetails.year,
-          vehicle_nvic: vehicleData.vehicleDetails.nvic,
-          vehicle_value: vehicleData.vehicleValueInfo.marketValue,
-          selected_coverage_value: selectedValue,
-          vehicle_image_url: vehicleData.imageUrl || null,
-          base_price: membershipPrice,
-        });
+        .insert(vehicleInserts);
 
       if (vehicleError) throw vehicleError;
 
@@ -211,6 +258,9 @@ export const QuoteForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  const discount = calculateFleetDiscount(vehicles.length);
+  const discountPercentage = discount * 100;
 
   return (
     <Card className="w-full max-w-4xl mx-auto p-8 bg-card/95 backdrop-blur-xl border-border/50 shadow-strong">
@@ -227,300 +277,201 @@ export const QuoteForm = () => {
           </p>
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium">
-              <Car className="w-4 h-4 text-accent" />
-              Vehicle Registration Number
-            </label>
-            <Input
-              placeholder="e.g., ABC123"
-              value={registration}
-              onChange={(e) => setRegistration(e.target.value.toUpperCase())}
-              className="border-border/50 bg-background/50 text-center font-mono text-lg tracking-wider"
-              maxLength={8}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label className="flex items-center gap-2 text-sm font-medium">
-              State of Registration
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {AUSTRALIAN_STATES.map((state) => (
-                <Button
-                  key={state.code}
-                  type="button"
-                  variant={selectedState === state.code ? "default" : "outline"}
-                  className={selectedState === state.code 
-                    ? "bg-gradient-to-r from-primary to-accent text-primary-foreground"
-                    : "hover:border-accent/50"
-                  }
-                  onClick={() => setSelectedState(state.code)}
-                >
-                  {state.code}
-                </Button>
-              ))}
+        {/* Vehicle Entry Section */}
+        {(vehicles.length === 0 || showAddVehicle) && (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <Car className="w-4 h-4 text-accent" />
+                Vehicle Registration Number
+              </label>
+              <Input
+                placeholder="e.g., ABC123"
+                value={registration}
+                onChange={(e) => setRegistration(e.target.value.toUpperCase())}
+                className="border-border/50 bg-background/50 text-center font-mono text-lg tracking-wider"
+                maxLength={8}
+              />
             </div>
-          </div>
 
-          <Button
-            onClick={handleFindVehicle}
-            disabled={isLoading || !registration || !selectedState}
-            className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg transition-all hover:shadow-glow"
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                Finding your car...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Car className="w-5 h-5" />
-                Find My Car
-              </span>
-            )}
-          </Button>
-
-          {showManualEntry && (
-            <Card className="p-4 bg-muted/50 border-muted-foreground/20 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-accent mt-0.5" />
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h4 className="font-semibold text-sm">Can't find your vehicle?</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Enter your VIN number for manual processing
-                    </p>
-                  </div>
-                  <Input
-                    placeholder="Enter VIN number"
-                    value={vinNumber}
-                    onChange={(e) => setVinNumber(e.target.value.toUpperCase())}
-                    className="text-sm"
-                    maxLength={17}
-                  />
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                State of Registration
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {AUSTRALIAN_STATES.map((state) => (
                   <Button
-                    onClick={handleManualEntry}
-                    size="sm"
-                    variant="outline"
-                    className="w-full"
+                    key={state.code}
+                    type="button"
+                    variant={selectedState === state.code ? "default" : "outline"}
+                    className={selectedState === state.code 
+                      ? "bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                      : "hover:border-accent/50"
+                    }
+                    onClick={() => setSelectedState(state.code)}
                   >
-                    Submit VIN for Manual Processing
+                    {state.code}
                   </Button>
-                </div>
+                ))}
               </div>
-            </Card>
-          )}
-        </div>
+            </div>
 
-        {vehicleData && membershipPrice !== null && (
-          <Card className="p-6 bg-gradient-to-br from-accent/10 to-primary/10 border-accent/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="space-y-4">
-              {/* Header with Make, Model, Year */}
-              <div className="text-center pb-4 border-b border-border/30">
-                <h3 className="text-2xl font-bold">
-                  {vehicleData.vehicleDetails.year} {vehicleData.vehicleDetails.make} {vehicleData.vehicleDetails.family}
-                </h3>
-                <p className="text-muted-foreground mt-1">
-                  {vehicleData.vehicleDetails.variant}
-                </p>
-              </div>
-
-              {/* Vehicle Image and Key Details */}
-              {vehicleData.imageUrl ? (
-                <div className="bg-card/50 rounded-lg p-6 backdrop-blur-sm">
-                  <div className="grid md:grid-cols-2 gap-6 items-center">
-                    {/* Vehicle Image */}
-                    <div className="flex justify-center">
-                      <img 
-                        src={vehicleData.imageUrl} 
-                        alt={`${vehicleData.vehicleDetails.year} ${vehicleData.vehicleDetails.make} ${vehicleData.vehicleDetails.family}`}
-                        className="max-w-full h-auto rounded-lg shadow-lg"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Key Vehicle Details */}
-                    <div className="space-y-3">
-                      <h4 className="text-lg font-semibold text-accent mb-4">Vehicle Details</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Make:</span>
-                          <span className="font-medium">{vehicleData.vehicleDetails.make}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Model:</span>
-                          <span className="font-medium">{vehicleData.vehicleDetails.family}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Year:</span>
-                          <span className="font-medium">{vehicleData.vehicleDetails.year}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Body Style:</span>
-                          <span className="font-medium">{vehicleData.vehicleDetails.bodyStyle}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
-                  <h4 className="text-sm font-semibold text-accent mb-3">Vehicle Details</h4>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Make:</span>
-                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.make}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Model:</span>
-                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.family}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Year:</span>
-                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.year}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Body Style:</span>
-                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.bodyStyle}</span>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleFindVehicle}
+                disabled={isLoading || !registration || !selectedState}
+                className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg transition-all hover:shadow-glow"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Finding vehicle...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Car className="w-5 h-5" />
+                    {vehicles.length === 0 ? 'Find My Car' : 'Add Vehicle'}
+                  </span>
+                )}
+              </Button>
+              {vehicles.length > 0 && showAddVehicle && (
+                <Button
+                  onClick={() => {
+                    setShowAddVehicle(false);
+                    setRegistration("");
+                    setSelectedState("");
+                  }}
+                  variant="outline"
+                  className="py-6"
+                >
+                  Cancel
+                </Button>
               )}
+            </div>
 
-              {/* Select Your Value Covered - Interactive Slider */}
-              <div className="bg-card/50 rounded-lg p-6 backdrop-blur-sm space-y-6">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-lg font-semibold text-accent">Select Your Value Covered</h4>
-                  {vehicleData.vehicleValueInfo.retailPrice > 99999.99 && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
-                            <AlertCircle className="w-4 h-4" />
-                            Coverage Limit
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">Mutual only covers vehicles up to $100,000</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-
-                {/* Reference Values Display */}
-                <div className="grid grid-cols-3 gap-4 text-xs">
-                  <div className="text-center p-2 bg-muted/30 rounded">
-                    <p className="text-muted-foreground mb-1">Trade Low</p>
-                    <p className="font-semibold">${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</p>
-                  </div>
-                  <div className="text-center p-2 bg-primary/10 rounded border border-primary/30">
-                    <p className="text-muted-foreground mb-1">Market Value</p>
-                    <p className="font-semibold text-primary">${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</p>
-                  </div>
-                  <div className="text-center p-2 bg-muted/30 rounded">
-                    <p className="text-muted-foreground mb-1">Retail Price</p>
-                    <p className="font-semibold">${Math.min(vehicleData.vehicleValueInfo.retailPrice, 99999.99).toLocaleString()}</p>
+            {showManualEntry && (
+              <Card className="p-4 bg-muted/50 border-muted-foreground/20 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-accent mt-0.5" />
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <h4 className="font-semibold text-sm">Can't find your vehicle?</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Enter your VIN number for manual processing
+                      </p>
+                    </div>
+                    <Input
+                      placeholder="Enter VIN number"
+                      value={vinNumber}
+                      onChange={(e) => setVinNumber(e.target.value.toUpperCase())}
+                      className="text-sm"
+                      maxLength={17}
+                    />
+                    <Button
+                      onClick={handleManualEntry}
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Submit VIN for Manual Processing
+                    </Button>
                   </div>
                 </div>
+              </Card>
+            )}
+          </div>
+        )}
 
-                {/* Current Selection Display with Percentage Change */}
-                <div className="text-center py-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-accent/20">
-                  <p className="text-sm text-muted-foreground mb-1">Your Selected Coverage</p>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    ${selectedValue?.toLocaleString() || '0'}
-                  </div>
-                  {percentageChange !== 0 && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <p className={`text-sm mt-2 cursor-help ${percentageChange > 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                            {percentageChange > 0 ? '↑' : '↓'} {Math.abs(percentageChange).toFixed(1)}% from market value
-                          </p>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>This will {percentageChange > 0 ? 'increase' : 'decrease'} your premium by approximately {Math.abs(percentageChange).toFixed(1)}%</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-
-                {/* Interactive Slider */}
-                <div className="px-2 py-4">
-                  <Slider
-                    value={[selectedValue || vehicleData.vehicleValueInfo.marketValue]}
-                    onValueChange={handleValueChange}
-                    min={vehicleData.vehicleValueInfo.tradeLowPrice}
-                    max={Math.min(vehicleData.vehicleValueInfo.retailPrice, 99999.99)}
-                    step={100}
-                    className="cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                    <span>${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</span>
-                    <span>${Math.min(vehicleData.vehicleValueInfo.retailPrice, 99999.99).toLocaleString()}</span>
-                  </div>
-                </div>
-
-                {/* Additional Context */}
-                <div className="text-xs text-muted-foreground bg-muted/20 p-3 rounded">
-                  <p className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>
-                      Selecting a lower value reduces your premium but means you'll receive less in a total loss claim. 
-                      Selecting a higher value increases protection but costs more.
-                    </span>
-                  </p>
-                </div>
+        {/* Vehicle List */}
+        {vehicles.length > 0 && (
+          <div className="space-y-4">
+            {/* Vehicle Counter & Fleet Badge */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Your Vehicles</h3>
+                <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  {vehicles.length} {vehicles.length === 1 ? 'vehicle' : 'vehicles'}
+                </span>
+                {discountPercentage > 0 && (
+                  <span className="text-sm bg-green-500/10 text-green-600 px-2 py-1 rounded-full font-semibold">
+                    {discountPercentage}% Fleet Discount
+                  </span>
+                )}
               </div>
-
-              {/* Add Another Vehicle Button */}
-              <div className="flex justify-center mt-4">
+              {!showAddVehicle && vehicles.length < 20 && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-muted-foreground"
-                        onClick={() => {
-                          toast.info("Multi-vehicle support coming soon! You'll be able to add up to 20 vehicles.");
-                        }}
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowAddVehicle(true)}
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Another Vehicle
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>Mutual provides fleet coverage for up to 20 vehicles with discounts for bulk memberships</p>
+                      <p>Add up to 20 vehicles. Fleet discounts: 2-4 vehicles (5%), 5-9 (10%), 10-20 (15%)</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              </div>
-
-              <Button
-                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg"
-                onClick={handleSeePrice}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Creating quote...
-                  </span>
-                ) : (
-                  <>
-                    <Shield className="w-5 h-5 mr-2" />
-                    See Your Price
-                  </>
-                )}
-              </Button>
+              )}
             </div>
-          </Card>
+
+            {/* Vehicle Cards */}
+            <div className="space-y-3">
+              {vehicles.map((vehicle, index) => (
+                <VehicleCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  index={index}
+                  onValueChange={handleValueChange}
+                  onRemove={handleRemoveVehicle}
+                  canRemove={vehicles.length > 1}
+                />
+              ))}
+            </div>
+
+            {/* Pricing Summary */}
+            <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-accent/30">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total Base Price:</span>
+                  <span className="font-semibold">${getTotalBasePrice().toFixed(2)}</span>
+                </div>
+                {discountPercentage > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Fleet Discount ({discountPercentage}%):</span>
+                    <span className="font-semibold">-${getFleetDiscountAmount().toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold pt-3 border-t border-border/50">
+                  <span>Your Total Annual Price:</span>
+                  <span className="text-accent">${getTotalWithDiscount().toFixed(2)}</span>
+                </div>
+              </div>
+            </Card>
+
+            {/* See Your Price Button */}
+            <Button
+              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg"
+              onClick={handleSeePrice}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Creating quote...
+                </span>
+              ) : (
+                <>
+                  <Shield className="w-5 h-5 mr-2" />
+                  See Your Price
+                </>
+              )}
+            </Button>
+          </div>
         )}
       </div>
     </Card>
