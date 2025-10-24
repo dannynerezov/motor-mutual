@@ -113,6 +113,41 @@ export type Database = {
         }
         Relationships: []
       }
+      named_drivers: {
+        Row: {
+          claims_count: number
+          created_at: string
+          date_of_birth: string
+          driver_name: string
+          id: string
+          quote_id: string
+        }
+        Insert: {
+          claims_count?: number
+          created_at?: string
+          date_of_birth: string
+          driver_name: string
+          id?: string
+          quote_id: string
+        }
+        Update: {
+          claims_count?: number
+          created_at?: string
+          date_of_birth?: string
+          driver_name?: string
+          id?: string
+          quote_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "named_drivers_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       policies: {
         Row: {
           created_at: string
@@ -167,16 +202,15 @@ export type Database = {
           },
         ]
       }
-      quotes: {
+      quote_vehicles: {
         Row: {
+          base_price: number
           created_at: string
-          customer_id: string
-          expires_at: string
           id: string
-          membership_price: number
-          quote_reference: string
+          quote_id: string
           registration_number: string
-          status: string
+          selected_coverage_value: number
+          vehicle_image_url: string | null
           vehicle_make: string
           vehicle_model: string
           vehicle_nvic: string | null
@@ -184,14 +218,13 @@ export type Database = {
           vehicle_year: number
         }
         Insert: {
+          base_price: number
           created_at?: string
-          customer_id: string
-          expires_at?: string
           id?: string
-          membership_price: number
-          quote_reference: string
+          quote_id: string
           registration_number: string
-          status?: string
+          selected_coverage_value: number
+          vehicle_image_url?: string | null
           vehicle_make: string
           vehicle_model: string
           vehicle_nvic?: string | null
@@ -199,14 +232,81 @@ export type Database = {
           vehicle_year: number
         }
         Update: {
+          base_price?: number
+          created_at?: string
+          id?: string
+          quote_id?: string
+          registration_number?: string
+          selected_coverage_value?: number
+          vehicle_image_url?: string | null
+          vehicle_make?: string
+          vehicle_model?: string
+          vehicle_nvic?: string | null
+          vehicle_value?: number
+          vehicle_year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_vehicles_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          claim_loading_percentage: number | null
+          created_at: string
+          customer_id: string
+          expires_at: string
+          id: string
+          membership_price: number
+          quote_number: string | null
+          quote_reference: string
+          registration_number: string
+          status: string
+          total_base_price: number | null
+          total_final_price: number | null
+          vehicle_make: string
+          vehicle_model: string
+          vehicle_nvic: string | null
+          vehicle_value: number
+          vehicle_year: number
+        }
+        Insert: {
+          claim_loading_percentage?: number | null
+          created_at?: string
+          customer_id: string
+          expires_at?: string
+          id?: string
+          membership_price: number
+          quote_number?: string | null
+          quote_reference: string
+          registration_number: string
+          status?: string
+          total_base_price?: number | null
+          total_final_price?: number | null
+          vehicle_make: string
+          vehicle_model: string
+          vehicle_nvic?: string | null
+          vehicle_value: number
+          vehicle_year: number
+        }
+        Update: {
+          claim_loading_percentage?: number | null
           created_at?: string
           customer_id?: string
           expires_at?: string
           id?: string
           membership_price?: number
+          quote_number?: string | null
           quote_reference?: string
           registration_number?: string
           status?: string
+          total_base_price?: number | null
+          total_final_price?: number | null
           vehicle_make?: string
           vehicle_model?: string
           vehicle_nvic?: string | null
@@ -228,7 +328,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_quote_number: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
