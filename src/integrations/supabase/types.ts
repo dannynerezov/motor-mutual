@@ -113,6 +113,39 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_pricing_data: {
+        Row: {
+          created_at: string
+          full_address: string
+          id: string
+          index_value: string | null
+          postcode: string
+          state: string
+          street: string | null
+          suburb: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_address: string
+          id?: string
+          index_value?: string | null
+          postcode: string
+          state: string
+          street?: string | null
+          suburb?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_address?: string
+          id?: string
+          index_value?: string | null
+          postcode?: string
+          state?: string
+          street?: string | null
+          suburb?: string | null
+        }
+        Relationships: []
+      }
       named_drivers: {
         Row: {
           claims_count: number

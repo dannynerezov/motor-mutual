@@ -31,6 +31,11 @@ export const Footer = () => {
                   How It Works
                 </Link>
               </li>
+              <li>
+                <Link to="/admin" className="text-sm opacity-90 hover:opacity-100 transition-opacity">
+                  Admin
+                </Link>
+              </li>
             </ul>
           </div>
           
