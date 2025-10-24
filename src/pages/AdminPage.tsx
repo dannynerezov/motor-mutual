@@ -62,15 +62,26 @@ const AdminPage = () => {
       
       setUploadProgress(`Processing ${csvData.length} records...`);
 
-      // Map CSV columns to database columns
-      const records = csvData.map(row => ({
-        full_address: row["Full Address"] || "",
-        index_value: row["Index"] || null,
-        street: row["Street"] || "",
-        suburb: row["Suburb"] || "",
-        state: row["State"] || "",
-        postcode: row["Postcode"] || ""
-      }));
+      // Map CSV columns to database columns (case-insensitive header matching)
+      const records = csvData.map(row => {
+        // Helper to find column value by matching header names (case-insensitive)
+        const getColumnValue = (possibleNames: string[]) => {
+          for (const name of possibleNames) {
+            const value = row[name];
+            if (value !== undefined) return value;
+          }
+          return "";
+        };
+
+        return {
+          full_address: getColumnValue(["Full Address", "full_address", "FullAddress"]) || "",
+          index_value: getColumnValue(["Index", "index_value", "index"]) || null,
+          street: getColumnValue(["Street", "street"]) || "",
+          suburb: getColumnValue(["Suburb", "suburb"]) || "",
+          state: getColumnValue(["State", "state"]) || "",
+          postcode: getColumnValue(["Postcode", "postcode", "PostCode"]) || ""
+        };
+      });
 
       // Insert in batches of 1000 to avoid timeout
       const batchSize = 1000;
