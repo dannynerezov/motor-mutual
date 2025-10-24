@@ -41,6 +41,7 @@ interface VehicleValueInfo {
 interface VehicleData {
   vehicleDetails: VehicleDetails;
   vehicleValueInfo: VehicleValueInfo;
+  imageUrl?: string | null;
 }
 
 export const QuoteForm = () => {
@@ -218,64 +219,103 @@ export const QuoteForm = () => {
         {vehicleData && membershipPrice !== null && (
           <Card className="p-6 bg-gradient-to-br from-accent/10 to-primary/10 border-accent/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-4">
+              {/* Header with Make, Model, Year */}
               <div className="text-center pb-4 border-b border-border/30">
                 <h3 className="text-2xl font-bold">
                   {vehicleData.vehicleDetails.year} {vehicleData.vehicleDetails.make} {vehicleData.vehicleDetails.family}
                 </h3>
                 <p className="text-muted-foreground mt-1">
-                  {vehicleData.vehicleDetails.variant} • {vehicleData.vehicleDetails.series}
+                  {vehicleData.vehicleDetails.variant}
                 </p>
-                <div className="inline-block mt-2 px-3 py-1 bg-accent/20 rounded-full">
-                  <span className="text-xs font-semibold text-accent">NVIC: {vehicleData.vehicleDetails.nvic}</span>
-                </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
-                  <h4 className="text-sm font-semibold text-accent mb-3">Vehicle Details</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Body Style:</span>
-                      <span className="font-medium">{vehicleData.vehicleDetails.bodyStyle}</span>
+              {/* Vehicle Image and Key Details */}
+              {vehicleData.imageUrl ? (
+                <div className="bg-card/50 rounded-lg p-6 backdrop-blur-sm">
+                  <div className="grid md:grid-cols-2 gap-6 items-center">
+                    {/* Vehicle Image */}
+                    <div className="flex justify-center">
+                      <img 
+                        src={vehicleData.imageUrl} 
+                        alt={`${vehicleData.vehicleDetails.year} ${vehicleData.vehicleDetails.make} ${vehicleData.vehicleDetails.family}`}
+                        className="max-w-full h-auto rounded-lg shadow-lg"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Doors:</span>
-                      <span className="font-medium">{vehicleData.vehicleDetails.doors}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Transmission:</span>
-                      <span className="font-medium">{vehicleData.vehicleDetails.transmissionDescription}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Fuel:</span>
-                      <span className="font-medium">{vehicleData.vehicleDetails.fuelType}</span>
+                    
+                    {/* Key Vehicle Details */}
+                    <div className="space-y-3">
+                      <h4 className="text-lg font-semibold text-accent mb-4">Vehicle Details</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Make:</span>
+                          <span className="font-medium">{vehicleData.vehicleDetails.make}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Model:</span>
+                          <span className="font-medium">{vehicleData.vehicleDetails.family}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Year:</span>
+                          <span className="font-medium">{vehicleData.vehicleDetails.year}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Body Style:</span>
+                          <span className="font-medium">{vehicleData.vehicleDetails.bodyStyle}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-
+              ) : (
                 <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
-                  <h4 className="text-sm font-semibold text-accent mb-3">Value Information</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Trade Low Price:</span>
-                      <span className="font-medium">${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</span>
+                  <h4 className="text-sm font-semibold text-accent mb-3">Vehicle Details</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Make:</span>
+                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.make}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Market Value:</span>
-                      <span className="font-medium">${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</span>
+                    <div>
+                      <span className="text-muted-foreground">Model:</span>
+                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.family}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Retail Price:</span>
-                      <span className="font-medium">${vehicleData.vehicleValueInfo.retailPrice.toLocaleString()}</span>
+                    <div>
+                      <span className="text-muted-foreground">Year:</span>
+                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.year}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Trade Price:</span>
-                      <span className="font-medium">${vehicleData.vehicleValueInfo.tradePrice.toLocaleString()}</span>
+                    <div>
+                      <span className="text-muted-foreground">Body Style:</span>
+                      <span className="font-medium ml-2">{vehicleData.vehicleDetails.bodyStyle}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Kilometers:</span>
-                      <span className="font-medium">{vehicleData.vehicleValueInfo.kilometers.toLocaleString()} km</span>
-                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Value Information */}
+              <div className="bg-card/50 rounded-lg p-4 backdrop-blur-sm">
+                <h4 className="text-sm font-semibold text-accent mb-3">Value Information</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Trade Low Price:</span>
+                    <span className="font-medium">${vehicleData.vehicleValueInfo.tradeLowPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Market Value:</span>
+                    <span className="font-medium">${vehicleData.vehicleValueInfo.marketValue.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Retail Price:</span>
+                    <span className="font-medium">${vehicleData.vehicleValueInfo.retailPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Trade Price:</span>
+                    <span className="font-medium">${vehicleData.vehicleValueInfo.tradePrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Kilometers:</span>
+                    <span className="font-medium">{vehicleData.vehicleValueInfo.kilometers.toLocaleString()} km</span>
                   </div>
                 </div>
               </div>

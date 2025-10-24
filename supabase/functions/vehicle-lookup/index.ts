@@ -1,9 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const supabaseClient = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -61,7 +67,57 @@ serve(async (req) => {
     console.log('Vehicle data retrieved successfully');
     console.log('Full vehicle valuation data:', JSON.stringify(vehicleData.vehicleValueInfo, null, 2));
 
-    return new Response(JSON.stringify(vehicleData), {
+    // Attempt to fetch and store vehicle image
+    let imageUrl = null;
+    const nvic = vehicleData.vehicleDetails?.nvic;
+
+    if (nvic) {
+      try {
+        const imageSourceUrl = `https://sales-assets.suncorp.com.au/vehicles/nvic/${nvic}.jpg`;
+        console.log('Checking for vehicle image:', imageSourceUrl);
+        
+        // Check if image exists
+        const imageCheckResponse = await fetch(imageSourceUrl, { method: 'HEAD' });
+        
+        if (imageCheckResponse.ok && imageCheckResponse.headers.get('content-type')?.includes('image')) {
+          console.log('Vehicle image found, fetching...');
+          
+          // Fetch the actual image
+          const imageResponse = await fetch(imageSourceUrl);
+          const imageBlob = await imageResponse.blob();
+          const imageBuffer = await imageBlob.arrayBuffer();
+          
+          // Upload to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabaseClient
+            .storage
+            .from('vehicle-images')
+            .upload(`${nvic}.jpg`, imageBuffer, {
+              contentType: 'image/jpeg',
+              upsert: true
+            });
+          
+          if (!uploadError && uploadData) {
+            // Get public URL
+            const { data: urlData } = supabaseClient
+              .storage
+              .from('vehicle-images')
+              .getPublicUrl(`${nvic}.jpg`);
+            
+            imageUrl = urlData.publicUrl;
+            console.log('Vehicle image stored successfully:', imageUrl);
+          } else {
+            console.log('Failed to upload image:', uploadError);
+          }
+        } else {
+          console.log('No vehicle image available for NVIC:', nvic);
+        }
+      } catch (imageError) {
+        console.log('Failed to fetch vehicle image:', imageError);
+        // Don't throw - continue without image
+      }
+    }
+
+    return new Response(JSON.stringify({ ...vehicleData, imageUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
