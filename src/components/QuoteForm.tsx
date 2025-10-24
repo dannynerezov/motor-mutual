@@ -185,23 +185,35 @@ export const QuoteForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Create customer
+      // Generate or reuse guest email to avoid conflicts
+      let guestEmail = localStorage.getItem("guestEmail");
+      if (!guestEmail) {
+        guestEmail = `guest+${Date.now()}@example.com`;
+        localStorage.setItem("guestEmail", guestEmail);
+      }
+
+      // Upsert customer (create or reuse existing)
       const { data: customerData, error: customerError } = await supabase
         .from("customers")
-        .insert({
+        .upsert({
           first_name: "Guest",
           last_name: "User",
-          email: "guest@example.com",
+          email: guestEmail,
           phone: "0000000000",
           address_line1: "TBD",
           city: "TBD",
           state: vehicles[0].state,
           postcode: "0000",
+        }, {
+          onConflict: "email"
         })
         .select()
         .single();
 
-      if (customerError) throw customerError;
+      if (customerError) {
+        console.error("Customer error:", customerError);
+        throw customerError;
+      }
 
       const totalBase = getTotalBasePrice();
       const totalFinal = getTotalWithDiscount();
