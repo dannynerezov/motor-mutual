@@ -153,15 +153,149 @@ serve(async (req) => {
               parameters: {
                 type: "object",
                 properties: {
-                  full_content: { type: "object" },
-                  summary: { type: "string" },
-                  key_benefits: { type: "object" },
-                  coverage_details: { type: "object" },
-                  exclusions: { type: "object" },
-                  conditions: { type: "object" },
-                  faq: { type: "object" }
+                  summary: {
+                    type: "string",
+                    description: "A comprehensive 2-3 sentence summary of the entire PDS"
+                  },
+                  full_content: {
+                    type: "object",
+                    properties: {
+                      sections: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            title: { type: "string" },
+                            content: { type: "string" },
+                            page_number: { type: "number" }
+                          },
+                          required: ["title", "content"]
+                        }
+                      }
+                    },
+                    required: ["sections"]
+                  },
+                  key_benefits: {
+                    type: "object",
+                    properties: {
+                      collision_damage: {
+                        type: "object",
+                        properties: {
+                          description: { type: "string" },
+                          covered: { type: "boolean" },
+                          conditions: { type: "array", items: { type: "string" } },
+                          icon: { type: "string" }
+                        },
+                        required: ["description", "covered"]
+                      },
+                      flood_damage: {
+                        type: "object",
+                        properties: {
+                          description: { type: "string" },
+                          covered: { type: "boolean" },
+                          conditions: { type: "array", items: { type: "string" } },
+                          icon: { type: "string" }
+                        },
+                        required: ["description", "covered"]
+                      },
+                      fire_damage: {
+                        type: "object",
+                        properties: {
+                          description: { type: "string" },
+                          covered: { type: "boolean" },
+                          conditions: { type: "array", items: { type: "string" } },
+                          icon: { type: "string" }
+                        },
+                        required: ["description", "covered"]
+                      },
+                      theft: {
+                        type: "object",
+                        properties: {
+                          description: { type: "string" },
+                          covered: { type: "boolean" },
+                          conditions: { type: "array", items: { type: "string" } },
+                          icon: { type: "string" }
+                        },
+                        required: ["description", "covered"]
+                      },
+                      storm_damage: {
+                        type: "object",
+                        properties: {
+                          description: { type: "string" },
+                          covered: { type: "boolean" },
+                          conditions: { type: "array", items: { type: "string" } },
+                          icon: { type: "string" }
+                        },
+                        required: ["description", "covered"]
+                      },
+                      hail_damage: {
+                        type: "object",
+                        properties: {
+                          description: { type: "string" },
+                          covered: { type: "boolean" },
+                          conditions: { type: "array", items: { type: "string" } },
+                          icon: { type: "string" }
+                        },
+                        required: ["description", "covered"]
+                      }
+                    },
+                    required: ["collision_damage", "flood_damage", "fire_damage", "theft", "storm_damage", "hail_damage"]
+                  },
+                  coverage_details: {
+                    type: "object",
+                    properties: {
+                      maximum_cover: { type: "number" },
+                      currency: { type: "string" },
+                      geographic_limitations: { type: "string" },
+                      coverage_types: { type: "array", items: { type: "string" } }
+                    },
+                    required: ["maximum_cover", "currency", "geographic_limitations"]
+                  },
+                  exclusions: {
+                    type: "object",
+                    properties: {
+                      general_exclusions: {
+                        type: "array",
+                        items: { type: "string" }
+                      },
+                      specific_exclusions: {
+                        type: "object",
+                        additionalProperties: {
+                          type: "array",
+                          items: { type: "string" }
+                        }
+                      }
+                    },
+                    required: ["general_exclusions"]
+                  },
+                  conditions: {
+                    type: "object",
+                    properties: {
+                      discretionary_conditions: { type: "array", items: { type: "string" } },
+                      member_obligations: { type: "array", items: { type: "string" } }
+                    }
+                  },
+                  faq: {
+                    type: "object",
+                    properties: {
+                      questions: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            question: { type: "string" },
+                            answer: { type: "string" },
+                            pds_reference: { type: "string", description: "Section number and page reference" }
+                          },
+                          required: ["question", "answer", "pds_reference"]
+                        },
+                        minItems: 7
+                      }
+                    },
+                    required: ["questions"]
+                  }
                 },
-                required: ["full_content", "summary", "key_benefits", "coverage_details", "exclusions", "faq"],
+                required: ["summary", "full_content", "key_benefits", "coverage_details", "exclusions", "faq"],
                 additionalProperties: false
               }
             }
