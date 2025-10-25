@@ -1,86 +1,41 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
-type SuburbData = {
-  suburb: string;
-  state: string;
-  postcode: string;
-  avg_index: number;
-  min_index: number;
-  max_index: number;
-  location_count: number;
-};
-
 type StateStats = {
   state: string;
+  suburb_count: number;
+  location_count: number;
   avg_index: number;
   min_index: number;
   max_index: number;
-  suburb_count: number;
   ranking: number;
 };
 
 export const CompactPricingWidget = () => {
-  const { data: suburbData, isLoading } = useQuery({
-    queryKey: ["compact-pricing-data"],
+  const { data: rawStateStats, isLoading } = useQuery({
+    queryKey: ["state-pricing-data"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc(
-        'get_suburb_pricing_analysis_paginated',
-        { limit_rows: 1000, offset_rows: 0 }
-      );
+      const { data, error } = await supabase.rpc('get_state_pricing_analysis');
 
       if (error) throw error;
       if (!data || data.length === 0) return [];
 
-      return data.map((row: any) => ({
-        suburb: row.suburb,
+      return data.map((row: any, index: number) => ({
         state: row.state,
-        postcode: row.postcode,
+        suburb_count: parseInt(row.suburb_count),
+        location_count: parseInt(row.location_count),
         avg_index: parseFloat(row.avg_index),
         min_index: parseFloat(row.min_index),
         max_index: parseFloat(row.max_index),
-        location_count: parseInt(row.location_count),
+        ranking: index + 1,
       }));
     },
   });
 
-  const stateStats = useMemo<StateStats[]>(() => {
-    if (!suburbData || suburbData.length === 0) return [];
-
-    const stateGroups = suburbData.reduce((acc: Record<string, SuburbData[]>, suburb: SuburbData) => {
-      if (!acc[suburb.state]) {
-        acc[suburb.state] = [];
-      }
-      acc[suburb.state].push(suburb);
-      return acc;
-    }, {});
-
-    const stats = Object.entries(stateGroups).map(([state, suburbs]) => {
-      const avgIndex = suburbs.reduce((sum, s) => sum + s.avg_index, 0) / suburbs.length;
-      const minIndex = Math.min(...suburbs.map(s => s.min_index));
-      const maxIndex = Math.max(...suburbs.map(s => s.max_index));
-
-      return {
-        state,
-        avg_index: avgIndex,
-        min_index: minIndex,
-        max_index: maxIndex,
-        suburb_count: suburbs.length,
-        ranking: 0,
-      };
-    });
-
-    const sortedStats = stats.sort((a, b) => a.avg_index - b.avg_index);
-    sortedStats.forEach((stat, index) => {
-      stat.ranking = index + 1;
-    });
-
-    return sortedStats;
-  }, [suburbData]);
+  const stateStats = rawStateStats || [];
 
   const topCheapest = stateStats.slice(0, 3);
   const topExpensive = stateStats.slice(-3).reverse();

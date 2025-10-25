@@ -453,6 +453,7 @@ export type Database = {
           max_index: number
           min_index: number
           state: string
+          suburb_count: number
         }[]
       }
       get_suburb_pricing_analysis: {
