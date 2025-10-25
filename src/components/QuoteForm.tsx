@@ -327,20 +327,30 @@ export const QuoteForm = () => {
   const discountPercentage = discount * 100;
 
   return (
-    <Card className="w-full max-w-4xl mx-auto p-8 bg-card/95 backdrop-blur-xl border-border/50 shadow-strong">
-      <div className="space-y-6">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent mb-4">
-            <Calculator className="w-8 h-8 text-primary-foreground" />
+    <Card className="w-full max-w-4xl mx-auto p-8 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-xl border-2 border-primary/30 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700 relative overflow-hidden">
+      {/* Decorative corner accents */}
+      <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4 border-accent/30 rounded-tl-2xl pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-24 h-24 border-b-4 border-r-4 border-accent/30 rounded-br-2xl pointer-events-none"></div>
+      
+      <div className="space-y-6 relative">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-accent to-primary mb-6 animate-in zoom-in-50 duration-700 shadow-lg">
+            <Calculator className="w-10 h-10 text-primary-foreground animate-pulse" />
           </div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-in fade-in slide-in-from-top-4 duration-700 mb-4">
             Get Your Rideshare Quote
           </h2>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-lg md:text-xl text-muted-foreground mt-3 animate-in fade-in slide-in-from-top-4 duration-700 delay-150">
             Protect your business on wheels with coverage built for rideshare drivers
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full border border-accent/30 animate-in fade-in scale-in-95 duration-700 delay-300">
+            <Shield className="w-4 h-4 text-accent" />
+            <span className="text-sm font-semibold text-accent">
+              Quick • Simple • Transparent
+            </span>
+          </div>
           {activeScheme && (
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-3">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-4 animate-in fade-in duration-700 delay-500">
               <Info className="w-4 h-4" />
               <span>
                 Using Pricing Scheme #{activeScheme.scheme_number} 
@@ -357,72 +367,132 @@ export const QuoteForm = () => {
         {/* Vehicle Entry Section */}
         {(vehicles.length === 0 || showAddVehicle) && (
           <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium">
-                <Car className="w-4 h-4 text-accent" />
+            <div className="space-y-2 relative">
+              <label className="flex items-center gap-2 text-base font-semibold">
+                <Car className="w-5 h-5 text-accent animate-pulse" />
                 Vehicle Registration Number
+                <span className="text-xs text-muted-foreground font-normal">(Step 1 of 3)</span>
               </label>
+              
+              {/* Desktop arrow indicator */}
+              <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden xl:block">
+                <div className="flex items-center gap-2 text-accent animate-bounce">
+                  <span className="text-sm font-semibold">Start here →</span>
+                </div>
+              </div>
+              
               <Input
                 placeholder="e.g., ABC123"
                 value={registration}
                 onChange={(e) => setRegistration(e.target.value.toUpperCase())}
-                className="border-border/50 bg-background/50 text-center font-mono text-lg tracking-wider"
+                className="border-2 border-accent/50 bg-background text-center font-mono text-xl tracking-wider h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
                 maxLength={8}
               />
+              
+              {/* Helper text when empty */}
+              {!registration && (
+                <p className="text-sm text-accent/70 flex items-center gap-2 animate-pulse">
+                  <span className="inline-block w-2 h-2 bg-accent rounded-full"></span>
+                  Enter your vehicle's registration number to begin
+                </p>
+              )}
             </div>
 
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-sm font-medium">
+            <div className="space-y-3 relative">
+              <label className="flex items-center gap-2 text-base font-semibold">
                 State of Registration
+                <span className="text-xs text-muted-foreground font-normal">(Step 2 of 3)</span>
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              
+              {/* Animated indicator when registration is filled but state not selected */}
+              {registration && !selectedState && (
+                <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden xl:block">
+                  <div className="flex items-center gap-2 text-accent animate-bounce">
+                    <span className="text-sm font-semibold">Select state →</span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-4 gap-3 p-4 bg-muted/30 rounded-lg border-2 border-dashed border-accent/30 animate-in fade-in slide-in-from-top-4 duration-500 delay-300">
                 {AUSTRALIAN_STATES.map((state) => (
                   <Button
                     key={state.code}
                     type="button"
                     variant={selectedState === state.code ? "default" : "outline"}
-                    className={selectedState === state.code 
-                      ? "bg-gradient-to-r from-primary to-accent text-primary-foreground"
-                      : "hover:border-accent/50"
-                    }
+                    className={`h-12 text-base font-semibold transition-all duration-300 ${
+                      selectedState === state.code 
+                        ? "bg-gradient-to-r from-primary to-accent text-primary-foreground scale-110 shadow-lg"
+                        : "hover:border-accent/50 hover:scale-105"
+                    }`}
                     onClick={() => setSelectedState(state.code)}
                   >
                     {state.code}
                   </Button>
                 ))}
               </div>
+              
+              {/* Confirmation text after state selection */}
+              {selectedState && (
+                <p className="text-sm text-accent/70 flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                  <span className="inline-block w-2 h-2 bg-accent rounded-full"></span>
+                  {AUSTRALIAN_STATES.find(s => s.code === selectedState)?.name} selected
+                </p>
+              )}
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                onClick={handleFindVehicle}
-                disabled={isLoading || !registration || !selectedState}
-                className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold py-6 text-lg transition-all hover:shadow-glow"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Finding vehicle...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Car className="w-5 h-5" />
-                    {vehicles.length === 0 ? 'Find My Car' : 'Add Vehicle'}
-                  </span>
-                )}
-              </Button>
-              {vehicles.length > 0 && showAddVehicle && (
+            <div className="relative mt-6">
+              {/* Progress indicator arrow */}
+              {registration && selectedState && (
+                <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden xl:block">
+                  <div className="flex items-center gap-2 text-accent animate-bounce">
+                    <span className="text-sm font-semibold">Click here →</span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex gap-3">
                 <Button
-                  onClick={() => {
-                    setShowAddVehicle(false);
-                    setRegistration("");
-                    setSelectedState("");
-                  }}
-                  variant="outline"
-                  className="py-6"
+                  onClick={handleFindVehicle}
+                  disabled={isLoading || !registration || !selectedState}
+                  className="flex-1 bg-gradient-to-r from-accent via-primary to-accent hover:from-accent/90 hover:via-primary/90 hover:to-accent/90 text-white font-bold py-8 text-xl transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in scale-in-95 duration-500 delay-500 relative overflow-hidden group"
                 >
-                  Cancel
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                  
+                  {isLoading ? (
+                    <span className="flex items-center gap-3 relative z-10">
+                      <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                      Finding your vehicle...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-3 relative z-10">
+                      <Car className="w-6 h-6" />
+                      {vehicles.length === 0 ? 'Find My Car' : 'Add Another Vehicle'}
+                      {registration && selectedState && (
+                        <span className="text-xs font-normal opacity-90">(Step 3 of 3)</span>
+                      )}
+                    </span>
+                  )}
                 </Button>
+                
+                {vehicles.length > 0 && showAddVehicle && (
+                  <Button
+                    onClick={() => {
+                      setShowAddVehicle(false);
+                      setRegistration("");
+                      setSelectedState("");
+                    }}
+                    variant="outline"
+                    className="py-8 px-6 text-base"
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+              
+              {/* Pulsing ring around button when ready */}
+              {registration && selectedState && !isLoading && (
+                <div className="absolute inset-0 rounded-md border-4 border-accent animate-ping opacity-20 pointer-events-none"></div>
               )}
             </div>
 
