@@ -374,20 +374,23 @@ export const QuoteForm = () => {
                 <span className="text-xs text-muted-foreground font-normal">(Step 1 of 3)</span>
               </label>
               
-              {/* Desktop arrow indicator */}
-              <div className="absolute -left-8 top-1/2 -translate-y-1/2 hidden xl:flex xl:w-24 xl:justify-end">
-                <div className="flex items-center gap-1 text-accent animate-bounce">
-                  <span className="text-xs font-semibold whitespace-nowrap">Start here →</span>
-                </div>
-              </div>
               
-              <Input
-                placeholder="e.g., ABC123"
-                value={registration}
-                onChange={(e) => setRegistration(e.target.value.toUpperCase())}
-                className="border-2 border-accent/50 bg-background text-center font-mono text-xl tracking-wider h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
-                maxLength={8}
-              />
+              <div className="relative">
+                {/* Desktop arrow indicator anchored to input */}
+                <div className="absolute right-full mr-5 top-1/2 -translate-y-1/2 hidden xl:flex w-40 justify-end">
+                  <div className="flex items-center gap-1 text-accent animate-bounce">
+                    <span className="text-xs font-semibold whitespace-nowrap">Start here</span>
+                    <span className="text-base" aria-hidden>→</span>
+                  </div>
+                </div>
+                <Input
+                  placeholder="e.g., ABC123"
+                  value={registration}
+                  onChange={(e) => setRegistration(e.target.value.toUpperCase())}
+                  className="border-2 border-accent/50 bg-background text-center font-mono text-xl tracking-wider h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
+                  maxLength={8}
+                />
+              </div>
               
               {/* Helper text when empty */}
               {!registration && (
