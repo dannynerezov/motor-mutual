@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { pdfPath, extractedText } = await req.json();
+    const { pdfPath } = await req.json();
 
     console.log('Downloading PDF from storage:', pdfPath);
 
@@ -64,17 +64,7 @@ serve(async (req) => {
 
     const systemPrompt = `You extract structured fields from a Product Disclosure Statement (PDS). Reply with ONLY valid JSON, no extra text or markdown. Extract comprehensive information including all sections, exclusions, FAQ entries, monetary amounts, definitions, claims process, and member obligations with accurate PDS references.`;
     
-    // Prefer extracted text over base64 for better AI understanding
-    let userPrompt: string;
-
-    if (extractedText && extractedText.length > 100) {
-      // Truncate to ~150k chars to avoid context overflow
-      const truncatedText = extractedText.slice(0, 150000);
-      console.log('Using extracted text, length:', truncatedText.length);
-      
-      userPrompt = `Analyze this PDS text content:
-
-${truncatedText}
+    const userPrompt = `Analyze this PDS PDF (base64): ${base64Pdf}
 
 Extract the following JSON structure:
 ${jsonSchema}
@@ -86,22 +76,6 @@ Rules:
 - Include all monetary amounts mentioned
 - Include accurate PDS section references
 - Keep data comprehensive but well-structured`;
-    } else {
-      // Fallback to base64 if no text provided
-      console.log('No extracted text provided, using base64 PDF');
-      userPrompt = `Analyze this PDS PDF (base64): ${base64Pdf}
-
-Extract the following JSON structure:
-${jsonSchema}
-
-Rules:
-- Return ONLY valid JSON, no markdown code blocks
-- Include as many exclusions as you can find (aim for 28+)
-- Include comprehensive FAQ entries (aim for 15+)
-- Include all monetary amounts mentioned
-- Include accurate PDS section references
-- Keep data comprehensive but well-structured`;
-    }
 
     let extractedData;
     let modelUsed = 'google/gemini-2.5-flash';
