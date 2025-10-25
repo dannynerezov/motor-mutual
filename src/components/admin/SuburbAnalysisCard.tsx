@@ -31,12 +31,44 @@ export const SuburbAnalysisCard = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["suburb-analysis"],
     queryFn: async () => {
-      const { data: rpcData, error } = await supabase.rpc('get_suburb_pricing_analysis');
+      // Fetch first page to get total count
+      const { data: firstPage, error: firstError } = await supabase.rpc(
+        'get_suburb_pricing_analysis_paginated',
+        { limit_rows: 1000, offset_rows: 0 }
+      );
 
-      if (error) throw error;
+      if (firstError) throw firstError;
+      if (!firstPage || firstPage.length === 0) {
+        return { topExpensive: [], topCheapest: [], all: [] };
+      }
 
-      // Data already comes aggregated from database with all suburbs
-      const suburbStats = rpcData.map((row: any) => ({
+      const totalCount = Number(firstPage[0].total_count);
+      const allData = [...firstPage];
+
+      // Calculate remaining pages
+      const remainingPages = Math.ceil((totalCount - 1000) / 1000);
+
+      // Fetch remaining pages in parallel
+      if (remainingPages > 0) {
+        const pagePromises = Array.from({ length: remainingPages }, (_, i) => {
+          const offset = (i + 1) * 1000;
+          return supabase.rpc('get_suburb_pricing_analysis_paginated', {
+            limit_rows: 1000,
+            offset_rows: offset
+          });
+        });
+
+        const pageResults = await Promise.all(pagePromises);
+        
+        pageResults.forEach(result => {
+          if (result.data) {
+            allData.push(...result.data);
+          }
+        });
+      }
+
+      // Map to final structure
+      const suburbStats = allData.map((row: any) => ({
         suburb: row.suburb,
         state: row.state,
         postcode: row.postcode,
@@ -47,7 +79,7 @@ export const SuburbAnalysisCard = () => {
       return {
         topExpensive: suburbStats.slice(0, 20),
         topCheapest: suburbStats.slice(-20).reverse(),
-        all: suburbStats, // All suburbs from the dataset
+        all: suburbStats,
       };
     },
   });

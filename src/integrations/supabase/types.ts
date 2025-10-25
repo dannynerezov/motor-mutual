@@ -415,6 +415,19 @@ export type Database = {
           suburb: string
         }[]
       }
+      get_suburb_pricing_analysis_paginated: {
+        Args: { limit_rows?: number; offset_rows?: number }
+        Returns: {
+          avg_index: number
+          location_count: number
+          max_index: number
+          min_index: number
+          postcode: string
+          state: string
+          suburb: string
+          total_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
