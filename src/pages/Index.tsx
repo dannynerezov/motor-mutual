@@ -1,12 +1,12 @@
 import { QuoteForm } from "@/components/QuoteForm";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Shield, Car, FileText, Users, Navigation, Clock, DollarSign, MapPin, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { FairnessSection } from "@/components/home/FairnessSection";
+import { TransparencySection } from "@/components/home/TransparencySection";
+import { ReliabilitySection } from "@/components/home/ReliabilitySection";
+import { HowItWorksComparison } from "@/components/home/HowItWorksComparison";
 import heroBg from "@/assets/rideshare-hero.jpg";
 import rideshareDriver from "@/assets/rideshare-driver.png";
-import rideshareProtection from "@/assets/rideshare-protection.png";
 
 const Index = () => {
   return (
@@ -44,99 +44,19 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="coverage" className="py-20 bg-card">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold mb-4">Why Rideshare Drivers Choose Us</h3>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Coverage that understands your unique needs on the road
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="group p-6 rounded-2xl border border-border/50 bg-background/50 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/10 hover:border-accent/30 transition-all duration-300 hover:shadow-medium">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Shield className="w-7 h-7 text-accent" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3">Rideshare-Specific</h4>
-              <p className="text-muted-foreground">
-                Coverage designed for the unique risks of driving for Uber, Ola, and other platforms
-              </p>
-            </div>
-
-            <div className="group p-6 rounded-2xl border border-border/50 bg-background/50 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/10 hover:border-accent/30 transition-all duration-300 hover:shadow-medium">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Clock className="w-7 h-7 text-accent" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3">Always On</h4>
-              <p className="text-muted-foreground">
-                24/7 coverage whether you're between rides or actively driving passengers
-              </p>
-            </div>
-
-            <div className="group p-6 rounded-2xl border border-border/50 bg-background/50 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/10 hover:border-accent/30 transition-all duration-300 hover:shadow-medium">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <DollarSign className="w-7 h-7 text-accent" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3">Value-Based Pricing</h4>
-              <p className="text-muted-foreground">
-                Fair pricing from $500-$2,500 based on your vehicle's value, not inflated premiums
-              </p>
-            </div>
-
-            <div className="group p-6 rounded-2xl border border-border/50 bg-background/50 hover:bg-gradient-to-br hover:from-accent/10 hover:to-primary/10 hover:border-accent/30 transition-all duration-300 hover:shadow-medium">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Navigation className="w-7 h-7 text-accent" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3">Quick Quotes</h4>
-              <p className="text-muted-foreground">
-                Get back on the road fast with instant quotes using just your rego number
-              </p>
-            </div>
-          </div>
-        </div>
+      {/* Fairness Section */}
+      <section id="fairness" className="py-20 bg-background">
+        <FairnessSection />
       </section>
 
-      {/* Price Explorer CTA */}
-      <section className="py-20 bg-gradient-to-br from-accent/10 via-primary/5 to-background border-y">
-        <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 border border-accent/30 rounded-full text-sm font-medium text-accent mb-6">
-                <MapPin className="h-4 w-4" />
-                New Tool Available
-              </div>
-              <h3 className="text-4xl md:text-5xl font-bold mb-4">
-                How Does Your Suburb Compare?
-              </h3>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-                Explore pricing across 5,000+ locations in Australia. See how your suburb ranks and discover the cheapest areas for rideshare insurance.
-              </p>
-              <Link to="/widget">
-                <Button size="lg" className="group text-lg px-8 py-6 shadow-medium hover:shadow-strong">
-                  Explore Price Data
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-            </div>
+      {/* Transparency Section */}
+      <section id="transparency" className="py-20 bg-card">
+        <TransparencySection />
+      </section>
 
-            <div className="grid md:grid-cols-3 gap-6 mt-12">
-              <div className="bg-card border rounded-xl p-6 shadow-soft hover:shadow-medium transition-shadow">
-                <div className="text-3xl font-bold text-accent mb-2">5,000+</div>
-                <div className="text-sm text-muted-foreground">Suburbs Analyzed</div>
-              </div>
-              <div className="bg-card border rounded-xl p-6 shadow-soft hover:shadow-medium transition-shadow">
-                <div className="text-3xl font-bold text-accent mb-2">8</div>
-                <div className="text-sm text-muted-foreground">States & Territories</div>
-              </div>
-              <div className="bg-card border rounded-xl p-6 shadow-soft hover:shadow-medium transition-shadow">
-                <div className="text-3xl font-bold text-accent mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">Free to Use</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Reliability Section */}
+      <section id="reliability" className="py-20 bg-gradient-to-br from-accent/5 to-primary/5">
+        <ReliabilitySection />
       </section>
 
       {/* How It Works */}
@@ -197,6 +117,9 @@ const Index = () => {
                 />
               </div>
             </div>
+
+            {/* Comparison Table */}
+            <HowItWorksComparison />
           </div>
         </div>
       </section>
