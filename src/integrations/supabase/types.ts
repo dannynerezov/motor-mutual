@@ -371,6 +371,27 @@ export type Database = {
     }
     Functions: {
       generate_quote_number: { Args: never; Returns: string }
+      get_pricing_summary_stats: {
+        Args: never
+        Returns: {
+          avg_index: number
+          max_index: number
+          median_index: number
+          min_index: number
+          std_dev: number
+          total_locations: number
+        }[]
+      }
+      get_state_pricing_analysis: {
+        Args: never
+        Returns: {
+          avg_index: number
+          location_count: number
+          max_index: number
+          min_index: number
+          state: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

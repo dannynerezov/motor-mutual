@@ -24,8 +24,12 @@ export const StateAnalysisCard = () => {
 
       // Group by state and calculate statistics
       const stateGroups = data.reduce((acc: any, row) => {
-        const state = row.state;
         const index = parseFloat(row.index_value || "0");
+        
+        // Skip invalid data
+        if (isNaN(index) || index <= 0) return acc;
+        
+        const state = row.state?.toUpperCase() || "UNKNOWN";
         
         if (!acc[state]) {
           acc[state] = { indices: [], count: 0 };

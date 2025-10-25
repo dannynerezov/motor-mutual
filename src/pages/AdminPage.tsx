@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Papa from "papaparse";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,44 +8,95 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, Database, Trash2, BarChart3 } from "lucide-react";
+import { Upload, Database, Trash2, BarChart3, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+interface PreviewRow {
+  full_address: string;
+  index_value: string;
+  street: string;
+  suburb: string;
+  state: string;
+  postcode: string;
+}
 
 const AdminPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [previewData, setPreviewData] = useState<PreviewRow[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile && selectedFile.type === "text/csv") {
-      setFile(selectedFile);
-      toast.success(`File selected: ${selectedFile.name}`);
-    } else {
+    if (!selectedFile || selectedFile.type !== "text/csv") {
       toast.error("Please select a valid CSV file");
       setFile(null);
+      setPreviewData([]);
+      setValidationErrors([]);
+      return;
     }
-  };
 
-  const parseCSV = (text: string) => {
-    const lines = text.split("\n");
-    const headers = lines[0].split(",").map(h => h.trim());
-    
-    const data = [];
-    for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim() === "") continue;
-      
-      const values = lines[i].split(",").map(v => v.trim());
-      const row: any = {};
-      
-      headers.forEach((header, index) => {
-        row[header] = values[index] || "";
+    setFile(selectedFile);
+    toast.success(`File selected: ${selectedFile.name}`);
+
+    // Parse and preview the first 5 rows
+    try {
+      const text = await selectedFile.text();
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const errors: string[] = [];
+          const preview: PreviewRow[] = [];
+
+          // Process first 5 rows for preview
+          const sampleRows = results.data.slice(0, 5) as any[];
+          
+          sampleRows.forEach((row, idx) => {
+            const mapped: PreviewRow = {
+              full_address: row["Full Address"] || "",
+              index_value: row["Index"] || "",
+              street: row["Street"] || "",
+              suburb: row["Suburb"] || "",
+              state: row["State"] || "",
+              postcode: row["Postcode"] || ""
+            };
+
+            // Validate data
+            if (!mapped.index_value || isNaN(parseFloat(mapped.index_value))) {
+              errors.push(`Row ${idx + 2}: Invalid index value "${mapped.index_value}"`);
+            }
+            if (mapped.postcode && !/^\d{4}$/.test(mapped.postcode)) {
+              errors.push(`Row ${idx + 2}: Invalid postcode "${mapped.postcode}"`);
+            }
+            if (mapped.state && !["NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT"].includes(mapped.state.toUpperCase())) {
+              errors.push(`Row ${idx + 2}: Invalid state "${mapped.state}"`);
+            }
+
+            preview.push(mapped);
+          });
+
+          setPreviewData(preview);
+          setValidationErrors(errors.slice(0, 10)); // Show max 10 errors
+          
+          if (errors.length === 0) {
+            toast.success("File validated successfully!");
+          } else {
+            toast.warning(`Found ${errors.length} validation issues in sample`);
+          }
+        },
+        error: (error) => {
+          toast.error(`Failed to parse CSV: ${error.message}`);
+          setFile(null);
+        }
       });
-      
-      data.push(row);
+    } catch (error: any) {
+      toast.error(`Failed to read file: ${error.message}`);
+      setFile(null);
     }
-    
-    return data;
   };
 
   const handleUpload = async () => {
@@ -54,67 +106,81 @@ const AdminPage = () => {
     }
 
     setIsUploading(true);
-    setUploadProgress("Reading file...");
+    setUploadProgress("Parsing CSV file...");
 
     try {
       const text = await file.text();
-      const csvData = parseCSV(text);
       
-      setUploadProgress(`Processing ${csvData.length} records...`);
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+          try {
+            const totalRows = results.data.length;
+            setUploadProgress(`Processing ${totalRows} records...`);
 
-      // Map CSV columns to database columns (case-insensitive header matching)
-      const records = csvData.map(row => {
-        // Helper to find column value by matching header names (case-insensitive)
-        const getColumnValue = (possibleNames: string[]) => {
-          for (const name of possibleNames) {
-            const value = row[name];
-            if (value !== undefined) return value;
+            // Map and validate records
+            const records = results.data.map((row: any) => ({
+              full_address: row["Full Address"] || "",
+              index_value: row["Index"] || null,
+              street: row["Street"] || "",
+              suburb: row["Suburb"] || "",
+              state: row["State"]?.toUpperCase() || "",
+              postcode: row["Postcode"] || ""
+            })).filter(record => 
+              // Filter out invalid records
+              record.index_value && 
+              !isNaN(parseFloat(record.index_value))
+            );
+
+            setUploadProgress(`Validated ${records.length} of ${totalRows} records. Starting upload...`);
+
+            // Insert in batches of 1000 to avoid timeout
+            const batchSize = 1000;
+            let inserted = 0;
+
+            for (let i = 0; i < records.length; i += batchSize) {
+              const batch = records.slice(i, i + batchSize);
+              setUploadProgress(`Uploading batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(records.length / batchSize)}...`);
+              
+              const { error } = await supabase
+                .from("insurance_pricing_data")
+                .insert(batch);
+
+              if (error) {
+                console.error("Insert error:", error);
+                throw error;
+              }
+              
+              inserted += batch.length;
+            }
+
+            toast.success(`Successfully uploaded ${inserted} records!`);
+            setFile(null);
+            setPreviewData([]);
+            setValidationErrors([]);
+            setUploadProgress("");
+            
+            // Reset file input
+            const fileInput = document.getElementById("csv-file") as HTMLInputElement;
+            if (fileInput) fileInput.value = "";
+            
+          } catch (error: any) {
+            console.error("Upload error:", error);
+            toast.error(`Upload failed: ${error.message}`);
+          } finally {
+            setIsUploading(false);
           }
-          return "";
-        };
-
-        return {
-          full_address: getColumnValue(["Full Address", "full_address", "FullAddress"]) || "",
-          index_value: getColumnValue(["Index", "index_value", "index"]) || null,
-          street: getColumnValue(["Street", "street"]) || "",
-          suburb: getColumnValue(["Suburb", "suburb"]) || "",
-          state: getColumnValue(["State", "state"]) || "",
-          postcode: getColumnValue(["Postcode", "postcode", "PostCode"]) || ""
-        };
-      });
-
-      // Insert in batches of 1000 to avoid timeout
-      const batchSize = 1000;
-      let inserted = 0;
-
-      for (let i = 0; i < records.length; i += batchSize) {
-        const batch = records.slice(i, i + batchSize);
-        setUploadProgress(`Uploading batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(records.length / batchSize)}...`);
-        
-        const { error } = await supabase
-          .from("insurance_pricing_data")
-          .insert(batch);
-
-        if (error) {
-          console.error("Insert error:", error);
-          throw error;
+        },
+        error: (error) => {
+          toast.error(`CSV parsing failed: ${error.message}`);
+          setIsUploading(false);
         }
-        
-        inserted += batch.length;
-      }
-
-      toast.success(`Successfully uploaded ${inserted} records!`);
-      setFile(null);
-      setUploadProgress("");
-      
-      // Reset file input
-      const fileInput = document.getElementById("csv-file") as HTMLInputElement;
-      if (fileInput) fileInput.value = "";
+      });
       
     } catch (error: any) {
-      console.error("Upload error:", error);
-      toast.error(`Upload failed: ${error.message}`);
-    } finally {
+      console.error("File read error:", error);
+      toast.error(`Failed to read file: ${error.message}`);
       setIsUploading(false);
     }
   };
@@ -190,12 +256,66 @@ const AdminPage = () => {
                 </div>
 
                 {file && (
-                  <div className="p-4 bg-muted rounded-lg">
-                    <p className="text-sm font-medium">Selected file:</p>
-                    <p className="text-sm text-muted-foreground">{file.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Size: {(file.size / 1024).toFixed(2)} KB
-                    </p>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-muted rounded-lg">
+                      <p className="text-sm font-medium">Selected file:</p>
+                      <p className="text-sm text-muted-foreground">{file.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Size: {(file.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
+
+                    {validationErrors.length > 0 && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          <p className="font-semibold mb-1">Validation Issues Found:</p>
+                          <ul className="text-xs space-y-1">
+                            {validationErrors.map((error, idx) => (
+                              <li key={idx}>• {error}</li>
+                            ))}
+                          </ul>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {previewData.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <p className="text-sm font-medium">Preview (First 5 Rows)</p>
+                        </div>
+                        <div className="border rounded-lg overflow-hidden">
+                          <div className="max-h-[300px] overflow-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="text-xs">Full Address</TableHead>
+                                  <TableHead className="text-xs">Index</TableHead>
+                                  <TableHead className="text-xs">Suburb</TableHead>
+                                  <TableHead className="text-xs">State</TableHead>
+                                  <TableHead className="text-xs">Postcode</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {previewData.map((row, idx) => (
+                                  <TableRow key={idx}>
+                                    <TableCell className="text-xs">{row.full_address}</TableCell>
+                                    <TableCell className="text-xs font-medium">{row.index_value}</TableCell>
+                                    <TableCell className="text-xs">{row.suburb}</TableCell>
+                                    <TableCell className="text-xs">{row.state}</TableCell>
+                                    <TableCell className="text-xs">{row.postcode}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Column mapping looks correct? Verify Full Address, Index, Suburb, State, and Postcode are in the right columns before uploading.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

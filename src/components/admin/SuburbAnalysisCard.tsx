@@ -30,19 +30,24 @@ export const SuburbAnalysisCard = () => {
 
       // Group by suburb
       const suburbGroups = data.reduce((acc: any, row) => {
+        const index = parseFloat(row.index_value || "0");
+        
+        // Skip invalid data
+        if (isNaN(index) || index <= 0 || !row.suburb) return acc;
+        
         const key = `${row.suburb}-${row.state}-${row.postcode}`;
         
         if (!acc[key]) {
           acc[key] = {
             suburb: row.suburb,
-            state: row.state,
+            state: row.state?.toUpperCase() || "",
             postcode: row.postcode,
             indices: [],
             count: 0,
           };
         }
         
-        acc[key].indices.push(parseFloat(row.index_value || "0"));
+        acc[key].indices.push(index);
         acc[key].count++;
         
         return acc;

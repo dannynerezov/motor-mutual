@@ -25,18 +25,23 @@ export const PostcodeAnalysisCard = () => {
 
       // Group by postcode
       const postcodeGroups = data.reduce((acc: any, row) => {
+        const index = parseFloat(row.index_value || "0");
+        
+        // Skip invalid data
+        if (isNaN(index) || index <= 0) return acc;
+        
         const key = `${row.postcode}-${row.state}`;
         
         if (!acc[key]) {
           acc[key] = {
             postcode: row.postcode,
-            state: row.state,
+            state: row.state?.toUpperCase() || "",
             indices: [],
             count: 0,
           };
         }
         
-        acc[key].indices.push(parseFloat(row.index_value || "0"));
+        acc[key].indices.push(index);
         acc[key].count++;
         
         return acc;
