@@ -15,8 +15,6 @@ import { FileText, Upload, Download, CheckCircle, XCircle } from "lucide-react";
 
 export function PDSUploadCard() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [versionNumber, setVersionNumber] = useState("");
-  const [effectiveDate, setEffectiveDate] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
@@ -50,20 +48,10 @@ export function PDSUploadCard() {
   };
 
   const handleUpload = async () => {
-    if (!pdfFile || !versionNumber || !effectiveDate) {
+    if (!pdfFile) {
       toast({
-        title: "Missing information",
-        description: "Please fill in all fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate version number format
-    if (!/^\d+\.\d+$/.test(versionNumber)) {
-      toast({
-        title: "Invalid version",
-        description: "Version must be in format X.Y (e.g., 1.0)",
+        title: "Missing file",
+        description: "Please select a PDF file",
         variant: "destructive"
       });
       return;
@@ -73,8 +61,9 @@ export function PDSUploadCard() {
     setUploadProgress(20);
 
     try {
-      // Upload PDF to storage
-      const filePath = `pds-v${versionNumber}.pdf`;
+      // Upload PDF to storage with timestamp-based filename
+      const timestamp = Date.now();
+      const filePath = `pds-${timestamp}.pdf`;
       setUploadProgress(40);
       
       const { error: uploadError } = await supabase.storage
@@ -87,12 +76,10 @@ export function PDSUploadCard() {
 
       setUploadProgress(60);
 
-      // Call edge function to analyze PDF
+      // Call edge function to analyze PDF (version and effective date handled automatically by database)
       const { data, error: functionError } = await supabase.functions.invoke('analyze-pds', {
         body: {
-          pdfPath: filePath,
-          versionNumber,
-          effectiveFrom: new Date(effectiveDate).toISOString()
+          pdfPath: filePath
         }
       });
 
@@ -102,13 +89,11 @@ export function PDSUploadCard() {
 
       toast({
         title: "Success!",
-        description: `PDS version ${versionNumber} uploaded and analyzed successfully`
+        description: "PDS uploaded and analyzed successfully with automatic versioning"
       });
 
       // Reset form
       setPdfFile(null);
-      setVersionNumber("");
-      setEffectiveDate("");
       
       // Refresh list
       queryClient.invalidateQueries({ queryKey: ['pds-versions'] });
@@ -185,26 +170,13 @@ export function PDSUploadCard() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="version">Version Number (e.g., 1.0)</Label>
-                <Input
-                  id="version"
-                  placeholder="1.0"
-                  value={versionNumber}
-                  onChange={(e) => setVersionNumber(e.target.value)}
-                  disabled={isUploading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="effective-date">Effective Date</Label>
-                <Input
-                  id="effective-date"
-                  type="date"
-                  value={effectiveDate}
-                  onChange={(e) => setEffectiveDate(e.target.value)}
-                  disabled={isUploading}
-                />
+              <div className="rounded-lg bg-muted p-4 space-y-2">
+                <p className="text-sm font-medium">Automatic Features</p>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>✓ Version number assigned automatically (sequential)</li>
+                  <li>✓ Effective date set to upload timestamp</li>
+                  <li>✓ Previous PDS timeline updated automatically</li>
+                </ul>
               </div>
 
               {isUploading && (
@@ -221,7 +193,7 @@ export function PDSUploadCard() {
 
               <Button
                 onClick={handleUpload}
-                disabled={isUploading || !pdfFile || !versionNumber || !effectiveDate}
+                disabled={isUploading || !pdfFile}
                 className="w-full"
               >
                 <Upload className="mr-2 h-4 w-4" />
@@ -238,6 +210,7 @@ export function PDSUploadCard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Version</TableHead>
+                    <TableHead>Uploaded</TableHead>
                     <TableHead>Effective From</TableHead>
                     <TableHead>Effective Until</TableHead>
                     <TableHead>Status</TableHead>
@@ -248,9 +221,12 @@ export function PDSUploadCard() {
                   {pdsVersions.map((pds) => (
                     <TableRow key={pds.id}>
                       <TableCell className="font-medium">{pds.version_number}</TableCell>
-                      <TableCell>{format(new Date(pds.effective_from), 'PPP')}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(pds.created_at), 'PPP p')}
+                      </TableCell>
+                      <TableCell>{format(new Date(pds.effective_from), 'PPP p')}</TableCell>
                       <TableCell>
-                        {pds.effective_until ? format(new Date(pds.effective_until), 'PPP') : '-'}
+                        {pds.effective_until ? format(new Date(pds.effective_until), 'PPP p') : '-'}
                       </TableCell>
                       <TableCell>
                         {pds.is_active ? (

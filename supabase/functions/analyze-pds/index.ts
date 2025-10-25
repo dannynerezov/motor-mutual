@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { pdfPath, versionNumber, effectiveFrom } = await req.json();
+    const { pdfPath } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -561,15 +561,14 @@ serve(async (req) => {
 
     console.log('Inserting PDS record into database...');
 
-    // Insert into database
+    // Insert into database with extracted content
+    // Note: version_number and effective_from are set automatically by database triggers
     const { data: pdsRecord, error: insertError } = await supabase
       .from('product_disclosure_statements')
       .insert({
-        version_number: versionNumber,
         pdf_file_path: pdfPath,
         pdf_file_name: pdfPath.split('/').pop(),
         pdf_file_size: pdfData.size,
-        effective_from: effectiveFrom,
         is_active: true,
         ...extractedData
       })
