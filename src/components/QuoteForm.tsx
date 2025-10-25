@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,34 @@ export const QuoteForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [placeholderText, setPlaceholderText] = useState("");
+
+  // Typewriter animation for placeholder
+  useEffect(() => {
+    const fullText = "Enter your rego number e.g., ABC123";
+    let currentIndex = 0;
+    let typingInterval: NodeJS.Timeout;
+    
+    const typeText = () => {
+      typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setPlaceholderText(fullText.substring(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setTimeout(() => {
+            currentIndex = 0;
+            setPlaceholderText("");
+            setTimeout(typeText, 100);
+          }, 2000);
+        }
+      }, 80);
+    };
+    
+    typeText();
+    
+    return () => clearInterval(typingInterval);
+  }, []);
 
   const calculateFleetDiscount = (vehicleCount: number): number => {
     if (vehicleCount === 1) return 0;
@@ -375,22 +403,13 @@ export const QuoteForm = () => {
               </label>
               
               
-              <div className="relative">
-                {/* Desktop arrow indicator anchored to input */}
-                <div className="absolute right-full mr-5 top-1/2 -translate-y-1/2 hidden xl:flex w-40 justify-end">
-                  <div className="flex items-center gap-1 text-accent animate-bounce">
-                    <span className="text-xs font-semibold whitespace-nowrap">Start here</span>
-                    <span className="text-base" aria-hidden>→</span>
-                  </div>
-                </div>
-                <Input
-                  placeholder="e.g., ABC123"
-                  value={registration}
-                  onChange={(e) => setRegistration(e.target.value.toUpperCase())}
-                  className="border-2 border-accent/50 bg-background text-center font-mono text-xl tracking-wider h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
-                  maxLength={8}
-                />
-              </div>
+              <Input
+                placeholder={registration ? "" : placeholderText}
+                value={registration}
+                onChange={(e) => setRegistration(e.target.value.toUpperCase())}
+                className="border-2 border-accent/50 bg-background text-center font-mono text-xl tracking-wider h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
+                maxLength={8}
+              />
               
               {/* Helper text when empty */}
               {!registration && (
