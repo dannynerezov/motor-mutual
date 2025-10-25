@@ -125,10 +125,13 @@ export function PDSUploadCard() {
       queryClient.invalidateQueries({ queryKey: ['pds-versions'] });
 
     } catch (error: any) {
-      // Parse structured error from backend
-      const status = error?.context?.response?.status;
+      // Extract detailed error information from response
+      const resp = error?.context?.response;
+      const status = resp?.status;
+      const headerReqId = resp?.headers?.get?.('x-request-id') ?? undefined;
       let parsed: any = undefined;
       
+      // Try to parse the error body
       if (error?.context?.body) {
         try {
           parsed = typeof error.context.body === 'string' 
@@ -138,13 +141,16 @@ export function PDSUploadCard() {
           // Ignore parse errors
         }
       }
+      
+      // Use requestId from body or header
+      const requestId = parsed?.requestId ?? headerReqId;
 
       console.error('[PDS] FUNCTION_ERROR', {
         status,
         backendError: parsed?.error ?? error.message,
         code: parsed?.code,
         step: parsed?.step,
-        requestId: parsed?.requestId,
+        requestId,
         clientRunId
       });
       console.timeEnd(`[PDS] ${clientRunId} total`);
@@ -161,7 +167,7 @@ export function PDSUploadCard() {
       }
       
       // Include requestId in toast if available
-      const ref = parsed?.requestId ? ` Ref: ${parsed.requestId}` : '';
+      const ref = requestId ? ` Ref: ${requestId}` : '';
       
       toast({
         title: "Upload failed",

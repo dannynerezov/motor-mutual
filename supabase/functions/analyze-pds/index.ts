@@ -83,7 +83,7 @@ serve(async (req) => {
         code: 'STORAGE_DOWNLOAD_FAILED',
         step: 'STORAGE_DOWNLOAD',
         requestId
-      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
     }
 
     // Check file size limit (10MB)
@@ -97,7 +97,7 @@ serve(async (req) => {
           step: 'FILE_SIZE_CHECK',
           requestId
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -125,7 +125,7 @@ serve(async (req) => {
         step: 'BASE64_ENCODE',
         requestId,
         details: e.message
-      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
     }
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
@@ -193,7 +193,7 @@ Rules:
             code: 'AI_RATE_LIMITED',
             step: 'AI_REQUEST',
             requestId
-          }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+          }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
         }
         if (aiResponse.status === 402) {
           return new Response(JSON.stringify({
@@ -201,7 +201,7 @@ Rules:
             code: 'AI_PAYMENT_REQUIRED',
             step: 'AI_REQUEST',
             requestId
-          }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+          }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
         }
         
         // For 400/500 errors, try fallback to GPT
@@ -232,7 +232,7 @@ Rules:
               code: 'AI_REQUEST_FAILED',
               step: 'AI_REQUEST',
               requestId
-            }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+            }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
           }
 
           const fallbackResult = await fallbackResponse.json();
@@ -244,7 +244,7 @@ Rules:
             code: 'AI_REQUEST_FAILED',
             step: 'AI_REQUEST',
             requestId
-          }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+          }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
         }
       } else {
         const aiResult = await aiResponse.json();
@@ -276,7 +276,7 @@ Rules:
           code: 'DB_INSERT_FAILED',
           step: 'DB_INSERT',
           requestId
-        }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+        }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
       }
 
       log('DB_INSERT_OK', { id: minimalRecord.id, type: 'minimal' });
@@ -287,7 +287,7 @@ Rules:
           requestId,
           warning: 'PDF uploaded but AI analysis failed. Please try re-analyzing.'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId } }
       );
     }
 
@@ -349,7 +349,7 @@ Rules:
         code: 'DB_INSERT_FAILED',
         step: 'DB_INSERT',
         requestId
-      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId }});
     }
 
     const elapsed = Date.now() - startedAt;
@@ -357,7 +357,7 @@ Rules:
 
     return new Response(
       JSON.stringify({ success: true, data: pdsRecord, requestId }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId } }
     );
 
   } catch (error: any) {
@@ -369,7 +369,7 @@ Rules:
         step: 'UNHANDLED',
         requestId
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-request-id': requestId } }
     );
   }
 });
