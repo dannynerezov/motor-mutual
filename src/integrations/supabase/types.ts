@@ -294,6 +294,7 @@ export type Database = {
           effective_from: string
           effective_until: string | null
           exclusions: Json | null
+          faq: Json | null
           full_content: Json
           id: string
           is_active: boolean | null
@@ -313,6 +314,7 @@ export type Database = {
           effective_from: string
           effective_until?: string | null
           exclusions?: Json | null
+          faq?: Json | null
           full_content: Json
           id?: string
           is_active?: boolean | null
@@ -332,6 +334,7 @@ export type Database = {
           effective_from?: string
           effective_until?: string | null
           exclusions?: Json | null
+          faq?: Json | null
           full_content?: Json
           id?: string
           is_active?: boolean | null
@@ -492,6 +495,7 @@ export type Database = {
           effective_from: string
           effective_until: string | null
           exclusions: Json | null
+          faq: Json | null
           full_content: Json
           id: string
           is_active: boolean | null

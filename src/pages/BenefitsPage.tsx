@@ -20,9 +20,11 @@ import {
   DollarSign,
   CheckCircle,
   XCircle,
-  MapPin
+  MapPin,
+  FileText
 } from "lucide-react";
 import { useState } from "react";
+import { FAQSidebar } from "@/components/benefits/FAQSidebar";
 
 const benefitIcons = {
   collision_damage: Car,
@@ -115,9 +117,29 @@ const BenefitsPage = () => {
         </div>
       </section>
 
-      <main className="flex-1 container mx-auto px-4 py-12 space-y-16">
-        {/* Key Benefits Grid */}
-        <section>
+      <main className="flex-1 container mx-auto px-4 py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content - 70% */}
+          <div className="flex-1 lg:w-[70%] space-y-16">
+            {/* PDS Summary */}
+            {activePds.summary && (
+              <section>
+                <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-8 w-8 text-primary" />
+                      <CardTitle className="text-2xl">Summary</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg leading-relaxed">{activePds.summary}</p>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* Key Benefits Grid */}
+            <section>
           <h2 className="text-4xl font-bold mb-8 text-center">What's Covered</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {activePds.key_benefits && Object.entries(activePds.key_benefits).map(([key, benefit]: [string, any]) => {
@@ -159,159 +181,160 @@ const BenefitsPage = () => {
                 </Card>
               );
             })}
-          </div>
-        </section>
+              </div>
+            </section>
 
-        {/* Coverage Details */}
-        <section className="py-16 bg-background">
-          <div className="container mx-auto px-4">
-            <h2 className="text-4xl font-bold mb-8 text-center">Coverage Details</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card>
-                <CardHeader>
-                  <DollarSign className="h-8 w-8 text-primary mb-2" />
-                  <CardTitle>Maximum Cover</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-primary">
-                    ${(activePds.coverage_details as any)?.maximum_cover?.toLocaleString() || 'N/A'}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {(activePds.coverage_details as any)?.currency || 'AUD'}
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Coverage Details */}
+            <section>
+              <h2 className="text-4xl font-bold mb-8 text-center">Coverage Details</h2>
+              <div className="grid md:grid-cols-3 gap-8">
+                <Card>
+                  <CardHeader>
+                    <DollarSign className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Maximum Cover</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold text-primary">
+                      ${(activePds.coverage_details as any)?.maximum_cover?.toLocaleString() || 'N/A'}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {(activePds.coverage_details as any)?.currency || 'AUD'}
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <MapPin className="h-8 w-8 text-primary mb-2" />
-                  <CardTitle>Geographic Coverage</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-lg font-semibold">
-                    {(activePds.coverage_details as any)?.geographic_limitations || 'Australia-wide'}
-                  </p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader>
+                    <MapPin className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Geographic Coverage</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg font-semibold">
+                      {(activePds.coverage_details as any)?.geographic_limitations || 'Australia-wide'}
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <ShieldAlert className="h-8 w-8 text-primary mb-2" />
-                  <CardTitle>Coverage Types</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    {(activePds.coverage_details as any)?.coverage_types?.length || 0} types covered
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+                <Card>
+                  <CardHeader>
+                    <ShieldAlert className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Coverage Types</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      {(activePds.coverage_details as any)?.coverage_types?.length || 0} types covered
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
 
-        {/* Exclusions */}
-        <section className="py-16 bg-destructive/5 rounded-lg">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-center mb-8">
-              <AlertTriangle className="h-12 w-12 text-destructive mr-4" />
-              <h2 className="text-4xl font-bold">What's Not Covered</h2>
-            </div>
-            <Card className="border-destructive/50">
-              <CardContent className="pt-6">
-                <Accordion type="multiple">
-                  <AccordionItem value="general">
-                    <AccordionTrigger className="text-lg font-semibold">General Exclusions</AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="space-y-2">
-                        {((activePds.exclusions as any)?.general_exclusions as string[] || []).map((exclusion: string, idx: number) => (
-                          <li key={idx} className="flex items-start">
-                            <XCircle className="h-5 w-5 text-destructive mr-2 flex-shrink-0 mt-0.5" />
-                            <span>{exclusion}</span>
-                          </li>
-                        ))}
-                        {((activePds.exclusions as any)?.general_exclusions as string[] || []).length === 0 && (
-                          <li>No general exclusions listed</li>
-                        )}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                  
-                  {(activePds.exclusions as any)?.specific_exclusions && Object.keys((activePds.exclusions as any).specific_exclusions).length > 0 && (
-                    <AccordionItem value="specific">
-                      <AccordionTrigger className="text-lg font-semibold">Specific Exclusions</AccordionTrigger>
+            {/* Exclusions */}
+            <section className="bg-destructive/5 rounded-lg p-8">
+              <div className="flex items-center justify-center mb-8">
+                <AlertTriangle className="h-12 w-12 text-destructive mr-4" />
+                <h2 className="text-4xl font-bold">What's Not Covered</h2>
+              </div>
+              <Card className="border-destructive/50">
+                <CardContent className="pt-6">
+                  <Accordion type="multiple">
+                    <AccordionItem value="general">
+                      <AccordionTrigger className="text-lg font-semibold">General Exclusions</AccordionTrigger>
                       <AccordionContent>
-                        <div className="space-y-4">
-                          {Object.entries((activePds.exclusions as any).specific_exclusions).map(([category, items]: [string, any]) => (
-                            <div key={category}>
-                              <h4 className="font-semibold mb-2 capitalize">{category.replace(/_/g, ' ')}</h4>
-                              <ul className="space-y-1 ml-4">
-                                {Array.isArray(items) ? items.map((item: string, idx: number) => (
-                                  <li key={idx} className="text-sm text-muted-foreground">• {item}</li>
-                                )) : <li className="text-sm text-muted-foreground">• {items}</li>}
-                              </ul>
-                            </div>
+                        <ul className="space-y-2">
+                          {((activePds.exclusions as any)?.general_exclusions as string[] || []).map((exclusion: string, idx: number) => (
+                            <li key={idx} className="flex items-start">
+                              <XCircle className="h-5 w-5 text-destructive mr-2 flex-shrink-0 mt-0.5" />
+                              <span>{exclusion}</span>
+                            </li>
                           ))}
-                        </div>
+                          {((activePds.exclusions as any)?.general_exclusions as string[] || []).length === 0 && (
+                            <li>No general exclusions listed</li>
+                          )}
+                        </ul>
                       </AccordionContent>
                     </AccordionItem>
-                  )}
-                </Accordion>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Full PDS Document */}
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <h2 className="text-4xl font-bold mb-8 text-center">
-              Complete Product Disclosure Statement
-            </h2>
-            
-            <div className="flex justify-center mb-8">
-              <Button asChild size="lg">
-                <a href={getPdfUrl(activePds.pdf_file_path)} download target="_blank" rel="noopener noreferrer">
-                  <Download className="mr-2 h-5 w-5" />
-                  Download PDF (Version {activePds.version_number})
-                </a>
-              </Button>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <Input 
-                  type="search" 
-                  placeholder="Search the PDS..." 
-                  className="mb-4"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </CardHeader>
-              <CardContent>
-                {filteredSections.length > 0 ? (
-                  <Accordion type="single" collapsible>
-                    {filteredSections.map((section: any, idx: number) => (
-                      <AccordionItem key={idx} value={`section-${idx}`}>
-                        <AccordionTrigger>
-                          {section.title} {section.page_number && `(Page ${section.page_number})`}
-                        </AccordionTrigger>
+                    
+                    {(activePds.exclusions as any)?.specific_exclusions && Object.keys((activePds.exclusions as any).specific_exclusions).length > 0 && (
+                      <AccordionItem value="specific">
+                        <AccordionTrigger className="text-lg font-semibold">Specific Exclusions</AccordionTrigger>
                         <AccordionContent>
-                          <div className="prose max-w-none dark:prose-invert">
-                            <p className="whitespace-pre-wrap">{section.content}</p>
+                          <div className="space-y-4">
+                            {Object.entries((activePds.exclusions as any).specific_exclusions).map(([category, items]: [string, any]) => (
+                              <div key={category}>
+                                <h4 className="font-semibold mb-2 capitalize">{category.replace(/_/g, ' ')}</h4>
+                                <ul className="space-y-1 ml-4">
+                                  {Array.isArray(items) ? items.map((item: string, idx: number) => (
+                                    <li key={idx} className="text-sm text-muted-foreground">• {item}</li>
+                                  )) : <li className="text-sm text-muted-foreground">• {items}</li>}
+                                </ul>
+                              </div>
+                            ))}
                           </div>
                         </AccordionContent>
                       </AccordionItem>
-                    ))}
+                    )}
                   </Accordion>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    {searchTerm ? "No matching sections found" : "No document sections available"}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Full PDS Document */}
+            <section>
+              <h2 className="text-4xl font-bold mb-8 text-center">
+                Complete Product Disclosure Statement
+              </h2>
+              
+              <div className="flex justify-center mb-8">
+                <Button asChild size="lg">
+                  <a href={getPdfUrl(activePds.pdf_file_path)} download target="_blank" rel="noopener noreferrer">
+                    <Download className="mr-2 h-5 w-5" />
+                    Download PDF (Version {activePds.version_number})
+                  </a>
+                </Button>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <Input 
+                    type="search" 
+                    placeholder="Search the PDS..." 
+                    className="mb-4"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </CardHeader>
+                <CardContent>
+                  {filteredSections.length > 0 ? (
+                    <Accordion type="single" collapsible>
+                      {filteredSections.map((section: any, idx: number) => (
+                        <AccordionItem key={idx} value={`section-${idx}`}>
+                          <AccordionTrigger>
+                            {section.title} {section.page_number && `(Page ${section.page_number})`}
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="prose max-w-none dark:prose-invert">
+                              <p className="whitespace-pre-wrap">{section.content}</p>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      {searchTerm ? "No matching sections found" : "No document sections available"}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
           </div>
-        </section>
+
+          {/* FAQ Sidebar - 30% */}
+          <div className="lg:w-[30%]">
+            <FAQSidebar faqData={activePds.faq as any} />
+          </div>
+        </div>
       </main>
 
       <Footer />

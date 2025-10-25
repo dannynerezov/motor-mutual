@@ -73,7 +73,7 @@ serve(async (req) => {
               "full_content": {
                 "sections": [{"title": "...", "content": "...", "page_number": 1}]
               },
-              "summary": "Brief 2-3 sentence summary",
+              "summary": "Brief 2-3 sentence summary of the product",
               "key_benefits": {
                 "collision_damage": {"covered": true, "description": "...", "conditions": [], "icon": "car-crash"},
                 "flood_damage": {"covered": true, "description": "...", "conditions": [], "icon": "droplets"},
@@ -95,14 +95,53 @@ serve(async (req) => {
               "conditions": {
                 "discretionary_conditions": [],
                 "member_obligations": []
+              },
+              "faq": {
+                "questions": [
+                  {
+                    "question": "What is covered under this policy?",
+                    "answer": "Detailed answer...",
+                    "pds_reference": "Section X.X, Page Y"
+                  },
+                  {
+                    "question": "What is not covered?",
+                    "answer": "Detailed answer with specific exclusions...",
+                    "pds_reference": "Section X.X, Page Y"
+                  },
+                  {
+                    "question": "What is an excess and how much is it?",
+                    "answer": "Explanation of excess including amounts...",
+                    "pds_reference": "Section X.X, Page Y"
+                  },
+                  {
+                    "question": "What is a mutual?",
+                    "answer": "Explanation of the mutual structure...",
+                    "pds_reference": "Section X.X, Page Y"
+                  },
+                  {
+                    "question": "Are there any geographic limitations?",
+                    "answer": "Details about where coverage applies...",
+                    "pds_reference": "Section X.X, Page Y"
+                  },
+                  {
+                    "question": "How do I make a claim?",
+                    "answer": "Step-by-step claim process...",
+                    "pds_reference": "Section X.X, Page Y"
+                  },
+                  {
+                    "question": "Can I cancel my policy?",
+                    "answer": "Cancellation terms and process...",
+                    "pds_reference": "Section X.X, Page Y"
+                  }
+                ]
               }
             }
             
-            Be thorough and extract ALL relevant information.`
+            CRITICAL: Extract ALL sections from the PDF thoroughly. For FAQ, provide specific PDS references (section numbers and page numbers). Be comprehensive.`
           },
           {
             role: 'user',
-            content: `Analyze this Product Disclosure Statement PDF (base64: ${base64Pdf.substring(0, 100)}...) and extract all information according to the specified JSON structure. Pay special attention to coverage for: collision damage, flood, fire, theft, storms, and hail.`
+            content: `Analyze this complete Product Disclosure Statement PDF and extract all information according to the specified JSON structure. The full PDF content in base64 format is: ${base64Pdf}`
           }
         ],
         tools: [
@@ -119,9 +158,10 @@ serve(async (req) => {
                   key_benefits: { type: "object" },
                   coverage_details: { type: "object" },
                   exclusions: { type: "object" },
-                  conditions: { type: "object" }
+                  conditions: { type: "object" },
+                  faq: { type: "object" }
                 },
-                required: ["full_content", "summary", "key_benefits", "coverage_details", "exclusions"],
+                required: ["full_content", "summary", "key_benefits", "coverage_details", "exclusions", "faq"],
                 additionalProperties: false
               }
             }
