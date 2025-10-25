@@ -375,9 +375,9 @@ export const QuoteForm = () => {
               </label>
               
               {/* Desktop arrow indicator */}
-              <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden xl:block">
-                <div className="flex items-center gap-2 text-accent animate-bounce">
-                  <span className="text-sm font-semibold">Start here →</span>
+              <div className="absolute -left-8 top-1/2 -translate-y-1/2 hidden xl:flex xl:w-24 xl:justify-end">
+                <div className="flex items-center gap-1 text-accent animate-bounce">
+                  <span className="text-xs font-semibold whitespace-nowrap">Start here →</span>
                 </div>
               </div>
               
@@ -406,9 +406,9 @@ export const QuoteForm = () => {
               
               {/* Animated indicator when registration is filled but state not selected */}
               {registration && !selectedState && (
-                <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden xl:block">
-                  <div className="flex items-center gap-2 text-accent animate-bounce">
-                    <span className="text-sm font-semibold">Select state →</span>
+                <div className="absolute -left-8 top-1/2 -translate-y-1/2 hidden xl:flex xl:w-24 xl:justify-end">
+                  <div className="flex items-center gap-1 text-accent animate-bounce">
+                    <span className="text-xs font-semibold whitespace-nowrap">Next step →</span>
                   </div>
                 </div>
               )}
@@ -443,8 +443,8 @@ export const QuoteForm = () => {
             <div className="relative mt-6">
               {/* Progress indicator arrow */}
               {registration && selectedState && (
-                <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden xl:block">
-                  <div className="flex items-center gap-2 text-accent animate-bounce">
+                <div className="absolute -left-8 top-1/2 -translate-y-1/2 hidden xl:flex xl:w-24 xl:justify-end">
+                  <div className="flex items-center gap-1 text-accent animate-bounce">
                     <span className="text-sm font-semibold">Click here →</span>
                   </div>
                 </div>
