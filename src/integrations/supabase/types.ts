@@ -286,6 +286,66 @@ export type Database = {
         }
         Relationships: []
       }
+      product_disclosure_statements: {
+        Row: {
+          conditions: Json | null
+          coverage_details: Json | null
+          created_at: string | null
+          effective_from: string
+          effective_until: string | null
+          exclusions: Json | null
+          full_content: Json
+          id: string
+          is_active: boolean | null
+          key_benefits: Json | null
+          pdf_file_name: string
+          pdf_file_path: string
+          pdf_file_size: number
+          summary: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          version_number: string
+        }
+        Insert: {
+          conditions?: Json | null
+          coverage_details?: Json | null
+          created_at?: string | null
+          effective_from: string
+          effective_until?: string | null
+          exclusions?: Json | null
+          full_content: Json
+          id?: string
+          is_active?: boolean | null
+          key_benefits?: Json | null
+          pdf_file_name: string
+          pdf_file_path: string
+          pdf_file_size: number
+          summary?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version_number: string
+        }
+        Update: {
+          conditions?: Json | null
+          coverage_details?: Json | null
+          created_at?: string | null
+          effective_from?: string
+          effective_until?: string | null
+          exclusions?: Json | null
+          full_content?: Json
+          id?: string
+          is_active?: boolean | null
+          key_benefits?: Json | null
+          pdf_file_name?: string
+          pdf_file_path?: string
+          pdf_file_size?: number
+          summary?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version_number?: string
+        }
+        Relationships: []
+      }
       quote_vehicles: {
         Row: {
           base_price: number
@@ -423,6 +483,34 @@ export type Database = {
     }
     Functions: {
       generate_quote_number: { Args: never; Returns: string }
+      get_active_pds: {
+        Args: never
+        Returns: {
+          conditions: Json | null
+          coverage_details: Json | null
+          created_at: string | null
+          effective_from: string
+          effective_until: string | null
+          exclusions: Json | null
+          full_content: Json
+          id: string
+          is_active: boolean | null
+          key_benefits: Json | null
+          pdf_file_name: string
+          pdf_file_path: string
+          pdf_file_size: number
+          summary: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          version_number: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "product_disclosure_statements"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_postcode_pricing_analysis: {
         Args: never
         Returns: {
