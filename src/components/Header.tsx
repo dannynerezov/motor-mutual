@@ -5,7 +5,6 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
@@ -35,10 +34,8 @@ export const Header = () => {
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <Link to="/#how-it-works">
-                <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
-                  How It Works
-                </NavigationMenuLink>
+              <Link to="/#how-it-works" className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
+                How It Works
               </Link>
             </NavigationMenuItem>
 
@@ -75,18 +72,14 @@ export const Header = () => {
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <Link to="/benefits">
-                <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
-                  Benefits
-                </NavigationMenuLink>
+              <Link to="/benefits" className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
+                Benefits
               </Link>
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <Link to="/claims">
-                <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
-                  Claims
-                </NavigationMenuLink>
+              <Link to="/claims" className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
+                Claims
               </Link>
             </NavigationMenuItem>
           </NavigationMenuList>
