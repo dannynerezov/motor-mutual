@@ -7,6 +7,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Retry helper for transient storage errors
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  initialDelay = 2000
+): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      const isLastRetry = i === maxRetries - 1;
+      const isRetryableError = 
+        error?.name === 'StorageUnknownError' || 
+        error?.originalError?.status === 504 ||
+        error?.originalError?.status === 503;
+      
+      if (isLastRetry || !isRetryableError) {
+        throw error;
+      }
+      
+      const delay = initialDelay * Math.pow(2, i);
+      console.log(`Retry ${i + 1}/${maxRetries} after ${delay}ms due to:`, error?.message ?? error);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -21,13 +49,18 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: pdfData, error: downloadError } = await supabase.storage
-      .from('pds-documents')
-      .download(pdfPath);
+    // Download with retry logic for transient failures
+    const pdfData = await retryWithBackoff(async () => {
+      const { data, error } = await supabase.storage
+        .from('pds-documents')
+        .download(pdfPath);
+      
+      if (error) throw error;
+      return data;
+    }, 3, 2000);
 
-    if (downloadError) {
-      console.error('Download error:', downloadError);
-      throw downloadError;
+    if (!pdfData) {
+      throw new Error('Failed to download PDF after retries');
     }
 
     console.log('PDF downloaded, size:', pdfData.size);
