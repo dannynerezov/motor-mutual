@@ -14,32 +14,85 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, LineChart } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { PricingSchemeChartModal } from "@/components/admin/PricingSchemeChartModal";
+import { generatePricingEquation, calculateBasePremium } from "@/lib/pricingCalculator";
 
+// Simplified schema with only 4 core variables
 const pricingSchemeSchema = z.object({
-  vehicle_value: z.coerce.number().positive("Vehicle value must be positive"),
-  base_premium: z.coerce.number().positive("Base premium must be positive"),
   floor_price: z.coerce.number().positive("Floor price must be positive"),
   floor_point: z.coerce.number().positive("Floor point must be positive"),
   ceiling_price: z.coerce.number().positive("Ceiling price must be positive"),
   ceiling_point: z.coerce.number().positive("Ceiling point must be positive"),
-  increment: z.coerce.number().positive("Increment must be positive"),
-  number_increments: z.coerce.number().int().positive("Number of increments must be a positive integer"),
   valid_from: z.date(),
+}).refine((data) => data.ceiling_point > data.floor_point, {
+  message: "Ceiling point must be greater than floor point",
+  path: ["ceiling_point"],
 });
 
 type PricingSchemeFormData = z.infer<typeof pricingSchemeSchema>;
 
 const AdminPricingSchemes = () => {
   const [showForm, setShowForm] = useState(false);
+  const [selectedScheme, setSelectedScheme] = useState<any>(null);
+  const [showChartModal, setShowChartModal] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<PricingSchemeFormData>({
     resolver: zodResolver(pricingSchemeSchema),
+    defaultValues: {
+      floor_price: 500,
+      floor_point: 5000,
+      ceiling_price: 2000,
+      ceiling_point: 100000,
+    }
   });
+
+  // Watch form values for real-time equation preview
+  const watchedValues = form.watch();
+  const previewEquation = watchedValues.floor_price && 
+                          watchedValues.floor_point && 
+                          watchedValues.ceiling_price && 
+                          watchedValues.ceiling_point
+    ? generatePricingEquation({
+        floor_price: Number(watchedValues.floor_price),
+        floor_point: Number(watchedValues.floor_point),
+        ceiling_price: Number(watchedValues.ceiling_price),
+        ceiling_point: Number(watchedValues.ceiling_point),
+      })
+    : null;
+
+  // Sample calculations for preview
+  const getSampleCalculations = () => {
+    if (!watchedValues.floor_price || !watchedValues.floor_point || 
+        !watchedValues.ceiling_price || !watchedValues.ceiling_point) {
+      return [];
+    }
+
+    const scheme = {
+      floor_price: Number(watchedValues.floor_price),
+      floor_point: Number(watchedValues.floor_point),
+      ceiling_price: Number(watchedValues.ceiling_price),
+      ceiling_point: Number(watchedValues.ceiling_point),
+    };
+
+    const sampleValues = [5000, 10000, 25000, 50000, 75000, 100000];
+    return sampleValues
+      .map(value => {
+        try {
+          return {
+            value,
+            premium: calculateBasePremium(value, scheme)
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+  };
 
   // Fetch all pricing schemes
   const { data: schemes, isLoading } = useQuery({
@@ -59,14 +112,10 @@ const AdminPricingSchemes = () => {
   const createSchemeMutation = useMutation({
     mutationFn: async (formData: PricingSchemeFormData) => {
       const { error } = await supabase.from("pricing_schemes").insert([{
-        vehicle_value: formData.vehicle_value,
-        base_premium: formData.base_premium,
         floor_price: formData.floor_price,
         floor_point: formData.floor_point,
         ceiling_price: formData.ceiling_price,
         ceiling_point: formData.ceiling_point,
-        increment: formData.increment,
-        number_increments: formData.number_increments,
         valid_from: formData.valid_from.toISOString(),
       } as any]);
       if (error) throw error;
@@ -86,6 +135,11 @@ const AdminPricingSchemes = () => {
     createSchemeMutation.mutate(data);
   };
 
+  const handleViewChart = (scheme: any) => {
+    setSelectedScheme(scheme);
+    setShowChartModal(true);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -93,7 +147,7 @@ const AdminPricingSchemes = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Pricing Scheme Management</h1>
           <p className="text-muted-foreground">
-            Configure and manage membership pricing schemes with date-based versioning
+            Configure and manage membership pricing schemes using 4 core variables
           </p>
         </div>
 
@@ -111,41 +165,13 @@ const AdminPricingSchemes = () => {
             <CardHeader>
               <CardTitle>New Pricing Scheme</CardTitle>
               <CardDescription>
-                Enter the variables for the straight line equation to calculate membership prices
+                Enter 4 variables to define the straight-line pricing equation
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="vehicle_value"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Vehicle Value ($)</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.01" placeholder="25000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="base_premium"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Base Premium ($)</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.01" placeholder="500" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="floor_price"
@@ -153,7 +179,7 @@ const AdminPricingSchemes = () => {
                         <FormItem>
                           <FormLabel>Floor Price ($)</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.01" placeholder="100" {...field} />
+                            <Input type="number" step="0.01" placeholder="500" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -165,9 +191,9 @@ const AdminPricingSchemes = () => {
                       name="floor_point"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Floor Point</FormLabel>
+                          <FormLabel>Floor Point ($)</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.01" placeholder="50" {...field} />
+                            <Input type="number" step="0.01" placeholder="5000" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -181,7 +207,7 @@ const AdminPricingSchemes = () => {
                         <FormItem>
                           <FormLabel>Ceiling Price ($)</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.01" placeholder="1000" {...field} />
+                            <Input type="number" step="0.01" placeholder="2000" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -193,37 +219,9 @@ const AdminPricingSchemes = () => {
                       name="ceiling_point"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Ceiling Point</FormLabel>
+                          <FormLabel>Ceiling Point ($)</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.01" placeholder="200" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="increment"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Increment ($)</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.01" placeholder="10" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="number_increments"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Number of Increments</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="15" {...field} />
+                            <Input type="number" step="0.01" placeholder="100000" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -271,6 +269,36 @@ const AdminPricingSchemes = () => {
                     />
                   </div>
 
+                  {/* Real-time Equation Preview */}
+                  {previewEquation && (
+                    <Card className="bg-muted/50">
+                      <CardContent className="pt-6">
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">Preview Equation:</p>
+                            <p className="text-base font-mono font-semibold">{previewEquation}</p>
+                          </div>
+                          
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">Sample Calculations:</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                              {getSampleCalculations().map((sample: any) => (
+                                <div key={sample.value} className="flex justify-between">
+                                  <span className="text-muted-foreground">
+                                    ${sample.value.toLocaleString()}:
+                                  </span>
+                                  <span className="font-semibold">
+                                    ${sample.premium.toFixed(2)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   <div className="flex gap-4">
                     <Button type="submit" disabled={createSchemeMutation.isPending}>
                       {createSchemeMutation.isPending ? "Creating..." : "Create Pricing Scheme"}
@@ -305,12 +333,10 @@ const AdminPricingSchemes = () => {
                       <TableHead>Status</TableHead>
                       <TableHead>Valid From</TableHead>
                       <TableHead>Valid Until</TableHead>
-                      <TableHead>Vehicle Value</TableHead>
-                      <TableHead>Base Premium</TableHead>
-                      <TableHead>Floor Price</TableHead>
-                      <TableHead>Ceiling Price</TableHead>
-                      <TableHead>Increment</TableHead>
-                      <TableHead># Increments</TableHead>
+                      <TableHead>Equation</TableHead>
+                      <TableHead>Floor</TableHead>
+                      <TableHead>Ceiling</TableHead>
+                      <TableHead>Chart</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -325,19 +351,38 @@ const AdminPricingSchemes = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(scheme.valid_from), "PPP p")}
+                          {format(new Date(scheme.valid_from), "PPP")}
                         </TableCell>
                         <TableCell>
                           {scheme.valid_until
-                            ? format(new Date(scheme.valid_until), "PPP p")
+                            ? format(new Date(scheme.valid_until), "PPP")
                             : "Present"}
                         </TableCell>
-                        <TableCell>${scheme.vehicle_value.toLocaleString()}</TableCell>
-                        <TableCell>${scheme.base_premium.toLocaleString()}</TableCell>
-                        <TableCell>${scheme.floor_price.toLocaleString()}</TableCell>
-                        <TableCell>${scheme.ceiling_price.toLocaleString()}</TableCell>
-                        <TableCell>${scheme.increment.toLocaleString()}</TableCell>
-                        <TableCell>{scheme.number_increments}</TableCell>
+                        <TableCell className="font-mono text-xs max-w-xs truncate">
+                          {generatePricingEquation(scheme)}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <div>${scheme.floor_price}</div>
+                          <div className="text-xs text-muted-foreground">
+                            @${scheme.floor_point.toLocaleString()}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <div>${scheme.ceiling_price}</div>
+                          <div className="text-xs text-muted-foreground">
+                            @${scheme.ceiling_point.toLocaleString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewChart(scheme)}
+                          >
+                            <LineChart className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -352,6 +397,15 @@ const AdminPricingSchemes = () => {
         </Card>
       </main>
       <Footer />
+
+      {/* Chart Modal */}
+      {selectedScheme && (
+        <PricingSchemeChartModal
+          open={showChartModal}
+          onOpenChange={setShowChartModal}
+          scheme={selectedScheme}
+        />
+      )}
     </div>
   );
 };

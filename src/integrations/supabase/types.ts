@@ -246,55 +246,43 @@ export type Database = {
       }
       pricing_schemes: {
         Row: {
-          base_premium: number
           ceiling_point: number
           ceiling_price: number
           created_at: string
           floor_point: number
           floor_price: number
           id: string
-          increment: number
           is_active: boolean
-          number_increments: number
           scheme_number: number
           updated_at: string
           valid_from: string
           valid_until: string | null
-          vehicle_value: number
         }
         Insert: {
-          base_premium: number
           ceiling_point: number
           ceiling_price: number
           created_at?: string
           floor_point: number
           floor_price: number
           id?: string
-          increment: number
           is_active?: boolean
-          number_increments: number
           scheme_number: number
           updated_at?: string
           valid_from?: string
           valid_until?: string | null
-          vehicle_value: number
         }
         Update: {
-          base_premium?: number
           ceiling_point?: number
           ceiling_price?: number
           created_at?: string
           floor_point?: number
           floor_price?: number
           id?: string
-          increment?: number
           is_active?: boolean
-          number_increments?: number
           scheme_number?: number
           updated_at?: string
           valid_from?: string
           valid_until?: string | null
-          vehicle_value?: number
         }
         Relationships: []
       }
