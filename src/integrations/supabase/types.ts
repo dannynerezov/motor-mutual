@@ -392,6 +392,18 @@ export type Database = {
           state: string
         }[]
       }
+      get_suburb_pricing_analysis: {
+        Args: never
+        Returns: {
+          avg_index: number
+          location_count: number
+          max_index: number
+          min_index: number
+          postcode: string
+          state: string
+          suburb: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

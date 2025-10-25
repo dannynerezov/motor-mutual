@@ -31,56 +31,23 @@ export const SuburbAnalysisCard = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["suburb-analysis"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("insurance_pricing_data")
-        .select("suburb, state, postcode, index_value")
-        .not("index_value", "is", null)
-        .not("suburb", "is", null);
+      const { data: rpcData, error } = await supabase.rpc('get_suburb_pricing_analysis');
 
       if (error) throw error;
 
-      // Group by suburb
-      const suburbGroups = data.reduce((acc: any, row) => {
-        const index = parseFloat(row.index_value || "0");
-        
-        // Skip invalid data
-        if (isNaN(index) || index <= 0 || !row.suburb) return acc;
-        
-        const key = `${row.suburb}-${row.state}-${row.postcode}`;
-        
-        if (!acc[key]) {
-          acc[key] = {
-            suburb: row.suburb,
-            state: row.state?.toUpperCase() || "",
-            postcode: row.postcode,
-            indices: [],
-            count: 0,
-          };
-        }
-        
-        acc[key].indices.push(index);
-        acc[key].count++;
-        
-        return acc;
-      }, {});
+      // Data already comes aggregated from database with all suburbs
+      const suburbStats = rpcData.map((row: any) => ({
+        suburb: row.suburb,
+        state: row.state,
+        postcode: row.postcode,
+        avg_index: parseFloat(row.avg_index),
+        location_count: parseInt(row.location_count),
+      }));
 
-      const suburbStats = Object.values(suburbGroups).map((group: any) => {
-        const avg = group.indices.reduce((a: number, b: number) => a + b, 0) / group.indices.length;
-        return {
-          suburb: group.suburb,
-          state: group.state,
-          postcode: group.postcode,
-          avg_index: parseFloat(avg.toFixed(2)),
-          location_count: group.count,
-        };
-      });
-
-      const sorted = suburbStats.sort((a, b) => b.avg_index - a.avg_index);
-      
       return {
-        topExpensive: sorted.slice(0, 20),
-        topCheapest: sorted.slice(-20).reverse(),
-        all: sorted,
+        topExpensive: suburbStats.slice(0, 20),
+        topCheapest: suburbStats.slice(-20).reverse(),
+        all: suburbStats, // All suburbs from the dataset
       };
     },
   });
