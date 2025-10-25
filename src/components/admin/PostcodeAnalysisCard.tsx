@@ -16,52 +16,21 @@ export const PostcodeAnalysisCard = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["postcode-analysis"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("insurance_pricing_data")
-        .select("postcode, state, index_value")
-        .not("index_value", "is", null);
+      const { data: rpcData, error } = await supabase.rpc('get_postcode_pricing_analysis');
 
       if (error) throw error;
 
-      // Group by postcode
-      const postcodeGroups = data.reduce((acc: any, row) => {
-        const index = parseFloat(row.index_value || "0");
-        
-        // Skip invalid data
-        if (isNaN(index) || index <= 0) return acc;
-        
-        const key = `${row.postcode}-${row.state}`;
-        
-        if (!acc[key]) {
-          acc[key] = {
-            postcode: row.postcode,
-            state: row.state?.toUpperCase() || "",
-            indices: [],
-            count: 0,
-          };
-        }
-        
-        acc[key].indices.push(index);
-        acc[key].count++;
-        
-        return acc;
-      }, {});
+      // Data already comes aggregated from database with all postcodes
+      const postcodeStats = rpcData.map((row: any) => ({
+        postcode: row.postcode,
+        state: row.state,
+        avg_index: parseFloat(row.avg_index),
+        location_count: parseInt(row.location_count),
+      }));
 
-      const postcodeStats = Object.values(postcodeGroups).map((group: any) => {
-        const avg = group.indices.reduce((a: number, b: number) => a + b, 0) / group.indices.length;
-        return {
-          postcode: group.postcode,
-          state: group.state,
-          avg_index: parseFloat(avg.toFixed(2)),
-          location_count: group.count,
-        };
-      });
-
-      const sorted = postcodeStats.sort((a, b) => b.avg_index - a.avg_index);
-      
       return {
-        topExpensive: sorted.slice(0, 10),
-        topCheapest: sorted.slice(-10).reverse(),
+        topExpensive: postcodeStats.slice(0, 10),
+        topCheapest: postcodeStats.slice(-10).reverse(),
       };
     },
   });

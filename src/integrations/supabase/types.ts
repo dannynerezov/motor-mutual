@@ -371,6 +371,17 @@ export type Database = {
     }
     Functions: {
       generate_quote_number: { Args: never; Returns: string }
+      get_postcode_pricing_analysis: {
+        Args: never
+        Returns: {
+          avg_index: number
+          location_count: number
+          max_index: number
+          min_index: number
+          postcode: string
+          state: string
+        }[]
+      }
       get_pricing_summary_stats: {
         Args: never
         Returns: {
