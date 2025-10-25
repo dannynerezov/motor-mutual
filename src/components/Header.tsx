@@ -27,7 +27,10 @@ export const Header = () => {
           <Link to="/widget" className="text-sm font-medium hover:text-primary transition-colors">
             Price Explorer
           </Link>
-          <Link to="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors hidden sm:inline">
+          <Link to="/claims" className="text-sm font-medium hover:text-primary transition-colors hidden sm:inline">
+            Claims
+          </Link>
+          <Link to="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors hidden md:inline">
             How It Works
           </Link>
         </nav>
