@@ -34,9 +34,23 @@ serve(async (req) => {
 
     console.log('PDF downloaded, size:', pdfData.size);
 
-    // Convert PDF to base64
+    // Convert PDF to base64 using chunked approach to avoid stack overflow
     const arrayBuffer = await pdfData.arrayBuffer();
-    const base64Pdf = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    
+    function arrayBufferToBase64(buffer: ArrayBuffer): string {
+      const bytes = new Uint8Array(buffer);
+      const chunkSize = 8192; // 8KB chunks
+      let binary = '';
+      
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+        binary += String.fromCharCode(...chunk);
+      }
+      
+      return btoa(binary);
+    }
+    
+    const base64Pdf = arrayBufferToBase64(arrayBuffer);
 
     console.log('Calling Lovable AI for analysis...');
 
