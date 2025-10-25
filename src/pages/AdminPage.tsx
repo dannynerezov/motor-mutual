@@ -57,12 +57,12 @@ const AdminPage = () => {
           
           sampleRows.forEach((row, idx) => {
             const mapped: PreviewRow = {
-              full_address: row["Full Address"] || "",
-              index_value: row["Index"] || "",
-              street: row["Street"] || "",
-              suburb: row["Suburb"] || "",
-              state: row["State"] || "",
-              postcode: row["Postcode"] || ""
+              full_address: (row["Full Address"] || "").trim(),
+              index_value: (row["Index"] || "").trim(),
+              street: (row["Street"] || "").trim(),
+              suburb: (row["Suburb"] || "").trim(),
+              state: (row["State"] || "").trim(),
+              postcode: (row["Postcode"] || "").trim()
             };
 
             // Validate data
@@ -121,13 +121,13 @@ const AdminPage = () => {
 
             // Map and validate records
             const records = results.data.map((row: any) => ({
-              full_address: row["Full Address"] || "",
-              index_value: row["Index"] || null,
-              street: row["Street"] || "",
-              suburb: row["Suburb"] || "",
-              state: row["State"]?.toUpperCase() || "",
-              postcode: row["Postcode"] || ""
-            })).filter(record => 
+              full_address: (row["Full Address"] || "").trim(),
+              index_value: (row["Index"] || "").trim() || null,
+              street: (row["Street"] || "").trim(),
+              suburb: (row["Suburb"] || "").trim(),
+              state: ((row["State"] || "").trim()).toUpperCase(),
+              postcode: (row["Postcode"] || "").trim()
+            })).filter(record =>
               // Filter out invalid records
               record.index_value && 
               !isNaN(parseFloat(record.index_value))
