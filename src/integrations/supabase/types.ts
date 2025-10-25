@@ -347,6 +347,7 @@ export type Database = {
           expires_at: string
           id: string
           membership_price: number
+          pricing_scheme_id: string | null
           quote_number: string | null
           quote_reference: string
           registration_number: string
@@ -366,6 +367,7 @@ export type Database = {
           expires_at?: string
           id?: string
           membership_price: number
+          pricing_scheme_id?: string | null
           quote_number?: string | null
           quote_reference: string
           registration_number: string
@@ -385,6 +387,7 @@ export type Database = {
           expires_at?: string
           id?: string
           membership_price?: number
+          pricing_scheme_id?: string | null
           quote_number?: string | null
           quote_reference?: string
           registration_number?: string
@@ -403,6 +406,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_pricing_scheme_id_fkey"
+            columns: ["pricing_scheme_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_schemes"
             referencedColumns: ["id"]
           },
         ]

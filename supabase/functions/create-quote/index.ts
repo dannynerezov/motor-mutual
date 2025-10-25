@@ -29,6 +29,25 @@ Deno.serve(async (req) => {
       vehicleCount: vehicles.length 
     });
 
+    // Fetch active pricing scheme
+    const { data: activeScheme, error: schemeError } = await supabaseClient
+      .from('pricing_schemes')
+      .select('*')
+      .eq('is_active', true)
+      .order('valid_from', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (schemeError || !activeScheme) {
+      console.error('Failed to fetch active pricing scheme:', schemeError);
+      return new Response(
+        JSON.stringify({ error: 'Pricing configuration unavailable' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Using pricing scheme:', activeScheme.scheme_number);
+
     // Step 1: Find or create customer
     let customerId;
     
@@ -80,6 +99,7 @@ Deno.serve(async (req) => {
         total_base_price: totals.base,
         total_final_price: totals.final,
         status: 'pending',
+        pricing_scheme_id: activeScheme.id,
       })
       .select()
       .single();

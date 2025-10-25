@@ -20,6 +20,15 @@ interface Quote {
   total_base_price: number;
   total_final_price: number;
   status: string;
+  pricing_scheme_id: string | null;
+  pricing_schemes?: {
+    scheme_number: number;
+    valid_from: string;
+    floor_price: number;
+    floor_point: number;
+    ceiling_price: number;
+    ceiling_point: number;
+  };
 }
 
 interface Vehicle {
@@ -73,9 +82,19 @@ const QuotePage = () => {
       // Load quote
       const { data: quoteData, error: quoteError } = await supabase
         .from("quotes")
-        .select("*")
+        .select(`
+          *,
+          pricing_schemes (
+            scheme_number,
+            valid_from,
+            floor_price,
+            floor_point,
+            ceiling_price,
+            ceiling_point
+          )
+        `)
         .eq("id", quoteId)
-        .single();
+        .maybeSingle();
 
       if (quoteError) throw quoteError;
       setQuote(quoteData);
@@ -264,6 +283,33 @@ const QuotePage = () => {
                 </div>
               </CardHeader>
             </Card>
+
+            {/* Pricing Scheme Info */}
+            {quote.pricing_schemes && (
+              <Card className="bg-muted/30 border-muted">
+                <CardContent className="pt-4">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>
+                        <strong>Pricing Scheme #{quote.pricing_schemes.scheme_number}</strong>
+                        {' '}(Active from{' '}
+                        {new Date(quote.pricing_schemes.valid_from).toLocaleDateString('en-AU', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })})
+                      </p>
+                      <p className="text-xs font-mono">
+                        Base Premium = ${quote.pricing_schemes.floor_price} 
+                        {' + linear adjustment based on vehicle value up to $'}
+                        {quote.pricing_schemes.ceiling_price}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Welcome Alert */}
             <Alert>

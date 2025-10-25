@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Shield, Car, Calculator, AlertCircle, Plus } from "lucide-react";
+import { Shield, Car, Calculator, AlertCircle, Plus, Info } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { VehicleCard, Vehicle } from "./VehicleCard";
+import { usePricingScheme } from "@/hooks/usePricingScheme";
 
 const AUSTRALIAN_STATES = [
   { code: 'NSW', name: 'New South Wales' },
@@ -49,6 +50,7 @@ interface VehicleData {
 
 export const QuoteForm = () => {
   const navigate = useNavigate();
+  const { activeScheme, calculatePrice, isLoading: schemeLoading } = usePricingScheme();
   const [registration, setRegistration] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [vinNumber, setVinNumber] = useState("");
@@ -57,19 +59,6 @@ export const QuoteForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
-
-  const calculateMembershipPrice = (value: number): number => {
-    if (value <= 10000) {
-      return 500;
-    } else if (value >= 100000) {
-      return 2500;
-    } else {
-      const range = 100000 - 10000;
-      const priceRange = 2500 - 500;
-      const valueAboveMin = value - 10000;
-      return 500 + (valueAboveMin / range) * priceRange;
-    }
-  };
 
   const calculateFleetDiscount = (vehicleCount: number): number => {
     if (vehicleCount === 1) return 0;
@@ -125,7 +114,7 @@ export const QuoteForm = () => {
       if (data.error) throw new Error(data.error);
 
       const initialValue = data.vehicleValueInfo.marketValue;
-      const calculatedPrice = calculateMembershipPrice(initialValue);
+      const calculatedPrice = calculatePrice(initialValue);
 
       const newVehicle: Vehicle = {
         id: `${Date.now()}-${Math.random()}`,
@@ -160,7 +149,7 @@ export const QuoteForm = () => {
   const handleValueChange = (id: string, newValue: number) => {
     setVehicles(vehicles.map(v => {
       if (v.id === id) {
-        const newPrice = calculateMembershipPrice(newValue);
+        const newPrice = calculatePrice(newValue);
         return { ...v, selectedValue: newValue, membershipPrice: newPrice };
       }
       return v;
@@ -251,6 +240,7 @@ export const QuoteForm = () => {
             total_base_price: totalBase,
             total_final_price: totalFinal,
             status: "pending",
+            pricing_scheme_id: activeScheme?.id || null,
           } as any)
           .select()
           .single();
@@ -349,6 +339,19 @@ export const QuoteForm = () => {
           <p className="text-muted-foreground mt-2">
             Protect your business on wheels with coverage built for rideshare drivers
           </p>
+          {activeScheme && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-3">
+              <Info className="w-4 h-4" />
+              <span>
+                Using Pricing Scheme #{activeScheme.scheme_number} 
+                {' '}(Active since {new Date(activeScheme.valid_from).toLocaleDateString('en-AU', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                })})
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Vehicle Entry Section */}
