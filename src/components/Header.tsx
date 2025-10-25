@@ -2,14 +2,12 @@ import { Link } from "react-router-dom";
 import fullLogo from "@/assets/mcm-logo-full.webp";
 import iconLogo from "@/assets/mcm-logo-icon.webp";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 export const Header = () => {
   return (
@@ -31,59 +29,67 @@ export const Header = () => {
           </div>
         </Link>
         
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <Link to="/#how-it-works" className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
-                How It Works
-              </Link>
-            </NavigationMenuItem>
+        <nav className="hidden md:flex items-center gap-1">
+          <Link 
+            to="/#how-it-works" 
+            className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center"
+          >
+            How It Works
+          </Link>
 
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="text-base h-12">Values</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-56 gap-3 p-4 bg-background">
-                  <li>
-                    <Link to="/#fairness" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                      <div className="text-base font-semibold leading-none">Fair</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Transparent pricing for everyone
-                      </p>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/#transparency" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                      <div className="text-base font-semibold leading-none">Transparent</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Open and honest processes
-                      </p>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/#reliability" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                      <div className="text-base font-semibold leading-none">Reliable</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Dependable protection always
-                      </p>
-                    </Link>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center gap-1">
+              Values
+              <ChevronDown className="w-4 h-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link to="/#fairness" className="w-full cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <div className="font-semibold">Fair</div>
+                    <div className="text-sm text-muted-foreground">
+                      Transparent pricing for everyone
+                    </div>
+                  </div>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/#transparency" className="w-full cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <div className="font-semibold">Transparent</div>
+                    <div className="text-sm text-muted-foreground">
+                      Open and honest processes
+                    </div>
+                  </div>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/#reliability" className="w-full cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <div className="font-semibold">Reliable</div>
+                    <div className="text-sm text-muted-foreground">
+                      Dependable protection always
+                    </div>
+                  </div>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            <NavigationMenuItem>
-              <Link to="/benefits" className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
-                Benefits
-              </Link>
-            </NavigationMenuItem>
+          <Link 
+            to="/benefits" 
+            className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center"
+          >
+            Benefits
+          </Link>
 
-            <NavigationMenuItem>
-              <Link to="/claims" className={cn(navigationMenuTriggerStyle(), "text-base h-12")}>
-                Claims
-              </Link>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+          <Link 
+            to="/claims" 
+            className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center"
+          >
+            Claims
+          </Link>
+        </nav>
 
         {/* Mobile menu - simplified */}
         <nav className="flex md:hidden items-center gap-4">
