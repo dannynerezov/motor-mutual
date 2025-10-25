@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as pdfjsLib from 'pdfjs-dist';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { FileText, Upload, Download, CheckCircle, XCircle } from "lucide-react";
+
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`;
 
 export function PDSUploadCard() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -47,6 +51,32 @@ export function PDSUploadCard() {
     }
   };
 
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      
+      let fullText = '';
+      
+      // Extract text from all pages
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += pageText + '\n\n';
+      }
+      
+      console.log('Extracted text length:', fullText.length);
+      return fullText;
+    } catch (error) {
+      console.error('PDF text extraction error:', error);
+      return ''; // Return empty string on failure - backend will fallback to base64
+    }
+  };
+
   const handleUpload = async () => {
     if (!pdfFile) {
       toast({
@@ -76,10 +106,18 @@ export function PDSUploadCard() {
 
       setUploadProgress(60);
 
-      // Call edge function to analyze PDF (version and effective date handled automatically by database)
+      // Extract text from PDF client-side
+      console.log('Extracting text from PDF...');
+      const extractedText = await extractTextFromPDF(pdfFile);
+      console.log('Text extraction complete, length:', extractedText.length);
+
+      setUploadProgress(70);
+
+      // Call edge function to analyze PDF with extracted text
       const { data, error: functionError } = await supabase.functions.invoke('analyze-pds', {
         body: {
-          pdfPath: filePath
+          pdfPath: filePath,
+          extractedText: extractedText || undefined
         }
       });
 
@@ -114,6 +152,13 @@ export function PDSUploadCard() {
         } catch {
           // Keep default error message
         }
+      }
+
+      // Add helpful hints for common errors
+      if (errorMessage.includes('Rate limits exceeded')) {
+        errorMessage += ' Please wait a minute and try again.';
+      } else if (errorMessage.includes('credits exhausted')) {
+        errorMessage += ' Please add credits to your workspace in Settings → Usage.';
       }
       
       toast({

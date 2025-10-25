@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { encode as encodeBase64 } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { pdfPath } = await req.json();
+    const { pdfPath, extractedText } = await req.json();
 
     console.log('Downloading PDF from storage:', pdfPath);
 
@@ -31,16 +32,19 @@ serve(async (req) => {
 
     console.log('PDF downloaded, size:', pdfData.size);
 
-    // Convert PDF to base64 in chunks to avoid stack overflow
-    const arrayBuffer = await pdfData.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    
-    let base64Pdf = '';
-    const chunkSize = 1000000;
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const chunk = uint8Array.slice(i, i + chunkSize);
-      base64Pdf += btoa(String.fromCharCode(...chunk));
+    // Check file size limit (10MB)
+    const MAX_PDF_SIZE = 10 * 1024 * 1024;
+    if (pdfData.size > MAX_PDF_SIZE) {
+      return new Response(
+        JSON.stringify({ error: 'PDF too large for analysis. Please upload a file smaller than 10MB.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    // Convert PDF to base64 efficiently using Deno's standard encoder
+    const arrayBuffer = await pdfData.arrayBuffer();
+    const base64Pdf = encodeBase64(arrayBuffer);
+    console.log('PDF converted to base64, length:', base64Pdf.length);
 
     console.log('Calling Lovable AI for analysis...');
 
@@ -60,7 +64,17 @@ serve(async (req) => {
 
     const systemPrompt = `You extract structured fields from a Product Disclosure Statement (PDS). Reply with ONLY valid JSON, no extra text or markdown. Extract comprehensive information including all sections, exclusions, FAQ entries, monetary amounts, definitions, claims process, and member obligations with accurate PDS references.`;
     
-    const userPrompt = `Analyze this PDS PDF (base64): ${base64Pdf}
+    // Prefer extracted text over base64 for better AI understanding
+    let userPrompt: string;
+
+    if (extractedText && extractedText.length > 100) {
+      // Truncate to ~150k chars to avoid context overflow
+      const truncatedText = extractedText.slice(0, 150000);
+      console.log('Using extracted text, length:', truncatedText.length);
+      
+      userPrompt = `Analyze this PDS text content:
+
+${truncatedText}
 
 Extract the following JSON structure:
 ${jsonSchema}
@@ -72,6 +86,22 @@ Rules:
 - Include all monetary amounts mentioned
 - Include accurate PDS section references
 - Keep data comprehensive but well-structured`;
+    } else {
+      // Fallback to base64 if no text provided
+      console.log('No extracted text provided, using base64 PDF');
+      userPrompt = `Analyze this PDS PDF (base64): ${base64Pdf}
+
+Extract the following JSON structure:
+${jsonSchema}
+
+Rules:
+- Return ONLY valid JSON, no markdown code blocks
+- Include as many exclusions as you can find (aim for 28+)
+- Include comprehensive FAQ entries (aim for 15+)
+- Include all monetary amounts mentioned
+- Include accurate PDS section references
+- Keep data comprehensive but well-structured`;
+    }
 
     let extractedData;
     let modelUsed = 'google/gemini-2.5-flash';
