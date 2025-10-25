@@ -223,12 +223,20 @@ const AdminPage = () => {
                 Upload and manage insurance pricing data
               </p>
             </div>
-            <Link to="/admin/pricing-analysis">
-              <Button variant="outline">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                View Pricing Analysis
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/admin/pricing-analysis">
+                <Button variant="outline">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Pricing Analysis
+                </Button>
+              </Link>
+              <Link to="/admin/pricing-schemes">
+                <Button variant="outline">
+                  <Database className="mr-2 h-4 w-4" />
+                  Pricing Schemes
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <div className="grid gap-6">

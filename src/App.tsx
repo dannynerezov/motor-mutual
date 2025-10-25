@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import QuotePage from "./pages/QuotePage";
 import AdminPage from "./pages/AdminPage";
 import AdminPricingAnalysis from "./pages/AdminPricingAnalysis";
+import AdminPricingSchemes from "./pages/AdminPricingSchemes";
 import PricingAnalysisPage from "./pages/PricingAnalysisPage";
 import WidgetPage from "./pages/WidgetPage";
 import NotFound from "./pages/NotFound";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/quote/:quoteId" element={<QuotePage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/admin/pricing-analysis" element={<AdminPricingAnalysis />} />
+          <Route path="/admin/pricing-schemes" element={<AdminPricingSchemes />} />
           <Route path="/pricing-analysis" element={<PricingAnalysisPage />} />
           <Route path="/widget" element={<WidgetPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
