@@ -11,6 +11,7 @@ import AdminPricingSchemes from "./pages/AdminPricingSchemes";
 import PricingAnalysisPage from "./pages/PricingAnalysisPage";
 import WidgetPage from "./pages/WidgetPage";
 import ClaimsPage from "./pages/ClaimsPage";
+import BenefitsPage from "./pages/BenefitsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/pricing-analysis" element={<PricingAnalysisPage />} />
           <Route path="/widget" element={<WidgetPage />} />
           <Route path="/claims" element={<ClaimsPage />} />
+          <Route path="/benefits" element={<BenefitsPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.create-quote]
 verify_jwt = false
+
+[functions.analyze-pds]
+verify_jwt = false
