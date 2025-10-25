@@ -76,7 +76,8 @@ serve(async (req) => {
 
     // Convert PDF to base64 efficiently using Deno's standard encoder
     const arrayBuffer = await pdfData.arrayBuffer();
-    const base64Pdf = encodeBase64(arrayBuffer);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const base64Pdf = encodeBase64(uint8Array as any);
     console.log('PDF converted to base64, length:', base64Pdf.length);
 
     console.log('Calling Lovable AI for analysis...');
