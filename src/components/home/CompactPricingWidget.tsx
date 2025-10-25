@@ -71,10 +71,10 @@ export const CompactPricingWidget = () => {
       {currentView === 'states' ? (
         <>
           {/* Cheapest States */}
-          <Card className="border-2 border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10">
+          <Card className="border-2 border-primary/30 bg-primary/5 dark:border-primary/50 dark:bg-primary/10">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <TrendingDown className="h-5 w-5 text-accent" />
                 <CardTitle className="text-xl">Cheapest States (Traditional Insurance)</CardTitle>
               </div>
             </CardHeader>
@@ -88,7 +88,7 @@ export const CompactPricingWidget = () => {
                     aria-label={`View cheapest suburbs in ${state.state}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">#{index + 1}</div>
+                      <div className="text-2xl font-bold text-accent">#{index + 1}</div>
                       <div className="text-left">
                         <div className="font-semibold">{state.state}</div>
                         <div className="text-sm text-muted-foreground">{state.suburb_count} suburbs</div>
@@ -96,7 +96,7 @@ export const CompactPricingWidget = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                        <div className="text-lg font-bold text-accent">
                           {state.avg_index.toFixed(1)}
                         </div>
                         <div className="text-xs text-muted-foreground">Avg. Index</div>
@@ -110,10 +110,10 @@ export const CompactPricingWidget = () => {
           </Card>
 
           {/* Most Expensive States */}
-          <Card className="border-2 border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/10">
+          <Card className="border-2 border-muted bg-muted/30 dark:border-muted dark:bg-muted/10">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-red-600 dark:text-red-400" />
+                <TrendingUp className="h-5 w-5 text-muted-foreground" />
                 <CardTitle className="text-xl">Most Expensive States (Traditional Insurance)</CardTitle>
               </div>
             </CardHeader>
@@ -127,7 +127,7 @@ export const CompactPricingWidget = () => {
                     aria-label={`View most expensive suburbs in ${state.state}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl font-bold text-red-600 dark:text-red-400">#{state.ranking}</div>
+                      <div className="text-2xl font-bold text-muted-foreground">#{state.ranking}</div>
                       <div className="text-left">
                         <div className="font-semibold">{state.state}</div>
                         <div className="text-sm text-muted-foreground">{state.suburb_count} suburbs</div>
@@ -135,7 +135,7 @@ export const CompactPricingWidget = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                        <div className="text-lg font-bold text-muted-foreground">
                           {state.avg_index.toFixed(1)}
                         </div>
                         <div className="text-xs text-muted-foreground">Avg. Index</div>

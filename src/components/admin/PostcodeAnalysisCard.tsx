@@ -6,10 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 
 const getIndexBadge = (index: number) => {
-  if (index <= 150) return <Badge className="bg-green-500">Affordable</Badge>;
-  if (index <= 250) return <Badge className="bg-yellow-500">Moderate</Badge>;
-  if (index <= 400) return <Badge className="bg-orange-500">Expensive</Badge>;
-  return <Badge className="bg-red-500">Very Expensive</Badge>;
+  if (index <= 150) return <Badge className="bg-accent">Affordable</Badge>;
+  if (index <= 250) return <Badge className="bg-secondary">Moderate</Badge>;
+  if (index <= 400) return <Badge className="bg-muted-foreground">Expensive</Badge>;
+  return <Badge className="bg-muted-foreground">Very Expensive</Badge>;
 };
 
 export const PostcodeAnalysisCard = () => {

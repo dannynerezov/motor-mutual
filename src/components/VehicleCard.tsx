@@ -190,7 +190,7 @@ export const VehicleCard = ({ vehicle, index, onValueChange, onRemove, canRemove
                   ${vehicle.selectedValue.toLocaleString()}
                 </div>
                 {percentageChange !== 0 && (
-                  <p className={`text-[10px] mt-0.5 ${percentageChange > 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                  <p className={`text-[10px] mt-0.5 ${percentageChange > 0 ? 'text-accent' : 'text-muted-foreground'}`}>
                     {percentageChange > 0 ? '↑' : '↓'} {Math.abs(percentageChange).toFixed(1)}% from market
                   </p>
                 )}

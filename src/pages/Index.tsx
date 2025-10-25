@@ -73,7 +73,7 @@ const Index = () => {
             <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
               <div className="space-y-8">
                 <div className="flex gap-6 items-start group">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition-transform duration-300">
                     1
                   </div>
                   <div className="flex-grow pt-3">
@@ -85,7 +85,7 @@ const Index = () => {
                 </div>
 
                 <div className="flex gap-6 items-start group">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition-transform duration-300">
                     2
                   </div>
                   <div className="flex-grow pt-3">
@@ -97,7 +97,7 @@ const Index = () => {
                 </div>
 
                 <div className="flex gap-6 items-start group">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground group-hover:scale-110 transition-transform duration-300">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition-transform duration-300">
                     3
                   </div>
                   <div className="flex-grow pt-3">

@@ -22,10 +22,10 @@ export const ReliabilitySection = () => {
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         {/* Not-At-Fault Claims */}
         <Card className="border-2 hover:shadow-strong transition-shadow">
-          <CardHeader className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30">
+          <CardHeader className="bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
-                <Car className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 rounded-lg bg-primary/20 dark:bg-primary/30">
+                <Car className="h-6 w-6 text-primary dark:text-primary-foreground" />
               </div>
               <CardTitle className="text-2xl">Not Your Fault?</CardTitle>
             </div>
@@ -36,19 +36,19 @@ export const ReliabilitySection = () => {
             </p>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <ShieldCheck className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <ShieldCheck className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span>Claims processed through at-fault party's insurance</span>
               </li>
               <li className="flex items-start gap-3">
-                <Car className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <Car className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span>Replacement vehicle provided while yours is repaired</span>
               </li>
               <li className="flex items-start gap-3">
-                <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <DollarSign className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span>No excess, no impact on your claims history</span>
               </li>
               <li className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <Clock className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span>Professional management from start to finish</span>
               </li>
             </ul>
@@ -57,10 +57,10 @@ export const ReliabilitySection = () => {
 
         {/* At-Fault / Single Vehicle Claims */}
         <Card className="border-2 hover:shadow-strong transition-shadow">
-          <CardHeader className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30">
+          <CardHeader className="bg-gradient-to-br from-accent/10 to-accent/5 dark:from-accent/20 dark:to-accent/10">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50">
-                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 rounded-lg bg-accent/20 dark:bg-accent/30">
+                <DollarSign className="h-6 w-6 text-accent" />
               </div>
               <CardTitle className="text-2xl">At Fault or Single Vehicle?</CardTitle>
             </div>
@@ -71,19 +71,19 @@ export const ReliabilitySection = () => {
             </p>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <ShieldCheck className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <ShieldCheck className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span><strong>You decide:</strong> Repair or don't repair your vehicle</span>
               </li>
               <li className="flex items-start gap-3">
-                <Car className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <Car className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span>Choose your own repairer, no steering to networks</span>
               </li>
               <li className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <Clock className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span>Fast resolution - typically 5-10 business days</span>
               </li>
               <li className="flex items-start gap-3">
-                <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <DollarSign className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <span>No repair management delays or disputes</span>
               </li>
             </ul>
@@ -102,7 +102,7 @@ export const ReliabilitySection = () => {
         <CardContent className="pt-8">
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute top-8 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-green-500 hidden md:block" />
+            <div className="absolute top-8 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-accent hidden md:block" />
             
             {/* Timeline steps */}
             <div className="grid md:grid-cols-4 gap-6 relative">
@@ -115,7 +115,7 @@ export const ReliabilitySection = () => {
               </div>
               
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4 relative z-10">
+                <div className="w-16 h-16 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4 relative z-10">
                   2-3
                 </div>
                 <h4 className="font-semibold mb-2">Days 2-3</h4>
@@ -123,7 +123,7 @@ export const ReliabilitySection = () => {
               </div>
               
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-orange-500 text-white flex items-center justify-center text-xl font-bold mx-auto mb-4 relative z-10">
+                <div className="w-16 h-16 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4 relative z-10">
                   5-7
                 </div>
                 <h4 className="font-semibold mb-2">Days 5-7</h4>
@@ -131,7 +131,7 @@ export const ReliabilitySection = () => {
               </div>
               
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center text-xl font-bold mx-auto mb-4 relative z-10">
+                <div className="w-16 h-16 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4 relative z-10">
                   ✓
                 </div>
                 <h4 className="font-semibold mb-2">Days 7-10</h4>

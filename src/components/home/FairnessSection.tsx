@@ -22,11 +22,11 @@ export const FairnessSection = () => {
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         {/* Problem Statement */}
-        <Card className="border-2 border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/20">
+        <Card className="border-2 border-muted bg-muted/30 dark:border-muted dark:bg-muted/10">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/50">
-                <TrendingDown className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 rounded-lg bg-muted dark:bg-muted/50">
+                <TrendingDown className="h-6 w-6 text-muted-foreground" />
               </div>
               <CardTitle className="text-2xl">The Problem with Traditional Insurance</CardTitle>
             </div>
@@ -53,11 +53,11 @@ export const FairnessSection = () => {
         </Card>
 
         {/* Solution Statement */}
-        <Card className="border-2 border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20">
+        <Card className="border-2 border-primary/30 bg-primary/5 dark:border-primary/50 dark:bg-primary/10">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 rounded-lg bg-accent/20 dark:bg-accent/30">
+                <CheckCircle className="h-6 w-6 text-accent" />
               </div>
               <CardTitle className="text-2xl">The Mutual Solution</CardTitle>
             </div>
@@ -67,19 +67,19 @@ export const FairnessSection = () => {
               The Mutual uses <strong>location-independent pricing</strong>. Whether you live in the most expensive suburb or the cheapest, your base membership price is the same.
             </p>
             <div className="space-y-2">
-              <div className="flex items-start gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-start gap-2 text-accent">
                 <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span className="font-medium">Same pricing formula for all postcodes</span>
               </div>
-              <div className="flex items-start gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-start gap-2 text-accent">
                 <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span className="font-medium">No suburb penalties</span>
               </div>
-              <div className="flex items-start gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-start gap-2 text-accent">
                 <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span className="font-medium">Fair treatment regardless of location</span>
               </div>
-              <div className="flex items-start gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-start gap-2 text-accent">
                 <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span className="font-medium">Transparent, predictable costs</span>
               </div>

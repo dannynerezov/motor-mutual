@@ -30,93 +30,93 @@ export const HowItWorksComparison = () => {
                 <ComparisonRow
                   aspect="Pricing Model"
                   traditional="Complex location-based, can be 6x higher in metro areas"
-                  traditionalIcon={<X className="h-5 w-5 text-red-600" />}
+                  traditionalIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubs="Variable based on repair network usage"
-                  clubsIcon={<AlertTriangle className="h-5 w-5 text-orange-500" />}
+                  clubsIcon={<AlertTriangle className="h-5 w-5 text-accent" />}
                   mutual="Simple vehicle value-based"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Pricing Transparency"
                   traditional="Hidden variables (age, gender, postcode)"
-                  traditionalIcon={<X className="h-5 w-5 text-red-600" />}
+                  traditionalIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubs="Opaque fee structures"
-                  clubsIcon={<X className="h-5 w-5 text-red-600" />}
+                  clubsIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   mutual="Fully transparent formula"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Location Fairness"
                   traditional="High penalties for certain suburbs"
-                  traditionalIcon={<X className="h-5 w-5 text-red-600" />}
+                  traditionalIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubs="Varies by location"
-                  clubsIcon={<AlertTriangle className="h-5 w-5 text-orange-500" />}
+                  clubsIcon={<AlertTriangle className="h-5 w-5 text-accent" />}
                   mutual="Same price everywhere"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Claims Control"
                   traditional="Insurer steers repairs to network shops"
-                  traditionalIcon={<X className="h-5 w-5 text-red-600" />}
+                  traditionalIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubs="Required to use affiliated repairers"
-                  clubsIcon={<X className="h-5 w-5 text-red-600" />}
+                  clubsIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   mutual="Your choice of repairer"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Cash Settlement"
                   traditional="Rarely offered"
-                  traditionalIcon={<X className="h-5 w-5 text-red-600" />}
+                  traditionalIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubs="Non-existent"
-                  clubsIcon={<X className="h-5 w-5 text-red-600" />}
+                  clubsIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   mutual="Standard for at-fault claims"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Repair Management"
                   traditional="Insurer controls, causes delays"
-                  traditionalIcon={<X className="h-5 w-5 text-red-600" />}
+                  traditionalIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubs="Club controls, earns from claims"
-                  clubsIcon={<X className="h-5 w-5 text-red-600" />}
+                  clubsIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   mutual="You control your repairs"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Regulation"
                   traditional="ASIC regulated, AFCA member"
-                  traditionalIcon={<Check className="h-5 w-5 text-green-600" />}
+                  traditionalIcon={<Check className="h-5 w-5 text-accent" />}
                   clubs="Not ASIC regulated, not AFCA member"
-                  clubsIcon={<X className="h-5 w-5 text-red-600" />}
+                  clubsIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubsWarning
                   mutual="Fully regulated & AFCA member"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Dispute Resolution"
                   traditional="AFCA available"
-                  traditionalIcon={<Check className="h-5 w-5 text-green-600" />}
+                  traditionalIcon={<Check className="h-5 w-5 text-accent" />}
                   clubs="Limited customer recourse"
-                  clubsIcon={<X className="h-5 w-5 text-red-600" />}
+                  clubsIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubsWarning
                   mutual="Internal process + AFCA protection"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
                 <ComparisonRow
                   aspect="Typical Claim Time"
                   traditional="15-30+ days (repair management delays)"
-                  traditionalIcon={<X className="h-5 w-5 text-red-600" />}
+                  traditionalIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   clubs="20-40+ days (network conflicts)"
-                  clubsIcon={<X className="h-5 w-5 text-red-600" />}
+                  clubsIcon={<X className="h-5 w-5 text-muted-foreground" />}
                   mutual="5-10 days average"
-                  mutualIcon={<Check className="h-5 w-5 text-green-600" />}
+                  mutualIcon={<Check className="h-5 w-5 text-accent" />}
                   highlight
                 />
               </tbody>
@@ -219,7 +219,7 @@ const ComparisonRow = ({
         <span className="text-sm">{traditional}</span>
       </div>
     </td>
-    <td className={`px-6 py-4 text-center border-r ${clubsWarning ? 'bg-orange-50/50 dark:bg-orange-950/20' : ''}`}>
+    <td className={`px-6 py-4 text-center border-r ${clubsWarning ? 'bg-accent/10 dark:bg-accent/5' : ''}`}>
       <div className="flex items-center justify-center gap-2">
         {clubsIcon}
         <span className="text-sm">{clubs}</span>
@@ -249,21 +249,21 @@ const MobileComparisonCard = ({ aspect, traditional, clubs, mutual, clubsWarning
     </CardHeader>
     <CardContent className="pt-4 space-y-4">
       <div className="flex items-start gap-2">
-        <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+        <X className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-medium text-sm">Traditional Insurance</p>
           <p className="text-sm text-muted-foreground">{traditional}</p>
         </div>
       </div>
-      <div className={`flex items-start gap-2 ${clubsWarning ? 'p-3 rounded-lg bg-orange-50/50 dark:bg-orange-950/20' : ''}`}>
-        <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+      <div className={`flex items-start gap-2 ${clubsWarning ? 'p-3 rounded-lg bg-accent/10 dark:bg-accent/5' : ''}`}>
+        <X className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-medium text-sm">Rideshare Clubs</p>
           <p className="text-sm text-muted-foreground">{clubs}</p>
         </div>
       </div>
-      <div className="flex items-start gap-2 p-3 rounded-lg bg-green-50/50 dark:bg-green-950/20">
-        <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/10 dark:bg-primary/20">
+        <Check className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-medium text-sm">The Mutual</p>
           <p className="text-sm font-semibold">{mutual}</p>

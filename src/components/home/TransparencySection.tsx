@@ -59,7 +59,7 @@ export const TransparencySection = () => {
         </Card>
 
         {/* Solution Statement */}
-        <Card className="border-2 border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20">
+        <Card className="border-2 border-primary/30 bg-primary/5 dark:border-primary/50 dark:bg-primary/10">
           <CardHeader>
             <CardTitle className="text-2xl">The Mutual: Transparent Value-Based Pricing</CardTitle>
           </CardHeader>
@@ -68,23 +68,23 @@ export const TransparencySection = () => {
               The Mutual has transparent pricing driven <strong>solely by vehicle value</strong>. No matter who you are, you get the same fair price:
             </p>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 text-accent">
                 <Check className="h-5 w-5 flex-shrink-0" />
                 <span className="font-medium">Gender? Not considered</span>
               </div>
-              <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 text-accent">
                 <Check className="h-5 w-5 flex-shrink-0" />
                 <span className="font-medium">Age? Not considered</span>
               </div>
-              <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 text-accent">
                 <Check className="h-5 w-5 flex-shrink-0" />
                 <span className="font-medium">Vehicle make/model? Not considered</span>
               </div>
-              <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 text-accent">
                 <Check className="h-5 w-5 flex-shrink-0" />
                 <span className="font-medium">Location? Not considered</span>
               </div>
-              <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 text-accent">
                 <Check className="h-5 w-5 flex-shrink-0 text-xl" />
                 <span className="font-bold text-lg">Vehicle Value? Only factor ✓</span>
               </div>
@@ -113,35 +113,35 @@ export const TransparencySection = () => {
                   <td className="px-6 py-4 font-medium">Gender</td>
                   <td className="px-6 py-4 text-center text-orange-600 dark:text-orange-400">Yes - affects price</td>
                   <td className="px-6 py-4 text-center bg-accent/5">
-                    <span className="text-green-600 dark:text-green-400 font-semibold">❌ Not considered</span>
+                    <span className="text-accent font-semibold">❌ Not considered</span>
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Age</td>
-                  <td className="px-6 py-4 text-center text-orange-600 dark:text-orange-400">Yes - affects price</td>
+                  <td className="px-6 py-4 text-center text-muted-foreground">Yes - affects price</td>
                   <td className="px-6 py-4 text-center bg-accent/5">
-                    <span className="text-green-600 dark:text-green-400 font-semibold">❌ Not considered</span>
+                    <span className="text-accent font-semibold">❌ Not considered</span>
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Vehicle Make/Model</td>
-                  <td className="px-6 py-4 text-center text-orange-600 dark:text-orange-400">Yes - affects price</td>
+                  <td className="px-6 py-4 text-center text-muted-foreground">Yes - affects price</td>
                   <td className="px-6 py-4 text-center bg-accent/5">
-                    <span className="text-green-600 dark:text-green-400 font-semibold">❌ Not considered</span>
+                    <span className="text-accent font-semibold">❌ Not considered</span>
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Location</td>
-                  <td className="px-6 py-4 text-center text-orange-600 dark:text-orange-400">Yes - huge impact</td>
+                  <td className="px-6 py-4 text-center text-muted-foreground">Yes - huge impact</td>
                   <td className="px-6 py-4 text-center bg-accent/5">
-                    <span className="text-green-600 dark:text-green-400 font-semibold">❌ Not considered</span>
+                    <span className="text-accent font-semibold">❌ Not considered</span>
                   </td>
                 </tr>
-                <tr className="bg-green-50/50 dark:bg-green-950/20">
+                <tr className="bg-primary/5 dark:bg-primary/10">
                   <td className="px-6 py-4 font-bold">Vehicle Value</td>
                   <td className="px-6 py-4 text-center text-muted-foreground">❓ Hidden weighting</td>
-                  <td className="px-6 py-4 text-center bg-green-100/50 dark:bg-green-900/30">
-                    <span className="text-green-700 dark:text-green-300 font-bold text-lg">✅ ONLY FACTOR</span>
+                  <td className="px-6 py-4 text-center bg-accent/10 dark:bg-accent/20">
+                    <span className="text-accent font-bold text-lg">✅ ONLY FACTOR</span>
                   </td>
                 </tr>
               </tbody>

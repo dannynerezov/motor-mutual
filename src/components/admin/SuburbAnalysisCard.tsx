@@ -11,10 +11,10 @@ import { useState, useMemo } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown, Download } from "lucide-react";
 
 const getIndexBadge = (index: number) => {
-  if (index <= 150) return <Badge className="bg-green-500">Affordable</Badge>;
-  if (index <= 250) return <Badge className="bg-yellow-500">Moderate</Badge>;
-  if (index <= 400) return <Badge className="bg-orange-500">Expensive</Badge>;
-  return <Badge className="bg-red-500">Very Expensive</Badge>;
+  if (index <= 150) return <Badge className="bg-accent">Affordable</Badge>;
+  if (index <= 250) return <Badge className="bg-secondary">Moderate</Badge>;
+  if (index <= 400) return <Badge className="bg-muted-foreground">Expensive</Badge>;
+  return <Badge className="bg-muted-foreground">Very Expensive</Badge>;
 };
 
 type SortColumn = "rank" | "suburb" | "state" | "postcode" | "avg_index" | "location_count";

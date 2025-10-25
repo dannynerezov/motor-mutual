@@ -470,7 +470,7 @@ export const QuoteForm = () => {
                   {vehicles.length} {vehicles.length === 1 ? 'vehicle' : 'vehicles'}
                 </span>
                 {discountPercentage > 0 && (
-                  <span className="text-sm bg-green-500/10 text-green-600 px-2 py-1 rounded-full font-semibold">
+                  <span className="text-sm bg-accent/10 text-accent px-2 py-1 rounded-full font-semibold">
                     {discountPercentage}% Fleet Discount
                   </span>
                 )}

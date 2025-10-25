@@ -153,7 +153,7 @@ const BenefitsPage = () => {
                   <CardContent>
                     <p className="text-muted-foreground mb-4">{benefit.description}</p>
                     {benefit.covered ? (
-                      <Badge className="bg-green-600 hover:bg-green-700 gap-1">
+                      <Badge className="bg-accent hover:bg-accent/80 gap-1">
                         <CheckCircle className="h-3 w-3" />
                         Covered
                       </Badge>

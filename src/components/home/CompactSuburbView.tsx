@@ -51,11 +51,10 @@ export const CompactSuburbView = ({ state, context, onBack }: CompactSuburbViewP
     : [...suburbData].reverse().slice(0, 5);
 
   const isCheapest = context === 'cheapest';
-  const themeColor = isCheapest ? 'green' : 'red';
 
   if (isLoading) {
     return (
-      <Card className={`border-2 ${isCheapest ? 'border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10' : 'border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/10'}`}>
+      <Card className={`border-2 ${isCheapest ? 'border-primary/30 bg-primary/5 dark:border-primary/50 dark:bg-primary/10' : 'border-muted bg-muted/30 dark:border-muted dark:bg-muted/10'}`}>
         <CardHeader>
           <Skeleton className="h-8 w-48" />
         </CardHeader>
@@ -107,7 +106,7 @@ export const CompactSuburbView = ({ state, context, onBack }: CompactSuburbViewP
   }
 
   return (
-    <Card className={`border-2 ${isCheapest ? 'border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10' : 'border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/10'}`}>
+    <Card className={`border-2 ${isCheapest ? 'border-primary/30 bg-primary/5 dark:border-primary/50 dark:bg-primary/10' : 'border-muted bg-muted/30 dark:border-muted dark:bg-muted/10'}`}>
       <CardHeader>
         <div className="flex items-center gap-3">
           <Button 
@@ -121,7 +120,7 @@ export const CompactSuburbView = ({ state, context, onBack }: CompactSuburbViewP
           </Button>
           <div>
             <CardTitle className="text-xl">{state}</CardTitle>
-            <p className={`text-sm ${isCheapest ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            <p className={`text-sm ${isCheapest ? 'text-accent' : 'text-muted-foreground'}`}>
               Top {displaySuburbs.length} {isCheapest ? 'Cheapest' : 'Most Expensive'} Suburbs
             </p>
           </div>
@@ -135,7 +134,7 @@ export const CompactSuburbView = ({ state, context, onBack }: CompactSuburbViewP
               className="flex items-center justify-between p-3 rounded-lg bg-background/50 border"
             >
               <div className="flex items-center gap-3">
-                <div className={`text-2xl font-bold ${isCheapest ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                <div className={`text-2xl font-bold ${isCheapest ? 'text-accent' : 'text-muted-foreground'}`}>
                   #{index + 1}
                 </div>
                 <div>
@@ -151,7 +150,7 @@ export const CompactSuburbView = ({ state, context, onBack }: CompactSuburbViewP
                 </div>
               </div>
               <div className="text-right">
-                <div className={`text-lg font-bold ${isCheapest ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                <div className={`text-lg font-bold ${isCheapest ? 'text-accent' : 'text-muted-foreground'}`}>
                   {suburb.avg_index.toFixed(1)}
                 </div>
                 <div className="text-xs text-muted-foreground">Avg. Index</div>
