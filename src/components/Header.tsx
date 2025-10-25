@@ -20,11 +20,14 @@ export const Header = () => {
             </p>
           </div>
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-4 md:gap-6">
           <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
             Home
           </Link>
-          <Link to="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link to="/widget" className="text-sm font-medium hover:text-primary transition-colors">
+            Price Explorer
+          </Link>
+          <Link to="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors hidden sm:inline">
             How It Works
           </Link>
         </nav>

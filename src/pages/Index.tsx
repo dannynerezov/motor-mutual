@@ -1,7 +1,9 @@
 import { QuoteForm } from "@/components/QuoteForm";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Shield, Car, FileText, Users, Navigation, Clock, DollarSign } from "lucide-react";
+import { Shield, Car, FileText, Users, Navigation, Clock, DollarSign, MapPin, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/rideshare-hero.jpg";
 import rideshareDriver from "@/assets/rideshare-driver.png";
 import rideshareProtection from "@/assets/rideshare-protection.png";
@@ -91,6 +93,47 @@ const Index = () => {
               <p className="text-muted-foreground">
                 Get back on the road fast with instant quotes using just your rego number
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Price Explorer CTA */}
+      <section className="py-20 bg-gradient-to-br from-accent/10 via-primary/5 to-background border-y">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 border border-accent/30 rounded-full text-sm font-medium text-accent mb-6">
+                <MapPin className="h-4 w-4" />
+                New Tool Available
+              </div>
+              <h3 className="text-4xl md:text-5xl font-bold mb-4">
+                How Does Your Suburb Compare?
+              </h3>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+                Explore pricing across 5,000+ locations in Australia. See how your suburb ranks and discover the cheapest areas for rideshare insurance.
+              </p>
+              <Link to="/widget">
+                <Button size="lg" className="group text-lg px-8 py-6 shadow-medium hover:shadow-strong">
+                  Explore Price Data
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mt-12">
+              <div className="bg-card border rounded-xl p-6 shadow-soft hover:shadow-medium transition-shadow">
+                <div className="text-3xl font-bold text-accent mb-2">5,000+</div>
+                <div className="text-sm text-muted-foreground">Suburbs Analyzed</div>
+              </div>
+              <div className="bg-card border rounded-xl p-6 shadow-soft hover:shadow-medium transition-shadow">
+                <div className="text-3xl font-bold text-accent mb-2">8</div>
+                <div className="text-sm text-muted-foreground">States & Territories</div>
+              </div>
+              <div className="bg-card border rounded-xl p-6 shadow-soft hover:shadow-medium transition-shadow">
+                <div className="text-3xl font-bold text-accent mb-2">100%</div>
+                <div className="text-sm text-muted-foreground">Free to Use</div>
+              </div>
             </div>
           </div>
         </div>

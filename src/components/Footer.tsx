@@ -27,6 +27,11 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/widget" className="text-sm opacity-90 hover:opacity-100 transition-opacity">
+                  Price Explorer
+                </Link>
+              </li>
+              <li>
                 <Link to="/#how-it-works" className="text-sm opacity-90 hover:opacity-100 transition-opacity">
                   How It Works
                 </Link>
