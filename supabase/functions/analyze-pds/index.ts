@@ -40,47 +40,93 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Generate unique request ID for correlation
+  const requestId = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
+  const startedAt = Date.now();
+  
+  // Structured logging helper
+  const log = (step: string, details?: Record<string, unknown>) => {
+    console.log(JSON.stringify({ requestId, step, timestamp: new Date().toISOString(), ...(details ?? {}) }));
+  };
+
   try {
     const { pdfPath } = await req.json();
+    log('REQUEST_START', { pdfPath });
 
-    console.log('Downloading PDF from storage:', pdfPath);
+    log('STORAGE_DOWNLOAD_START', { pdfPath });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Download with retry logic for transient failures
-    const pdfData = await retryWithBackoff(async () => {
-      const { data, error } = await supabase.storage
-        .from('pds-documents')
-        .download(pdfPath);
-      
-      if (error) throw error;
-      return data;
-    }, 3, 2000);
+    let pdfData;
+    try {
+      pdfData = await retryWithBackoff(async () => {
+        const { data, error } = await supabase.storage
+          .from('pds-documents')
+          .download(pdfPath);
+        
+        if (error) throw error;
+        return data;
+      }, 3, 2000);
 
-    if (!pdfData) {
-      throw new Error('Failed to download PDF after retries');
+      if (!pdfData) {
+        throw new Error('Failed to download PDF after retries');
+      }
+
+      log('STORAGE_DOWNLOAD_OK', { size: pdfData.size, type: pdfData.type });
+    } catch (e: any) {
+      log('STORAGE_DOWNLOAD_ERROR', { message: e.message });
+      return new Response(JSON.stringify({
+        error: 'Failed to download PDF from storage',
+        code: 'STORAGE_DOWNLOAD_FAILED',
+        step: 'STORAGE_DOWNLOAD',
+        requestId
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
     }
-
-    console.log('PDF downloaded, size:', pdfData.size);
 
     // Check file size limit (10MB)
     const MAX_PDF_SIZE = 10 * 1024 * 1024;
     if (pdfData.size > MAX_PDF_SIZE) {
+      log('FILE_SIZE_ERROR', { size: pdfData.size, limit: MAX_PDF_SIZE });
       return new Response(
-        JSON.stringify({ error: 'PDF too large for analysis. Please upload a file smaller than 10MB.' }),
+        JSON.stringify({ 
+          error: 'PDF too large for analysis. Please upload a file smaller than 10MB.',
+          code: 'FILE_TOO_LARGE',
+          step: 'FILE_SIZE_CHECK',
+          requestId
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Convert PDF to base64 efficiently using Deno's standard encoder
-    const arrayBuffer = await pdfData.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const base64Pdf = encodeBase64(uint8Array as any);
-    console.log('PDF converted to base64, length:', base64Pdf.length);
-
-    console.log('Calling Lovable AI for analysis...');
+    log('BASE64_ENCODE_START', { size: pdfData.size, type: pdfData.type });
+    let base64Pdf;
+    try {
+      const arrayBuffer = await pdfData.arrayBuffer();
+      log('ARRAYBUFFER_OK', { byteLength: arrayBuffer.byteLength });
+      
+      const uint8Array = new Uint8Array(arrayBuffer);
+      log('UINT8ARRAY_OK', { length: uint8Array.length, firstByte: uint8Array[0] });
+      
+      base64Pdf = encodeBase64(uint8Array as any);
+      log('BASE64_ENCODE_OK', { base64Length: base64Pdf.length });
+    } catch (e: any) {
+      log('BASE64_ENCODE_ERROR', { 
+        message: e.message, 
+        name: e.name,
+        stack: e.stack?.slice(0, 500)
+      });
+      return new Response(JSON.stringify({
+        error: 'Failed to convert PDF to base64',
+        code: 'BASE64_ENCODE_FAILED',
+        step: 'BASE64_ENCODE',
+        requestId,
+        details: e.message
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
+    }
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
     
@@ -116,7 +162,7 @@ Rules:
 
     // Try with Gemini first
     try {
-      console.log(`Attempting analysis with ${modelUsed}...`);
+      log('AI_REQUEST_START', { model: modelUsed, base64Length: base64Pdf.length });
       const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -134,14 +180,28 @@ Rules:
 
       if (!aiResponse.ok) {
         const errorText = await aiResponse.text();
-        console.error(`${modelUsed} API Error (${aiResponse.status}):`, errorText);
+        log('AI_REQUEST_ERROR', { 
+          model: modelUsed, 
+          status: aiResponse.status, 
+          bodyPreview: errorText.slice(0, 300) 
+        });
         
         // Handle specific gateway errors
         if (aiResponse.status === 429) {
-          throw new Error('Rate limits exceeded. Please retry in a minute.');
+          return new Response(JSON.stringify({
+            error: 'Rate limits exceeded. Please retry in a minute.',
+            code: 'AI_RATE_LIMITED',
+            step: 'AI_REQUEST',
+            requestId
+          }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
         }
         if (aiResponse.status === 402) {
-          throw new Error('AI credits exhausted. Please add credits to your workspace.');
+          return new Response(JSON.stringify({
+            error: 'AI credits exhausted. Please add credits to your workspace.',
+            code: 'AI_PAYMENT_REQUIRED',
+            step: 'AI_REQUEST',
+            requestId
+          }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
         }
         
         // For 400/500 errors, try fallback to GPT
@@ -166,25 +226,35 @@ Rules:
 
           if (!fallbackResponse.ok) {
             const fallbackError = await fallbackResponse.text();
-            console.error(`${modelUsed} fallback also failed:`, fallbackError);
-            throw new Error(`AI analysis failed with both models: ${fallbackResponse.status}`);
+            log('AI_FALLBACK_ERROR', { model: modelUsed, status: fallbackResponse.status });
+            return new Response(JSON.stringify({
+              error: `AI analysis failed with both models: ${fallbackResponse.status}`,
+              code: 'AI_REQUEST_FAILED',
+              step: 'AI_REQUEST',
+              requestId
+            }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
           }
 
           const fallbackResult = await fallbackResponse.json();
-          console.log(`Analysis complete with fallback model: ${modelUsed}`);
+          log('AI_REQUEST_OK', { model: modelUsed });
           extractedData = parseAIResponse(fallbackResult);
         } else {
-          throw new Error(`AI analysis failed: ${aiResponse.status} - ${errorText}`);
+          return new Response(JSON.stringify({
+            error: `AI analysis failed: ${aiResponse.status} - ${errorText}`,
+            code: 'AI_REQUEST_FAILED',
+            step: 'AI_REQUEST',
+            requestId
+          }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
         }
       } else {
         const aiResult = await aiResponse.json();
-        console.log(`Analysis complete with ${modelUsed}`);
+        log('AI_REQUEST_OK', { model: modelUsed });
         extractedData = parseAIResponse(aiResult);
       }
     } catch (error: any) {
-      console.error('AI analysis error:', error);
+      log('AI_ANALYSIS_ERROR', { message: error.message });
       // If all AI attempts fail, insert minimal record so upload doesn't hard-fail
-      console.log('Inserting minimal PDS record due to AI failure...');
+      log('DB_INSERT_START', { type: 'minimal' });
       const { data: minimalRecord, error: insertError } = await supabase
         .from('product_disclosure_statements')
         .insert({
@@ -200,14 +270,21 @@ Rules:
         .single();
 
       if (insertError) {
-        console.error('Minimal insert error:', insertError);
-        throw insertError;
+        log('DB_INSERT_ERROR', { message: insertError.message, type: 'minimal' });
+        return new Response(JSON.stringify({
+          error: insertError.message,
+          code: 'DB_INSERT_FAILED',
+          step: 'DB_INSERT',
+          requestId
+        }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
       }
 
+      log('DB_INSERT_OK', { id: minimalRecord.id, type: 'minimal' });
       return new Response(
         JSON.stringify({ 
           success: true, 
           data: minimalRecord,
+          requestId,
           warning: 'PDF uploaded but AI analysis failed. Please try re-analyzing.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -216,29 +293,34 @@ Rules:
 
     // Helper function to parse AI response
     function parseAIResponse(aiResult: any) {
-      const content = aiResult.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new Error('No content in AI response');
-      }
-
-      // Try direct JSON parse first
       try {
-        return JSON.parse(content);
-      } catch {
-        // Try to extract JSON from markdown code blocks or text
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            return JSON.parse(jsonMatch[0]);
-          } catch {
-            throw new Error('Failed to parse extracted JSON block');
-          }
+        const content = aiResult.choices?.[0]?.message?.content;
+        if (!content) {
+          throw new Error('No content in AI response');
         }
-        throw new Error('No valid JSON found in AI response');
+
+        // Try direct JSON parse first
+        try {
+          return JSON.parse(content);
+        } catch {
+          // Try to extract JSON from markdown code blocks or text
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              return JSON.parse(jsonMatch[0]);
+            } catch {
+              throw new Error('Failed to parse extracted JSON block');
+            }
+          }
+          throw new Error('No valid JSON found in AI response');
+        }
+      } catch (e: any) {
+        log('AI_PARSE_ERROR', { message: e.message });
+        throw e;
       }
     }
 
-    console.log('Inserting PDS record into database...');
+    log('DB_INSERT_START', { type: 'full' });
 
     // Insert into database with extracted content mapped to known columns only
     // Note: version_number and effective_from are set automatically by database triggers
@@ -261,21 +343,32 @@ Rules:
       .single();
 
     if (insertError) {
-      console.error('Database insert error:', insertError);
-      throw insertError;
+      log('DB_INSERT_ERROR', { message: insertError.message, type: 'full' });
+      return new Response(JSON.stringify({
+        error: insertError.message,
+        code: 'DB_INSERT_FAILED',
+        step: 'DB_INSERT',
+        requestId
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }});
     }
 
-    console.log('PDS record created successfully:', pdsRecord.id);
+    const elapsed = Date.now() - startedAt;
+    log('DB_INSERT_OK', { id: pdsRecord.id, type: 'full', elapsedMs: elapsed });
 
     return new Response(
-      JSON.stringify({ success: true, data: pdsRecord }),
+      JSON.stringify({ success: true, data: pdsRecord, requestId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: any) {
-    console.error('Error in analyze-pds:', error);
+    log('UNHANDLED_ERROR', { message: error.message, stack: error.stack?.slice(0, 500) });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        code: 'UNKNOWN',
+        step: 'UNHANDLED',
+        requestId
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

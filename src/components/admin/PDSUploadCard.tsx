@@ -57,6 +57,16 @@ export function PDSUploadCard() {
       return;
     }
 
+    // Generate client-side run ID for correlation
+    const clientRunId = (crypto as any)?.randomUUID?.() ?? Math.random().toString(36).slice(2);
+    console.groupCollapsed(`[PDS] Upload ${clientRunId}`);
+    console.time(`[PDS] ${clientRunId} total`);
+    console.log('[PDS] INPUT', { 
+      name: pdfFile.name, 
+      sizeMB: (pdfFile.size / 1024 / 1024).toFixed(2),
+      clientRunId
+    });
+
     setIsUploading(true);
     setUploadProgress(20);
 
@@ -64,6 +74,7 @@ export function PDSUploadCard() {
       // Upload PDF to storage with timestamp-based filename
       const timestamp = Date.now();
       const filePath = `pds-${timestamp}.pdf`;
+      console.log('[PDS] STORAGE_UPLOAD_START', { filePath, timestamp });
       setUploadProgress(40);
       
       const { error: uploadError } = await supabase.storage
@@ -73,10 +84,16 @@ export function PDSUploadCard() {
         });
 
       if (uploadError) throw uploadError;
+      console.log('[PDS] STORAGE_UPLOAD_OK', { filePath });
 
       setUploadProgress(60);
 
       // Call edge function to analyze PDF
+      console.log('[PDS] FUNCTION_INVOKE_START', { 
+        function: 'analyze-pds', 
+        body: { pdfPath: filePath } 
+      });
+      
       const { data, error: functionError } = await supabase.functions.invoke('analyze-pds', {
         body: {
           pdfPath: filePath
@@ -87,9 +104,18 @@ export function PDSUploadCard() {
 
       setUploadProgress(100);
 
+      console.log('[PDS] FUNCTION_OK', { 
+        requestId: data?.requestId,
+        id: data?.data?.id,
+        clientRunId
+      });
+      console.timeEnd(`[PDS] ${clientRunId} total`);
+      console.groupEnd();
+
+      const ref = data?.requestId ? ` (Ref: ${data.requestId})` : '';
       toast({
         title: "Success!",
-        description: "PDS uploaded and analyzed successfully with automatic versioning"
+        description: `PDS uploaded and analyzed successfully${ref}`
       });
 
       // Reset form
@@ -99,33 +125,47 @@ export function PDSUploadCard() {
       queryClient.invalidateQueries({ queryKey: ['pds-versions'] });
 
     } catch (error: any) {
-      console.error('Upload error:', error);
+      // Parse structured error from backend
+      const status = error?.context?.response?.status;
+      let parsed: any = undefined;
       
-      // Extract meaningful error message from backend
-      let errorMessage = error.message || 'Failed to upload and analyze PDS';
-      
-      // If it's a FunctionsHttpError, try to get more details
-      if (error.context?.body) {
+      if (error?.context?.body) {
         try {
-          const errorBody = typeof error.context.body === 'string' 
+          parsed = typeof error.context.body === 'string' 
             ? JSON.parse(error.context.body) 
             : error.context.body;
-          errorMessage = errorBody.error || errorMessage;
         } catch {
-          // Keep default error message
+          // Ignore parse errors
         }
       }
 
+      console.error('[PDS] FUNCTION_ERROR', {
+        status,
+        backendError: parsed?.error ?? error.message,
+        code: parsed?.code,
+        step: parsed?.step,
+        requestId: parsed?.requestId,
+        clientRunId
+      });
+      console.timeEnd(`[PDS] ${clientRunId} total`);
+      console.groupEnd();
+
+      // Extract meaningful error message
+      let errorMessage = parsed?.error ?? error.message ?? 'Failed to upload and analyze PDS';
+      
       // Add helpful hints for common errors
-      if (errorMessage.includes('Rate limits exceeded')) {
+      if (errorMessage.includes('Rate limits exceeded') || parsed?.code === 'AI_RATE_LIMITED') {
         errorMessage += ' Please wait a minute and try again.';
-      } else if (errorMessage.includes('credits exhausted')) {
+      } else if (errorMessage.includes('credits exhausted') || parsed?.code === 'AI_PAYMENT_REQUIRED') {
         errorMessage += ' Please add credits to your workspace in Settings → Usage.';
       }
       
+      // Include requestId in toast if available
+      const ref = parsed?.requestId ? ` Ref: ${parsed.requestId}` : '';
+      
       toast({
         title: "Upload failed",
-        description: errorMessage,
+        description: `${errorMessage}${ref}`,
         variant: "destructive"
       });
     } finally {
