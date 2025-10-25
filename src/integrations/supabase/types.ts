@@ -456,6 +456,17 @@ export type Database = {
           suburb_count: number
         }[]
       }
+      get_state_suburbs: {
+        Args: { state_filter: string }
+        Returns: {
+          avg_index: number
+          location_count: number
+          max_index: number
+          min_index: number
+          postcode: string
+          suburb: string
+        }[]
+      }
       get_suburb_pricing_analysis: {
         Args: never
         Returns: {
