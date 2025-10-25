@@ -100,9 +100,25 @@ export function PDSUploadCard() {
 
     } catch (error: any) {
       console.error('Upload error:', error);
+      
+      // Extract meaningful error message from backend
+      let errorMessage = error.message || 'Failed to upload and analyze PDS';
+      
+      // If it's a FunctionsHttpError, try to get more details
+      if (error.context?.body) {
+        try {
+          const errorBody = typeof error.context.body === 'string' 
+            ? JSON.parse(error.context.body) 
+            : error.context.body;
+          errorMessage = errorBody.error || errorMessage;
+        } catch {
+          // Keep default error message
+        }
+      }
+      
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload and analyze PDS",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

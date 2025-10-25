@@ -45,93 +45,156 @@ serve(async (req) => {
     console.log('Calling Lovable AI for analysis...');
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
-    const aiResponse = await fetch('https://app.lovable.app/api/ai', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: `Extract comprehensive information from this Motor Cover Mutual PDS. Include all sections, exclusions (aim for 28+), FAQ entries (aim for 15+), monetary amounts, definitions, claims process, and member obligations with accurate PDS references.`
-          },
-          {
-            role: 'user',
-            content: `Analyze this PDS PDF (base64): ${base64Pdf}`
-          }
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_pds_content",
-              description: "Extract structured content from PDS",
-              parameters: {
-                type: "object",
-                properties: {
-                  summary: { type: "string" },
-                  definitions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        term: { type: "string" },
-                        definition: { type: "string" }
-                      }
-                    }
-                  },
-                  full_content: { type: "object" },
-                  key_benefits: { type: "object" },
-                  coverage_details: { type: "object" },
-                  exclusions: { type: "object" },
-                  conditions: { type: "object" },
-                  faq: {
-                    type: "object",
-                    properties: {
-                      questions: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            category: { type: "string" },
-                            question: { type: "string" },
-                            answer: { type: "string" },
-                            pds_reference: { type: "string" }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        ],
-        tool_choice: {
-          type: "function",
-          function: { name: "extract_pds_content" }
-        }
-      })
-    });
+    
+    const jsonSchema = `{
+  "summary": "string",
+  "definitions": [{"term": "string", "definition": "string"}],
+  "key_benefits": {"benefit_name": {"covered": true/false, "notes": "string", "pds_reference": "string"}},
+  "coverage_details": {"maximum_cover": "string", "geographic_limits": ["string"], "cover_types": ["string"]},
+  "exclusions": [{"title": "string", "description": "string", "pds_reference": "string"}],
+  "claims_process": {"requirements": ["string"], "steps": ["string"]},
+  "obligations": [{"title": "string", "details": "string", "pds_reference": "string"}],
+  "faq": {"questions": [{"category": "string", "question": "string", "answer": "string", "pds_reference": "string"}]},
+  "full_content": [{"heading": "string", "body": "string", "page": number}]
+}`;
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API Error:', errorText);
-      throw new Error(`AI analysis failed: ${aiResponse.status} - ${errorText}`);
-    }
+    const systemPrompt = `You extract structured fields from a Product Disclosure Statement (PDS). Reply with ONLY valid JSON, no extra text or markdown. Extract comprehensive information including all sections, exclusions, FAQ entries, monetary amounts, definitions, claims process, and member obligations with accurate PDS references.`;
+    
+    const userPrompt = `Analyze this PDS PDF (base64): ${base64Pdf}
 
-    const aiResult = await aiResponse.json();
-    console.log('AI analysis complete');
+Extract the following JSON structure:
+${jsonSchema}
+
+Rules:
+- Return ONLY valid JSON, no markdown code blocks
+- Include as many exclusions as you can find (aim for 28+)
+- Include comprehensive FAQ entries (aim for 15+)
+- Include all monetary amounts mentioned
+- Include accurate PDS section references
+- Keep data comprehensive but well-structured`;
 
     let extractedData;
-    if (aiResult.choices && aiResult.choices[0]?.message?.tool_calls) {
-      const toolCall = aiResult.choices[0].message.tool_calls[0];
-      extractedData = JSON.parse(toolCall.function.arguments);
-    } else {
-      throw new Error('Unexpected AI response format');
+    let modelUsed = 'google/gemini-2.5-flash';
+
+    // Try with Gemini first
+    try {
+      console.log(`Attempting analysis with ${modelUsed}...`);
+      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: modelUsed,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ]
+        })
+      });
+
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error(`${modelUsed} API Error (${aiResponse.status}):`, errorText);
+        
+        // Handle specific gateway errors
+        if (aiResponse.status === 429) {
+          throw new Error('Rate limits exceeded. Please retry in a minute.');
+        }
+        if (aiResponse.status === 402) {
+          throw new Error('AI credits exhausted. Please add credits to your workspace.');
+        }
+        
+        // For 400/500 errors, try fallback to GPT
+        if (aiResponse.status === 400 || aiResponse.status >= 500) {
+          console.log('Falling back to openai/gpt-5-mini...');
+          modelUsed = 'openai/gpt-5-mini';
+          
+          const fallbackResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${lovableApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: modelUsed,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+              ]
+            })
+          });
+
+          if (!fallbackResponse.ok) {
+            const fallbackError = await fallbackResponse.text();
+            console.error(`${modelUsed} fallback also failed:`, fallbackError);
+            throw new Error(`AI analysis failed with both models: ${fallbackResponse.status}`);
+          }
+
+          const fallbackResult = await fallbackResponse.json();
+          console.log(`Analysis complete with fallback model: ${modelUsed}`);
+          extractedData = parseAIResponse(fallbackResult);
+        } else {
+          throw new Error(`AI analysis failed: ${aiResponse.status} - ${errorText}`);
+        }
+      } else {
+        const aiResult = await aiResponse.json();
+        console.log(`Analysis complete with ${modelUsed}`);
+        extractedData = parseAIResponse(aiResult);
+      }
+    } catch (error: any) {
+      console.error('AI analysis error:', error);
+      // If all AI attempts fail, insert minimal record so upload doesn't hard-fail
+      console.log('Inserting minimal PDS record due to AI failure...');
+      const { data: minimalRecord, error: insertError } = await supabase
+        .from('product_disclosure_statements')
+        .insert({
+          pdf_file_path: pdfPath,
+          pdf_file_name: pdfPath.split('/').pop(),
+          pdf_file_size: pdfData.size,
+          is_active: true,
+          summary: 'AI extraction pending - please re-analyze this document'
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          data: minimalRecord,
+          warning: 'PDF uploaded but AI analysis failed. Please try re-analyzing.'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Helper function to parse AI response
+    function parseAIResponse(aiResult: any) {
+      const content = aiResult.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error('No content in AI response');
+      }
+
+      // Try direct JSON parse first
+      try {
+        return JSON.parse(content);
+      } catch {
+        // Try to extract JSON from markdown code blocks or text
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            return JSON.parse(jsonMatch[0]);
+          } catch {
+            throw new Error('Failed to parse extracted JSON block');
+          }
+        }
+        throw new Error('No valid JSON found in AI response');
+      }
     }
 
     console.log('Inserting PDS record into database...');
