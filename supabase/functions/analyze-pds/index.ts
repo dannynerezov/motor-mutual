@@ -158,12 +158,15 @@ Rules:
           pdf_file_name: pdfPath.split('/').pop(),
           pdf_file_size: pdfData.size,
           is_active: true,
-          summary: 'AI extraction pending - please re-analyze this document'
+          summary: 'AI extraction pending - please re-analyze this document',
+          full_content: {},
+          faq: { questions: [] }
         })
         .select()
         .single();
 
       if (insertError) {
+        console.error('Minimal insert error:', insertError);
         throw insertError;
       }
 
@@ -203,7 +206,7 @@ Rules:
 
     console.log('Inserting PDS record into database...');
 
-    // Insert into database with extracted content
+    // Insert into database with extracted content mapped to known columns only
     // Note: version_number and effective_from are set automatically by database triggers
     const { data: pdsRecord, error: insertError } = await supabase
       .from('product_disclosure_statements')
@@ -212,13 +215,19 @@ Rules:
         pdf_file_name: pdfPath.split('/').pop(),
         pdf_file_size: pdfData.size,
         is_active: true,
-        ...extractedData
+        summary: extractedData.summary ?? null,
+        key_benefits: extractedData.key_benefits ?? null,
+        coverage_details: extractedData.coverage_details ?? null,
+        exclusions: extractedData.exclusions ?? null,
+        faq: extractedData.faq ?? { questions: [] },
+        full_content: extractedData.full_content ?? { raw: extractedData },
+        conditions: extractedData.conditions ?? null
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error('Insert error:', insertError);
+      console.error('Database insert error:', insertError);
       throw insertError;
     }
 
