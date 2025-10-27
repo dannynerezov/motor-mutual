@@ -562,10 +562,13 @@ const ThirdPartyBulk = () => {
         throw new Error('No matched address in validation response');
       }
       
-      // Require quality level 1 for best accuracy
+      // Accept quality levels 1-3; log warning for >1
+      if (!['1','2','3'].includes(matched.addressQualityLevel)) {
+        addLog(`  ❌ Address quality level ${matched.addressQualityLevel} not acceptable (need 1-3)`);
+        throw new Error(`Address quality level ${matched.addressQualityLevel} not acceptable (need level 1-3)`);
+      }
       if (matched.addressQualityLevel !== '1') {
-        addLog(`  ❌ Address quality level ${matched.addressQualityLevel} not acceptable (need 1)`);
-        throw new Error(`Address quality level ${matched.addressQualityLevel} not acceptable (need level 1)`);
+        addLog(`  ⚠️ Proceeding with address quality ${matched.addressQualityLevel}`);
       }
       
       // Log success
@@ -671,7 +674,7 @@ const ThirdPartyBulk = () => {
           suburb: addressData.suburb.toUpperCase(),
           state: addressData.state,
           lurn: addressData.addressId,
-          lurnScale: '1',
+          lurnScale: addressData.addressQualityLevel,
           geocodedNationalAddressFileData: addressData.geocodedNationalAddressFileData,
           pointLevelCoordinates: addressData.pointLevelCoordinates,
           spatialReferenceId: 4283,

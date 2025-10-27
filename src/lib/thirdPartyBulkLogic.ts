@@ -83,7 +83,8 @@ export function convertDateFormat(dateString: string): string {
  */
 export function getDefaultPolicyStartDate(): string {
   const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.setDate(tomorrow.getDate() + 1));
+  // Add one day correctly (do not nest setDate)
+  tomorrow.setDate(tomorrow.getDate() + 1);
   return formatInTimeZone(tomorrow, DEFAULT_TIMEZONE, API_DATE_FORMAT);
 }
 
