@@ -136,13 +136,15 @@ export function isValidAustralianState(state: string): state is AustralianState 
 
 /**
  * Determines if carPurchaseIn13Months field should be included based on vehicle age
- * Field is required for newer vehicles (current year and previous year)
+ * Field is required for 2024-2025 vehicles only
  */
 export function shouldIncludeCarPurchaseField(vehicleYear: string): boolean {
+  const year = parseInt(vehicleYear, 10);
   const currentYear = new Date().getFullYear();
-  const year = parseInt(vehicleYear);
-  // Include field for vehicles from current year and previous year
-  return year >= currentYear - 1;
+  
+  // Include the field for 2024 and 2025 vehicles only
+  // For 2023 and older: omit the field
+  return year >= 2024 && year <= currentYear + 1;
 }
 
 // ============================================
@@ -269,23 +271,6 @@ export function formatCurrency(amount: number): string {
 // ============================================
 // ERROR UTILITIES
 // ============================================
-
-/**
- * Check if error is a validation error that warrants retry
- */
-export function isValidationError(errorMessage: string): boolean {
-  const validationPatterns = [
-    'validation',
-    'invalid',
-    'required field',
-    'bad request',
-    '400',
-    'carpurchasein13months'
-  ];
-  
-  const lowerMsg = errorMessage.toLowerCase();
-  return validationPatterns.some(pattern => lowerMsg.includes(pattern));
-}
 
 /**
  * Extract meaningful error message from API response

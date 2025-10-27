@@ -23,7 +23,7 @@ import {
   VEHICLE_LOOKUP_ENTRY_DATE,
   isValidAustralianState,
   extractErrorMessage,
-  isValidationError,
+  shouldIncludeCarPurchaseField,
 } from '@/lib/thirdPartyBulkLogic';
 
 // Import types
@@ -651,10 +651,13 @@ const ThirdPartyBulk = () => {
       const policyStartDate = new Date().toISOString().slice(0, 10);
       const showStampDutyModal = getStampDutyModalByState(record.state);
       
-      addLog(`  → Building quote payload (DOB: ${dob}, Gender: ${gender}, Start: ${policyStartDate})`);
-      addLog(`  → Vehicle year: ${vehicleData.year} (universal retry strategy enabled)`);
+      // Check if we should include carPurchaseIn13Months based on vehicle year
+      const includeCarPurchase = shouldIncludeCarPurchaseField(vehicleData.year);
       
-      // Build vehicle details - ALWAYS omit carPurchaseIn13Months on first attempt
+      addLog(`  → Building quote payload (DOB: ${dob}, Gender: ${gender})`);
+      addLog(`  → Vehicle year: ${vehicleData.year}, Include carPurchase field: ${includeCarPurchase}`);
+      
+      // Build vehicle details with conditional carPurchaseIn13Months
       const vehicleDetails: any = {
         isRoadworthy: true,
         hasAccessoryAndModification: false,
@@ -682,10 +685,15 @@ const ThirdPartyBulk = () => {
           suburb: null,
           postcode: null
         }
-        // carPurchaseIn13Months is ALWAYS omitted on first attempt
       };
       
-      addLog(`  → Omitting carPurchaseIn13Months field (will retry with it if validation fails)`);
+      // Conditionally add carPurchaseIn13Months for 2024-2025 vehicles
+      if (includeCarPurchase) {
+        vehicleDetails.carPurchaseIn13Months = false;
+        addLog(`  → Including carPurchaseIn13Months: false (2024-2025 vehicle)`);
+      } else {
+        addLog(`  → Omitting carPurchaseIn13Months (2023 or older vehicle)`);
+      }
       
       // Build quote request payload
       const quotePayload = {
@@ -745,9 +753,9 @@ const ThirdPartyBulk = () => {
       };
       
       addLog(`  → Calling quote API with vehicle ${vehicleData.nvic}`);
-      console.log('[Quote Payload - Attempt 1]', JSON.stringify(quotePayload, null, 2));
+      console.log('[Quote Payload]', JSON.stringify(quotePayload, null, 2));
       
-      // FIRST ATTEMPT: Without carPurchaseIn13Months
+      // FIRST ATTEMPT
       let { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
           action: 'createQuote',
@@ -755,88 +763,52 @@ const ThirdPartyBulk = () => {
         }
       });
       
-      // UNIVERSAL RETRY LOGIC: If validation error, retry WITH carPurchaseIn13Months
-      if (error || !data?.success) {
+      // SURGICAL RETRY: Only retry if we included carPurchaseIn13Months and got error
+      if ((error || !data?.success) && includeCarPurchase) {
         const errorMsg = error?.message || data?.error || JSON.stringify(error || data);
+        addLog(`  ⚠️ Quote generation failed with carPurchaseIn13Months included`);
+        addLog(`  🔄 Retrying WITHOUT carPurchaseIn13Months...`);
         
-        // Check if it's a validation error that warrants retry
-        if (isValidationError(errorMsg)) {
-          addLog(`  ⚠️ First attempt failed with validation error`);
-          addLog(`  🔄 Retrying WITH carPurchaseIn13Months: false...`);
-          
-          // Add carPurchaseIn13Months to vehicleDetails
-          const retryVehicleDetails = {
-            ...vehicleDetails,
-            carPurchaseIn13Months: false
-          };
-          
-          const retryPayload = {
-            ...quotePayload,
-            vehicleDetails: retryVehicleDetails
-          };
-          
-          console.log('[Quote Payload - Attempt 2 with carPurchaseIn13Months]', JSON.stringify(retryPayload, null, 2));
-          
-          // Log retry attempt
-          await supabase.from('bulk_quote_processing_logs').insert({
-            batch_id: batchId,
-            record_id: record.id,
-            record_identifier: record.rego,
-            action: 'quote_generation_retry',
-            status: 'info',
-            api_endpoint: 'createQuote',
-            request_payload: retryPayload,
-            error_message: `First attempt failed: ${errorMsg}. Retrying WITH carPurchaseIn13Months`,
-            execution_time_ms: 0
-          });
-          
-          // SECOND ATTEMPT
-          const retryResult = await supabase.functions.invoke('suncorp-proxy', {
-            body: {
-              action: 'createQuote',
-              quotePayload: retryPayload
-            }
-          });
-          
-          data = retryResult.data;
-          error = retryResult.error;
-          
-          if (!error && data?.success) {
-            addLog(`  ✅ Quote generated (with carPurchaseIn13Months after retry)`);
-            
-            await supabase.from('bulk_quote_processing_logs').insert({
-              batch_id: batchId,
-              record_id: record.id,
-              record_identifier: record.rego,
-              action: 'quote_generation_retry_success',
-              status: 'success',
-              api_endpoint: 'createQuote',
-              request_payload: retryPayload,
-              response_data: data,
-              error_message: `Retry succeeded with carPurchaseIn13Months for vehicle year ${vehicleData.year}`,
-              execution_time_ms: 0
-            });
-          } else {
-            const retryErrorMsg = error?.message || data?.error || JSON.stringify(error || data);
-            addLog(`  ❌ Both attempts failed. Second attempt error: ${retryErrorMsg}`);
-            
-            await supabase.from('bulk_quote_processing_logs').insert({
-              batch_id: batchId,
-              record_id: record.id,
-              record_identifier: record.rego,
-              action: 'quote_generation_both_attempts_failed',
-              status: 'error',
-              api_endpoint: 'createQuote',
-              request_payload: retryPayload,
-              error_message: `First: ${errorMsg} | Second: ${retryErrorMsg}`,
-              execution_time_ms: 0
-            });
+        // Remove carPurchaseIn13Months from vehicleDetails
+        const retryVehicleDetails = { ...vehicleDetails };
+        delete retryVehicleDetails.carPurchaseIn13Months;
+        
+        const retryPayload = {
+          ...quotePayload,
+          vehicleDetails: retryVehicleDetails
+        };
+        
+        console.log('[Quote Payload - Retry without carPurchaseIn13Months]', JSON.stringify(retryPayload, null, 2));
+        
+        // Log retry attempt
+        await supabase.from('bulk_quote_processing_logs').insert({
+          batch_id: batchId,
+          record_id: record.id,
+          record_identifier: record.rego,
+          action: 'quote_generation_retry',
+          status: 'info',
+          api_endpoint: 'createQuote',
+          request_payload: retryPayload,
+          error_message: `Retrying without carPurchaseIn13Months. Original error: ${errorMsg}`,
+          execution_time_ms: 0
+        });
+        
+        // SECOND ATTEMPT
+        const retryResult = await supabase.functions.invoke('suncorp-proxy', {
+          body: {
+            action: 'createQuote',
+            quotePayload: retryPayload
           }
+        });
+        
+        data = retryResult.data;
+        error = retryResult.error;
+        
+        if (!error && data?.success) {
+          addLog(`  ✅ Retry succeeded WITHOUT carPurchaseIn13Months`);
         } else {
-          addLog(`  ❌ Non-validation error, no retry: ${errorMsg}`);
+          addLog(`  ❌ Both attempts failed`);
         }
-      } else {
-        addLog(`  ✅ Quote generated (without carPurchaseIn13Months)`);
       }
       
       const executionTime = Date.now() - startTime;
