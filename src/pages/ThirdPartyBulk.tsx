@@ -711,14 +711,17 @@ const ThirdPartyBulk = () => {
           state: addressData.state,
           lurn: addressData.addressId,
           lurnScale: addressData.addressQualityLevel,
-          geocodedNationalAddressFileData: addressData.geocodedNationalAddressFileData,
-          pointLevelCoordinates: addressData.pointLevelCoordinates,
+          geocodedNationalAddressFileData: addressData.geocodedNationalAddressFileData || {},
+          pointLevelCoordinates: addressData.pointLevelCoordinates || {},
           spatialReferenceId: 4283,
           matchStatus: 'HAPPY',
           structuredStreetAddress: {
-            streetName: addressData.structuredStreetAddress.streetName,
-            streetNumber1: addressData.structuredStreetAddress.streetNumber1,
-            streetTypeCode: addressData.structuredStreetAddress.streetType
+            streetName: addressData.structuredStreetAddress?.streetName || '',
+            streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || '',
+            streetNumber: addressData.structuredStreetAddress?.streetNumber || null,
+            streetTypeCode: addressData.structuredStreetAddress?.streetType || '',
+            unitNumber: addressData.structuredStreetAddress?.unitNumber || null,
+            unitType: addressData.structuredStreetAddress?.unitType || null
           }
         },
         driverDetails: {
@@ -737,6 +740,7 @@ const ThirdPartyBulk = () => {
       };
       
       addLog(`  → Calling quote API with vehicle ${vehicleData.nvic}`);
+      console.log('[Quote Payload]', JSON.stringify(quotePayload, null, 2));
       
       // Call createQuote action (single POST returns final pricing for THIRD_PARTY)
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
@@ -750,9 +754,10 @@ const ThirdPartyBulk = () => {
       addLog(`  ← Quote API response (${executionTime}ms): ${data?.success ? 'Success' : 'Failed'}`);
       
       if (error || !data?.success) {
-        const errorMsg = data?.error || error?.message || 'Quote generation failed';
+        const errorDetails = data?.error || data?.details || error?.message || 'Quote generation failed';
+        const errorMsg = typeof errorDetails === 'object' ? JSON.stringify(errorDetails) : errorDetails;
         addLog(`  ❌ Quote API error: ${errorMsg}`);
-        console.error('[Quote API Error Details]', data);
+        console.error('[Quote API Error Details]', { error, data, errorDetails });
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
