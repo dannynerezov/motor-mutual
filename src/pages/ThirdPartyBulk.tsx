@@ -710,16 +710,16 @@ const ThirdPartyBulk = () => {
           suburb: addressData.suburb.toUpperCase(),
           state: addressData.state,
           lurn: addressData.addressId,
-          lurnScale: addressData.addressQualityLevel,
+          lurnScale: Number(addressData.addressQualityLevel),
           geocodedNationalAddressFileData: addressData.geocodedNationalAddressFileData || {},
           pointLevelCoordinates: addressData.pointLevelCoordinates || {},
           spatialReferenceId: 4283,
           matchStatus: 'HAPPY',
           structuredStreetAddress: {
             streetName: addressData.structuredStreetAddress?.streetName || '',
-            streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || '',
+            streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || addressData.structuredStreetAddress?.streetNumber || '',
             streetNumber: addressData.structuredStreetAddress?.streetNumber || null,
-            streetTypeCode: addressData.structuredStreetAddress?.streetType || '',
+            streetTypeCode: (addressData.structuredStreetAddress as any)?.streetTypeCode || addressData.structuredStreetAddress?.streetType || (addressData.structuredStreetAddress as any)?.streetTypeName || '',
             unitNumber: addressData.structuredStreetAddress?.unitNumber || null,
             unitType: addressData.structuredStreetAddress?.unitType || null
           }
