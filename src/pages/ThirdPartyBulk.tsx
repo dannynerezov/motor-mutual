@@ -715,14 +715,12 @@ const ThirdPartyBulk = () => {
           pointLevelCoordinates: addressData.pointLevelCoordinates || {},
           spatialReferenceId: 4283,
           matchStatus: 'HAPPY',
-          structuredStreetAddress: {
-            streetName: addressData.structuredStreetAddress?.streetName || '',
-            streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || addressData.structuredStreetAddress?.streetNumber || '',
-            streetNumber: addressData.structuredStreetAddress?.streetNumber || null,
-            streetTypeCode: (addressData.structuredStreetAddress as any)?.streetTypeCode || addressData.structuredStreetAddress?.streetType || (addressData.structuredStreetAddress as any)?.streetTypeName || '',
-            unitNumber: addressData.structuredStreetAddress?.unitNumber || null,
-            unitType: addressData.structuredStreetAddress?.unitType || null
-          }
+            structuredStreetAddress: {
+              streetName: addressData.structuredStreetAddress?.streetName || '',
+              streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || addressData.structuredStreetAddress?.streetNumber || '',
+              streetTypeCode: addressData.structuredStreetAddress?.streetType || 
+                              (addressData.structuredStreetAddress as any)?.streetTypeCode || ''
+            }
         },
         driverDetails: {
           mainDriver: {
