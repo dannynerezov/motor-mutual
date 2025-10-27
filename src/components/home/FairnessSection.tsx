@@ -6,12 +6,50 @@ import { Button } from "@/components/ui/button";
 
 export const FairnessSection = () => {
   return (
-    <div className="container mx-auto px-6">
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 border border-accent/30 rounded-full text-sm font-medium text-accent mb-6">
-          <Scale className="h-4 w-4" />
+    <section className="relative py-20 overflow-hidden bg-gradient-to-b from-background via-accent/[0.01] to-background">
+      {/* Massive Watermark Background */}
+      <div 
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+        aria-hidden="true"
+      >
+        <div className="text-[15vw] font-black text-accent/[0.03] uppercase tracking-tighter rotate-[-2deg] whitespace-nowrap">
           Fairness
         </div>
+      </div>
+
+      {/* Floating Synonyms (Subtle Accents) */}
+      <div className="absolute top-20 left-10 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+        equity
+      </div>
+      <div className="absolute bottom-32 right-16 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+        justice
+      </div>
+      <div className="absolute top-40 right-32 text-xs text-muted-foreground/10 font-light italic" aria-hidden="true">
+        impartiality
+      </div>
+
+      {/* Dictionary Definition Card (Desktop Only) */}
+      <div className="hidden xl:block absolute top-24 right-8 w-64 sticky">
+        <div className="bg-background/95 backdrop-blur-sm border-2 border-accent/20 rounded-lg p-6 shadow-lg">
+          <div className="space-y-2">
+            <h3 className="font-serif text-2xl font-bold text-accent">Fairness</h3>
+            <p className="font-serif text-xs text-muted-foreground italic">/ˈfer-nəs/</p>
+            <div className="border-t border-accent/20 pt-2 mt-2">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                <em className="not-italic font-medium">noun</em> — The quality of treating everyone equally, without discrimination based on irrelevant factors like location or demographics.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-accent/10 backdrop-blur-md border-2 border-accent/40 rounded-full text-lg md:text-xl font-bold text-accent mb-6 shadow-lg hover:shadow-accent/20 transition-all duration-300 animate-pulse [animation-duration:3s]">
+            <Scale className="h-6 w-6" />
+            <span className="tracking-wide">FAIRNESS</span>
+          </div>
         <h2 className="text-4xl md:text-5xl font-bold mb-4">
           Fair Prices for Everyone, Everywhere
         </h2>
@@ -109,6 +147,7 @@ export const FairnessSection = () => {
           </Link>
         </div>
       </div>
-    </div>
+      </div>
+    </section>
   );
 };
