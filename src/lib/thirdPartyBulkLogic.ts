@@ -134,6 +134,17 @@ export function isValidAustralianState(state: string): state is AustralianState 
   return ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT'].includes(state);
 }
 
+/**
+ * Determines if carPurchaseIn13Months field should be included based on vehicle age
+ * Field is required for newer vehicles (current year and previous year)
+ */
+export function shouldIncludeCarPurchaseField(vehicleYear: string): boolean {
+  const currentYear = new Date().getFullYear();
+  const year = parseInt(vehicleYear);
+  // Include field for vehicles from current year and previous year
+  return year >= currentYear - 1;
+}
+
 // ============================================
 // ADDRESS UTILITIES
 // ============================================

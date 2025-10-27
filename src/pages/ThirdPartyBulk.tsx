@@ -17,6 +17,8 @@ import {
   convertDateFormat,
   convertGenderFormat,
   getStampDutyModalByState,
+  getStandardExcessByState,
+  shouldIncludeCarPurchaseField,
   getDefaultPolicyStartDate,
   validateBulkRecord,
   BATCH_CONFIG,
@@ -650,8 +652,49 @@ const ThirdPartyBulk = () => {
       const gender = convertGenderFormat(record.gender);
       const policyStartDate = new Date().toISOString().slice(0, 10);
       const showStampDutyModal = getStampDutyModalByState(record.state);
+      const includeCarPurchase = shouldIncludeCarPurchaseField(vehicleData.year);
+      const standardExcess = getStandardExcessByState(record.state);
       
       addLog(`  → Building quote payload (DOB: ${dob}, Gender: ${gender}, Start: ${policyStartDate})`);
+      addLog(`  → Vehicle year: ${vehicleData.year}, Include carPurchase: ${includeCarPurchase}, Excess: $${standardExcess}`);
+      
+      // Build vehicle details dynamically
+      const vehicleDetails: any = {
+        isRoadworthy: true,
+        hasAccessoryAndModification: false,
+        nvic: vehicleData.nvic,
+        highPerformance: null,
+        hasDamage: false,
+        financed: false,
+        usage: {
+          primaryUsage: 'S',
+          businessType: '',
+          extraQuestions: {},
+          showStampDutyModal
+        },
+        kmPerYear: '05',
+        vehicleInfo: {
+          year: vehicleData.year,
+          make: vehicleData.make,
+          family: vehicleData.family,
+          variant: vehicleData.variant
+        },
+        peakHourDriving: false,
+        daysUsed: 'A',
+        daytimeParked: {
+          indicator: 'S',
+          suburb: null,
+          postcode: null
+        }
+      };
+
+      // Conditionally add carPurchaseIn13Months
+      if (includeCarPurchase) {
+        vehicleDetails.carPurchaseIn13Months = false;
+        addLog(`  → Including carPurchaseIn13Months field (newer vehicle)`);
+      } else {
+        addLog(`  → Omitting carPurchaseIn13Months field (older vehicle)`);
+      }
       
       // Build quote request payload
       const quotePayload = {
@@ -668,42 +711,14 @@ const ThirdPartyBulk = () => {
           hasFamilyPolicy: false,
           hasMultiplePolicies: true
         },
-        vehicleDetails: {
-          isRoadworthy: true,
-          hasAccessoryAndModification: false,
-          carPurchaseIn13Months: false,
-          nvic: vehicleData.nvic,
-          highPerformance: null,
-          hasDamage: false,
-          financed: false,
-          usage: {
-            primaryUsage: 'S',
-            businessType: '',
-            extraQuestions: {},
-            showStampDutyModal
-          },
-          kmPerYear: '05',
-          vehicleInfo: {
-            year: vehicleData.year,
-            make: vehicleData.make,
-            family: vehicleData.family,
-            variant: vehicleData.variant
-          },
-          peakHourDriving: false,
-          daysUsed: 'A',
-          daytimeParked: {
-            indicator: 'S',
-            suburb: null,
-            postcode: null
-          }
-        },
+        vehicleDetails,
         coverDetails: {
           coverType: 'THIRD_PARTY',
           hasWindscreenExcessWaiver: false,
           hasHireCarLimited: false,
           hasRoadAssist: false,
           hasFireAndTheft: false,
-          standardExcess: null,
+          standardExcess,
           voluntaryExcess: null
         },
         riskAddress: {
@@ -742,12 +757,61 @@ const ThirdPartyBulk = () => {
       console.log('[Quote Payload]', JSON.stringify(quotePayload, null, 2));
       
       // Call createQuote action (single POST returns final pricing for THIRD_PARTY)
-      const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
+      let { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
           action: 'createQuote',
           quotePayload
         }
       });
+      
+      // If error and carPurchaseIn13Months was included, retry without it
+      if ((error || !data?.success) && includeCarPurchase) {
+        const errorMsg = error?.message || data?.error || JSON.stringify(error || data);
+        
+        // Check if it's a validation error that might be related to carPurchaseIn13Months
+        if (errorMsg.includes('validation') || errorMsg.includes('400') || errorMsg.includes('invalid')) {
+          addLog(`  ⚠️  First attempt failed, retrying without carPurchaseIn13Months field`);
+          
+          // Remove carPurchaseIn13Months from vehicleDetails
+          const retryVehicleDetails = { ...vehicleDetails };
+          delete retryVehicleDetails.carPurchaseIn13Months;
+          
+          const retryPayload = {
+            ...quotePayload,
+            vehicleDetails: retryVehicleDetails
+          };
+          
+          console.log('[Retry Quote Payload]', JSON.stringify(retryPayload, null, 2));
+          
+          // Log retry attempt
+          await supabase.from('bulk_quote_processing_logs').insert({
+            batch_id: batchId,
+            record_id: record.id,
+            record_identifier: record.rego,
+            action: 'quote_generation_retry',
+            status: 'success',
+            api_endpoint: 'createQuote',
+            request_payload: retryPayload,
+            error_message: 'Retrying without carPurchaseIn13Months',
+            execution_time_ms: 0
+          });
+          
+          // Second attempt
+          const retryResult = await supabase.functions.invoke('suncorp-proxy', {
+            body: {
+              action: 'createQuote',
+              quotePayload: retryPayload
+            }
+          });
+          
+          data = retryResult.data;
+          error = retryResult.error;
+          
+          if (!error && data?.success) {
+            addLog(`  ✅ Retry successful without carPurchaseIn13Months`);
+          }
+        }
+      }
       
       const executionTime = Date.now() - startTime;
       addLog(`  ← Quote API response (${executionTime}ms): ${data?.success ? 'Success' : 'Failed'}`);
