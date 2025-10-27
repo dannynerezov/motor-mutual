@@ -724,8 +724,8 @@ const ThirdPartyBulk = () => {
           hasHireCarLimited: false,
           hasRoadAssist: false,
           hasFireAndTheft: false,
-          standardExcess: undefined,
-          voluntaryExcess: 0
+          standardExcess: null,
+          voluntaryExcess: null
         },
         riskAddress: {
           postcode: addressData.postcode,
