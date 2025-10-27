@@ -48,7 +48,7 @@ export const DriverCard = ({
   driver,
   onUpdate,
 }: DriverCardProps) => {
-  // Local state for name fields with debouncing
+  // Local state for name fields
   const [localFirstName, setLocalFirstName] = useState(driver.first_name || "");
   const [localLastName, setLocalLastName] = useState(driver.last_name || "");
 
@@ -64,38 +64,11 @@ export const DriverCard = ({
   const [claimsSection, setClaimsSection] = useState(false);
   const [addressSection, setAddressSection] = useState(false);
 
-  // Debounce first name updates
+  // Initialize local state only when driver.id changes (prevents overwriting during typing)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localFirstName !== driver.first_name) {
-        onUpdate(driver.id, "first_name", localFirstName);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [localFirstName, driver.id, driver.first_name, onUpdate]);
-
-  // Debounce last name updates
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localLastName !== driver.last_name) {
-        onUpdate(driver.id, "last_name", localLastName);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [localLastName, driver.id, driver.last_name, onUpdate]);
-
-  // Sync local state when driver prop changes (e.g., from database)
-  useEffect(() => {
-    if (driver.first_name !== localFirstName) {
-      setLocalFirstName(driver.first_name || "");
-    }
-  }, [driver.first_name]);
-
-  useEffect(() => {
-    if (driver.last_name !== localLastName) {
-      setLocalLastName(driver.last_name || "");
-    }
-  }, [driver.last_name]);
+    setLocalFirstName(driver.first_name || "");
+    setLocalLastName(driver.last_name || "");
+  }, [driver.id]);
 
   // Validate first name
   useEffect(() => {
@@ -198,10 +171,11 @@ export const DriverCard = ({
     streetName?: string;
     streetType?: string;
   }) => {
-    onUpdate(driver.id, "address_line1", address.addressLine1);
+    // Update critical fields first for immediate completion detection
     onUpdate(driver.id, "address_suburb", address.suburb);
     onUpdate(driver.id, "address_state", address.state);
     onUpdate(driver.id, "address_postcode", address.postcode);
+    onUpdate(driver.id, "address_line1", address.addressLine1);
     onUpdate(driver.id, "address_unit_type", address.unitType || null);
     onUpdate(driver.id, "address_unit_number", address.unitNumber || null);
     onUpdate(driver.id, "address_street_number", address.streetNumber || null);
@@ -258,6 +232,11 @@ export const DriverCard = ({
                 <Input
                   value={localFirstName}
                   onChange={(e) => setLocalFirstName(e.target.value)}
+                  onBlur={() => {
+                    if (!firstNameError && localFirstName !== driver.first_name) {
+                      onUpdate(driver.id, "first_name", localFirstName);
+                    }
+                  }}
                   placeholder="John"
                   className={cn(
                     "transition-all duration-200",
@@ -274,6 +253,11 @@ export const DriverCard = ({
                 <Input
                   value={localLastName}
                   onChange={(e) => setLocalLastName(e.target.value)}
+                  onBlur={() => {
+                    if (!lastNameError && localLastName !== driver.last_name) {
+                      onUpdate(driver.id, "last_name", localLastName);
+                    }
+                  }}
                   placeholder="Smith"
                   className={cn(
                     "transition-all duration-200",

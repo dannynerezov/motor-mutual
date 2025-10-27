@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { calculateBasePremium } from '@/lib/pricingCalculator';
 
 export const usePricingScheme = () => {
+  const hasWarnedRef = useRef(false);
   const { data: activeScheme, isLoading, error } = useQuery({
     queryKey: ['active-pricing-scheme'],
     queryFn: async () => {
@@ -25,7 +27,10 @@ export const usePricingScheme = () => {
 
   const calculatePrice = (vehicleValue: number): number => {
     if (!activeScheme) {
-      console.warn('No active pricing scheme, using fallback');
+      if (!hasWarnedRef.current) {
+        console.warn('No active pricing scheme found, using fallback minimum price');
+        hasWarnedRef.current = true;
+      }
       return 500; // Safe minimum
     }
 

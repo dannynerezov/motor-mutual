@@ -213,6 +213,14 @@ const QuotePage = () => {
   };
 
   const handleDriverUpdate = async (id: string, field: string, value: any) => {
+    // Optimistic update: Update UI immediately
+    const previousDrivers = namedDrivers;
+    setNamedDrivers(
+      namedDrivers.map((driver) =>
+        driver.id === id ? { ...driver, [field]: value } : driver
+      )
+    );
+
     try {
       const { error } = await supabase
         .from("named_drivers")
@@ -220,14 +228,10 @@ const QuotePage = () => {
         .eq("id", id);
 
       if (error) throw error;
-
-      setNamedDrivers(
-        namedDrivers.map((driver) =>
-          driver.id === id ? { ...driver, [field]: value } : driver
-        )
-      );
     } catch (error) {
       console.error("Error updating driver:", error);
+      // Revert on failure
+      setNamedDrivers(previousDrivers);
       toast.error("Failed to update driver");
     }
   };
@@ -325,6 +329,21 @@ const QuotePage = () => {
     namedDrivers[0].address_suburb && 
     namedDrivers[0].address_state && 
     namedDrivers[0].address_postcode;
+
+  // Debug completion status (temporary)
+  if (namedDrivers[0] && !isDriverComplete) {
+    const missing = [];
+    if (!namedDrivers[0].first_name) missing.push('first_name');
+    if (!namedDrivers[0].last_name) missing.push('last_name');
+    if (!namedDrivers[0].date_of_birth) missing.push('date_of_birth');
+    if (!namedDrivers[0].gender) missing.push('gender');
+    if (!namedDrivers[0].address_suburb) missing.push('address_suburb');
+    if (!namedDrivers[0].address_state) missing.push('address_state');
+    if (!namedDrivers[0].address_postcode) missing.push('address_postcode');
+    if (missing.length > 0) {
+      console.debug('Driver incomplete, missing:', missing.join(', '));
+    }
+  }
 
   if (loading) {
     return (
