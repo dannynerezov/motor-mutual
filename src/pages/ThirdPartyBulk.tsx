@@ -250,23 +250,26 @@ const ThirdPartyBulk = () => {
   // PROCESS RECORDS IN BATCHES
   const processBatches = async (batchId: string) => {
     const totalBatches = Math.ceil(records.length / BATCH_CONFIG.BATCH_SIZE);
+    addLog(`📦 Processing ${totalBatches} batch${totalBatches > 1 ? 'es' : ''}`);
     
     for (let i = 0; i < totalBatches; i++) {
-      if (!processing) break;
-      
       const start = i * BATCH_CONFIG.BATCH_SIZE;
       const end = Math.min(start + BATCH_CONFIG.BATCH_SIZE, records.length);
       const batchRecords = records.slice(start, end);
       
       setCurrentBatchIndex(i + 1);
+      addLog(`\n📦 Batch ${i + 1}/${totalBatches}: Processing ${batchRecords.length} records`);
       
       // Process batch in parallel
       await Promise.all(
         batchRecords.map(record => processRecord(record, batchId))
       );
       
+      addLog(`✅ Batch ${i + 1}/${totalBatches} complete`);
+      
       // Delay between batches
       if (i < totalBatches - 1) {
+        addLog(`⏱️ Waiting ${BATCH_CONFIG.BATCH_DELAY_MS}ms before next batch...`);
         await new Promise(resolve => setTimeout(resolve, BATCH_CONFIG.BATCH_DELAY_MS));
       }
     }
@@ -274,6 +277,13 @@ const ThirdPartyBulk = () => {
     // Update batch completion
     const successCount = records.filter(r => r.status === 'success').length;
     const failCount = records.filter(r => r.status === 'error').length;
+    
+    addLog(`\n═══════════════════════════════════════════`);
+    addLog(`🏁 BATCH PROCESSING COMPLETE`);
+    addLog(`✅ Successful: ${successCount}`);
+    addLog(`❌ Failed: ${failCount}`);
+    addLog(`📊 Total: ${records.length}`);
+    addLog(`═══════════════════════════════════════════`);
     
     await supabase
       .from('bulk_quote_batches')
