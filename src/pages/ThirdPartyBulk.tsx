@@ -758,6 +758,10 @@ const ThirdPartyBulk = () => {
         const errorMsg = typeof errorDetails === 'object' ? JSON.stringify(errorDetails) : errorDetails;
         addLog(`  ❌ Quote API error: ${errorMsg}`);
         console.error('[Quote API Error Details]', { error, data, errorDetails });
+        console.error('[Suncorp API Full Response]', JSON.stringify(data, null, 2));
+        if (data?.details) {
+          console.error('[Suncorp Validation Error]', JSON.stringify(data.details, null, 2));
+        }
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
