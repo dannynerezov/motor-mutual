@@ -1,9 +1,8 @@
-import { Eye, X, Check, HelpCircle } from "lucide-react";
+import { Eye, X, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PricingSchemeChart } from "@/components/admin/PricingSchemeChart";
+import { PricingCarousel } from "./PricingCarousel";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const TransparencySection = () => {
   const { activeScheme, isLoading } = usePricingScheme();
@@ -150,64 +149,47 @@ export const TransparencySection = () => {
         </CardContent>
       </Card>
 
-      {/* Active Pricing Scheme Chart */}
-      <div className="space-y-6">
+      {/* Animated Pricing Showcase */}
+      <div className="space-y-8">
         <div className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <h3 className="text-2xl md:text-3xl font-bold">
-              Our Pricing Formula - Fully Transparent
-            </h3>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="p-1 hover:bg-muted rounded-full transition-colors">
-                    <HelpCircle className="h-5 w-5 text-muted-foreground" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs p-4">
-                  <p className="font-semibold mb-2">How to Read This Chart:</p>
-                  <ul className="space-y-1 text-sm">
-                    <li>• <strong>X-axis</strong>: Your vehicle's value ($5k - $100k)</li>
-                    <li>• <strong>Y-axis</strong>: Your base membership premium</li>
-                    <li>• <strong>Find your vehicle value</strong> on the bottom, look up to see your price</li>
-                    <li>• <strong>Green line (Floor)</strong>: Minimum vehicle value tier</li>
-                    <li>• <strong>Red line (Ceiling)</strong>: Maximum vehicle value tier</li>
-                  </ul>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <h3 className="text-2xl md:text-3xl font-bold mb-4">
+            See Real Examples - Your Vehicle Could Be Next
+          </h3>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            This is the exact formula we use. No secrets, no surprises. Everyone sees the same pricing curve.
+            Watch how our transparent formula works across different vehicle values.
+            Same formula for everyone - no hidden variables, no discrimination.
           </p>
         </div>
 
-        {isLoading ? (
-          <Skeleton className="h-96 w-full" />
-        ) : activeScheme ? (
-          <Card className="border-2">
-            <CardHeader className="text-center bg-muted/30">
-              <CardTitle className="text-lg">
-                Active Pricing Scheme #{activeScheme.scheme_number}
-                <span className="text-sm text-muted-foreground ml-2">
-                  (Valid from {new Date(activeScheme.valid_from).toLocaleDateString()})
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <PricingSchemeChart scheme={activeScheme} height={400} />
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-2 border-orange-200">
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No active pricing scheme available
-            </CardContent>
-          </Card>
-        )}
+        {/* New Carousel Component */}
+        <PricingCarousel />
+
+        {/* Formula Explanation */}
+        <Card className="border-2 bg-accent/5">
+          <CardContent className="py-6">
+            <div className="text-center space-y-4">
+              <h4 className="text-xl font-bold">The Formula (Everyone Sees This)</h4>
+              {isLoading ? (
+                <Skeleton className="h-8 w-96 mx-auto" />
+              ) : activeScheme ? (
+                <div className="space-y-2">
+                  <p className="font-mono text-sm md:text-lg bg-background px-4 py-2 rounded-lg inline-block">
+                    Linear pricing: ${activeScheme.floor_price} at ${activeScheme.floor_point.toLocaleString()} 
+                    → ${activeScheme.ceiling_price} at ${activeScheme.ceiling_point.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Valid from {new Date(activeScheme.valid_from).toLocaleDateString()}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Formula currently unavailable</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         <p className="text-center text-sm text-muted-foreground italic max-w-2xl mx-auto">
-          This chart shows base membership pricing. Additional loadings may apply based on claims history (transparently disclosed).
+          Base premium shown. Claims history loading may apply (transparently disclosed).
         </p>
       </div>
     </div>
