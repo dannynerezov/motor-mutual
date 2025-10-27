@@ -42,6 +42,49 @@ interface SuncorpQuoteResult {
   error?: string;
 }
 
+/**
+ * Validates quote payload before sending to edge function
+ */
+const validateQuotePayload = (payload: any): { valid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  // Required fields
+  const requiredFields = [
+    'registrationNumber', 'registrationState', 'vehicleYear',
+    'vehicleFamily', 'vehicleMake', 'primaryDriverFirstName',
+    'primaryDriverLastName', 'primaryDriverGender', 'primaryDriverDateOfBirth',
+    'riskAddressStreetNumber', 'riskAddressStreetName', 'riskAddressStreetType',
+    'riskAddressSuburb', 'riskAddressState', 'riskAddressPostcode',
+    'riskAddressLurn', 'policyStartDate', 'primaryUsage', 'coverType'
+  ];
+  
+  for (const field of requiredFields) {
+    if (!payload[field] || payload[field] === '') {
+      errors.push(`Missing or empty: ${field}`);
+    }
+  }
+  
+  // Date format validation (dd/mm/yyyy)
+  if (payload.primaryDriverDateOfBirth && !/^\d{2}\/\d{2}\/\d{4}$/.test(payload.primaryDriverDateOfBirth)) {
+    errors.push(`Invalid date format for primaryDriverDateOfBirth: ${payload.primaryDriverDateOfBirth} (expected dd/mm/yyyy)`);
+  }
+  
+  // Gender validation
+  if (payload.primaryDriverGender && !['M', 'F'].includes(payload.primaryDriverGender)) {
+    errors.push(`Invalid gender: ${payload.primaryDriverGender} (expected M or F)`);
+  }
+  
+  // Vehicle year validation
+  if (payload.vehicleYear && !/^\d{4}$/.test(payload.vehicleYear)) {
+    errors.push(`Invalid vehicle year: ${payload.vehicleYear}`);
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+};
+
 export const useSuncorpQuote = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -96,19 +139,53 @@ export const useSuncorpQuote = () => {
 
       for (let i = 0; i < attempts.length; i++) {
         try {
-          console.log(`Attempt ${i + 1}/${attempts.length} for Suncorp quote generation`);
+          console.log(`[useSuncorpQuote] ========================================`);
+          console.log(`[useSuncorpQuote] Attempt ${i + 1}/${attempts.length} for Suncorp quote generation`);
+          
+          // Log payload before validation
+          console.log(`[useSuncorpQuote] Payload before validation:`, JSON.stringify(attempts[i], null, 2));
+          
+          // Validate payload
+          const validation = validateQuotePayload(attempts[i]);
+          if (!validation.valid) {
+            console.error(`[useSuncorpQuote] ❌ Payload validation failed:`, validation.errors);
+            throw new Error(`Payload validation failed: ${validation.errors.join(', ')}`);
+          }
+          console.log(`[useSuncorpQuote] ✓ Payload validation passed`);
+          
+          // Log key fields being sent
+          console.log(`[useSuncorpQuote] Key fields:`, {
+            registration: attempts[i].registrationNumber,
+            vehicle: `${attempts[i].vehicleYear} ${attempts[i].vehicleMake} ${attempts[i].vehicleFamily}`,
+            driver: `${attempts[i].primaryDriverFirstName} ${attempts[i].primaryDriverLastName}`,
+            dob: attempts[i].primaryDriverDateOfBirth,
+            gender: attempts[i].primaryDriverGender,
+            address: `${attempts[i].riskAddressStreetNumber} ${attempts[i].riskAddressStreetName} ${attempts[i].riskAddressStreetType}, ${attempts[i].riskAddressSuburb} ${attempts[i].riskAddressState} ${attempts[i].riskAddressPostcode}`,
+            policyStart: attempts[i].policyStartDate,
+            carPurchaseField: attempts[i].carPurchaseIn13Months || 'omitted'
+          });
+          
+          console.log(`[useSuncorpQuote] Invoking suncorp-proxy edge function...`);
 
           const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
             body: {
               action: 'createQuote',
-              parameters: attempts[i]
+              quotePayload: attempts[i]
             }
           });
 
-          if (error) throw error;
+          if (error) {
+            console.error(`[useSuncorpQuote] ❌ Edge function invocation error:`, error);
+            throw error;
+          }
+
+          console.log(`[useSuncorpQuote] Edge function response:`, data);
 
           if (data.success && data.quoteNumber) {
-            console.log('Suncorp quote generated successfully:', data.quoteNumber);
+            console.log(`[useSuncorpQuote] ✅ Quote generated successfully!`);
+            console.log(`[useSuncorpQuote] Quote Number: ${data.quoteNumber}`);
+            console.log(`[useSuncorpQuote] Base Premium: $${data.basePremium}`);
+            console.log(`[useSuncorpQuote] Total Premium: $${data.totalPremium}`);
             
             return {
               success: true,
@@ -121,15 +198,16 @@ export const useSuncorpQuote = () => {
               responseData: data,
             };
           } else {
+            console.error(`[useSuncorpQuote] ❌ Quote generation failed:`, data.error || 'Unknown error');
             throw new Error(data.error || 'Quote generation failed');
           }
         } catch (err: any) {
-          console.error(`Attempt ${i + 1} failed:`, err);
+          console.error(`[useSuncorpQuote] ❌ Attempt ${i + 1} failed:`, err.message || err);
           lastError = err;
           
           // If not last attempt, continue to next
           if (i < attempts.length - 1) {
-            console.log('Retrying with different parameters...');
+            console.log(`[useSuncorpQuote] 🔄 Retrying with different parameters...`);
             continue;
           }
         }

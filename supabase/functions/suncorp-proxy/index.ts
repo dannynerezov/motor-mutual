@@ -103,6 +103,27 @@ serve(async (req) => {
 
       case 'createQuote': {
         const { quotePayload } = params;
+        
+        // Validate quotePayload exists
+        if (!quotePayload) {
+          console.error('[Create Quote Error] quotePayload is missing from request body');
+          console.error('[Create Quote Error] Received params:', JSON.stringify(params, null, 2));
+          throw new Error('quotePayload parameter is required for createQuote action. Make sure to send { action: "createQuote", quotePayload: {...} }');
+        }
+        
+        console.log(`[Create Quote] Starting quote creation`);
+        console.log(`[Create Quote] Received quotePayload with ${Object.keys(quotePayload).length} fields`);
+        console.log(`[Create Quote] Key fields:`, {
+          registration: quotePayload.registrationNumber,
+          vehicle: `${quotePayload.vehicleYear} ${quotePayload.vehicleMake} ${quotePayload.vehicleFamily}`,
+          driver: `${quotePayload.primaryDriverFirstName} ${quotePayload.primaryDriverLastName}`,
+          suburb: quotePayload.riskAddressSuburb,
+          state: quotePayload.riskAddressState
+        });
+        
+        const payloadStr = JSON.stringify(quotePayload);
+        console.log(`[Create Quote Payload] Full payload (${payloadStr.length} chars): ${payloadStr.substring(0, 2000)}`);
+        
         endpoint = '/pi-motor-quote-api/api/v1/insurance/motor/brands/sun/quotes';
         method = 'POST';
         headers = {
@@ -116,8 +137,6 @@ serve(async (req) => {
           'referer': 'https://motor.suncorp.com.au/',
         };
         body = JSON.stringify(quotePayload);
-        console.log(`[Create Quote] Starting quote creation`);
-        console.log(`[Create Quote Payload] ${JSON.stringify(quotePayload).substring(0, 2000)}`);
         break;
       }
 
