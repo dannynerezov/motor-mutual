@@ -271,10 +271,20 @@ export function formatCurrency(amount: number): string {
 // ============================================
 
 /**
- * Check if error is a "carPurchaseIn13Months" error that requires retry
+ * Check if error is a validation error that warrants retry
  */
-export function shouldRetryWithCarPurchaseFlag(errorMessage: string): boolean {
-  return errorMessage.toLowerCase().includes('carpurchasein13months');
+export function isValidationError(errorMessage: string): boolean {
+  const validationPatterns = [
+    'validation',
+    'invalid',
+    'required field',
+    'bad request',
+    '400',
+    'carpurchasein13months'
+  ];
+  
+  const lowerMsg = errorMessage.toLowerCase();
+  return validationPatterns.some(pattern => lowerMsg.includes(pattern));
 }
 
 /**
