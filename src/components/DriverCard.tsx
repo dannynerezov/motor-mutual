@@ -16,6 +16,8 @@ import { CheckCircle, ChevronDown } from "lucide-react";
 import { AddressAutosuggest } from "@/components/AddressAutosuggest";
 import { EnhancedDatePicker } from "@/components/EnhancedDatePicker";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NamedDriver {
   id: string;
@@ -160,7 +162,7 @@ export const DriverCard = ({
     }
   }, [driver.claims_count]);
 
-  const handleAddressSelect = (address: {
+  const handleAddressSelect = async (address: {
     addressLine1: string;
     suburb: string;
     state: string;
@@ -171,6 +173,8 @@ export const DriverCard = ({
     streetName?: string;
     streetType?: string;
   }) => {
+    console.debug('[DriverCard] Address selected from suggestions:', address);
+
     // Update critical fields first for immediate completion detection
     onUpdate(driver.id, "address_suburb", address.suburb);
     onUpdate(driver.id, "address_state", address.state);
@@ -184,6 +188,52 @@ export const DriverCard = ({
     onUpdate(driver.id, "address_lurn", null);
     onUpdate(driver.id, "address_latitude", null);
     onUpdate(driver.id, "address_longitude", null);
+
+    // Immediately validate address to capture LURN
+    try {
+      const { data: validateData, error: validateError } = await supabase.functions.invoke('suncorp-proxy', {
+        body: {
+          action: 'addressValidate',
+          address: {
+            country: 'AUS',
+            suburb: address.suburb,
+            postcode: address.postcode,
+            state: address.state,
+            addressInFreeForm: {
+              addressLine1: address.addressLine1,
+            },
+          },
+        },
+      });
+
+      if (validateError || !validateData?.success) {
+        const msg = validateData?.error || validateError?.message || 'Address validation failed';
+        console.error('[DriverCard] Address validate error:', msg, validateData);
+        toast.error('Address validation failed. Please refine your selection.');
+        return;
+      }
+
+      const matched = validateData.data?.matchedAddress;
+      if (!matched) {
+        console.warn('[DriverCard] No matchedAddress returned from validate');
+        toast.error('Could not confirm address. Please try again.');
+        return;
+      }
+
+      const lurn = matched.addressId as string;
+      const lat = matched.pointLevelCoordinates?.latitude?.toString() || null;
+      const lng = matched.pointLevelCoordinates?.longitude?.toString() || null;
+
+      onUpdate(driver.id, 'address_lurn', lurn);
+      if (lat) onUpdate(driver.id, 'address_latitude', lat);
+      if (lng) onUpdate(driver.id, 'address_longitude', lng);
+
+      console.debug('[DriverCard] Address validated. LURN (last 8):', lurn?.slice(-8));
+      toast.success('Address validated');
+    } catch (err: any) {
+      console.error('[DriverCard] Unexpected error validating address:', err);
+      toast.error('Unexpected error validating address');
+    }
   };
 
   // Completion checks
@@ -403,7 +453,7 @@ export const DriverCard = ({
           </CollapsibleTrigger>
 
           <CollapsibleContent className="px-6 pb-4">
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
               <AddressAutosuggest
                 onAddressSelect={handleAddressSelect}
                 selectedAddress={driver.address_line1 ? {
@@ -418,6 +468,16 @@ export const DriverCard = ({
                   streetType: driver.address_street_type,
                 } : null}
               />
+
+              {/* Address debug/completion status */}
+              <div className="text-xs text-muted-foreground flex items-center gap-3">
+                <span>
+                  Selected: {driver.address_line1 && driver.address_suburb && driver.address_state && driver.address_postcode ? 'Yes' : 'No'}
+                </span>
+                <span>
+                  Validated: {driver.address_lurn ? `Yes (…${driver.address_lurn.slice(-6)})` : 'No'}
+                </span>
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

@@ -125,12 +125,12 @@ export const useSuncorpQuote = () => {
     state: string
   ): Promise<AddressValidationResult> => {
     console.log(`[Address Validation] Starting validation for: ${addressLine}`);
-    
-    // Step 2a: Address search
+
+    // Step 2a: Address search (use same shape as bulk flow)
     const { data: searchData, error: searchError } = await supabase.functions.invoke('suncorp-proxy', {
       body: {
         action: 'addressSearch',
-        query: addressLine
+        query: addressLine,
       }
     });
 
@@ -139,20 +139,44 @@ export const useSuncorpQuote = () => {
       throw new Error('Address search failed');
     }
 
-    const suggestions = searchData.suggestions || [];
-    if (suggestions.length === 0) {
+    const suggestions = searchData?.data?.data || [];
+    if (!Array.isArray(suggestions) || suggestions.length === 0) {
+      console.error('[Address Search] No suggestions returned');
       throw new Error('No address suggestions found');
     }
 
-    const firstSuggestion = suggestions[0];
-    console.log(`[Address Search] Found suggestion:`, firstSuggestion.address);
+    const suggestion = suggestions[0];
+    const broken = suggestion.addressInBrokenDownForm || {};
 
-    // Step 2b: Address validate
+    // Build addressLine1 including unit if present
+    let addressLine1: string;
+    if (broken.unitNumber) {
+      addressLine1 = `${broken.unitNumber}/${broken.streetNumber} ${broken.streetName} ${broken.streetType}`.trim();
+    } else {
+      addressLine1 = `${broken.streetNumber} ${broken.streetName} ${broken.streetType}`.trim();
+    }
+
+    console.log('[Address Search] Using suggestion:', {
+      addressLine1,
+      suburb: suggestion.suburb,
+      state: suggestion.state,
+      postcode: suggestion.postcode,
+    });
+
+    // Step 2b: Address validate (structured address payload)
     const { data: validateData, error: validateError } = await supabase.functions.invoke('suncorp-proxy', {
       body: {
         action: 'addressValidate',
-        addressId: firstSuggestion.addressId
-      }
+        address: {
+          country: 'AUS',
+          suburb: suggestion.suburb,
+          postcode: suggestion.postcode,
+          state: suggestion.state,
+          addressInFreeForm: {
+            addressLine1,
+          },
+        },
+      },
     });
 
     if (validateError || !validateData?.success) {
@@ -160,12 +184,17 @@ export const useSuncorpQuote = () => {
       throw new Error('Address validation failed');
     }
 
-    const matched = validateData.address;
-    console.log(`[Address Validation] Success:`, {
+    const matched = validateData?.data?.matchedAddress;
+    if (!matched) {
+      console.error('[Address Validate] No matchedAddress in response', validateData);
+      throw new Error('No matched address in validation response');
+    }
+
+    console.log('[Address Validation] Success:', {
       suburb: matched.suburb,
       postcode: matched.postcode,
       quality: matched.addressQualityLevel,
-      lurn: matched.addressId?.substring(0, 30) + '...'
+      lurn: `${matched.addressId?.substring(0, 30)}...`,
     });
 
     return {
@@ -176,7 +205,7 @@ export const useSuncorpQuote = () => {
       addressQualityLevel: matched.addressQualityLevel,
       geocodedNationalAddressFileData: matched.geocodedNationalAddressFileData,
       pointLevelCoordinates: matched.pointLevelCoordinates,
-      structuredStreetAddress: matched.addressInBrokenDownForm
+      structuredStreetAddress: matched.addressInBrokenDownForm,
     };
   };
 
