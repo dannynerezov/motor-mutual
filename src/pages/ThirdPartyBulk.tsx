@@ -135,15 +135,10 @@ const ThirdPartyBulk = () => {
   const handleTestConnection = async () => {
     setIsTestingConnection(true);
     try {
-      console.log('[Test Connection] Testing suncorp-proxy edge function...');
+      console.log('[Test Connection] Pinging suncorp-proxy edge function...');
       
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
-        body: { 
-          action: 'vehicleLookup',
-          registrationNumber: 'TEST123',
-          state: 'NSW',
-          entryDate: VEHICLE_LOOKUP_ENTRY_DATE
-        }
+        body: { action: 'ping' }
       });
 
       console.log('[Test Connection] Response:', { data, error });
@@ -159,12 +154,12 @@ const ThirdPartyBulk = () => {
         return;
       }
 
-      if (!data) {
-        console.error('[Test Connection] No data returned');
+      if (!data?.success) {
+        console.error('[Test Connection] Ping failed:', data);
         setConnectionStatus('failed');
         toast({
           title: "Connection Failed",
-          description: "No response from edge function - may not be deployed",
+          description: data?.error || "Ping response unsuccessful",
           variant: "destructive",
         });
         return;
@@ -174,7 +169,7 @@ const ThirdPartyBulk = () => {
       setConnectionStatus('success');
       toast({
         title: "Connection Successful",
-        description: "Edge function is accessible and responding",
+        description: "Edge function is accessible and ready",
       });
     } catch (error: any) {
       console.error('[Test Connection] Fatal error:', error);
@@ -601,7 +596,7 @@ const ThirdPartyBulk = () => {
     }
   };
 
-  // STEP 3: GENERATE QUOTE
+  // STEP 3: GENERATE QUOTE (TWO-STEP FLOW)
   const callGenerateQuote = async (
     record: BulkRecord,
     vehicleData: VehicleDetails,
@@ -613,31 +608,35 @@ const ThirdPartyBulk = () => {
     try {
       console.log(`[Quote Generation] Starting for rego: ${record.rego}`);
       
-      const payload = {
+      // Build the base payload
+      const basePayload = {
         quoteDetails: {
           policyStartDate: getDefaultPolicyStartDate(),
           acceptDutyOfDisclosure: true,
-          currentInsurer: 'NONE',
+          currentInsurer: 'AAMI',
           sumInsured: {
             marketValue: vehicleData.newCarPrice,
             agreedValue: 0,
-            sumInsuredType: 'Market Value'
+            sumInsuredType: 'Agreed Value'
           },
+          campaignCode: '',
+          hasFamilyPolicy: false,
           hasMultiplePolicies: true
         },
         vehicleDetails: {
           isRoadworthy: true,
           hasAccessoryAndModification: false,
           nvic: vehicleData.nvic,
+          highPerformance: null,
           hasDamage: false,
           financed: false,
           usage: {
-            primaryUsage: 'PERSONAL',
+            primaryUsage: 'S',
             businessType: '',
             extraQuestions: {},
             showStampDutyModal: getStampDutyModalByState(record.state)
           },
-          kmPerYear: '5000_15000',
+          kmPerYear: '05',
           vehicleInfo: {
             year: vehicleData.year,
             make: vehicleData.make,
@@ -647,7 +646,9 @@ const ThirdPartyBulk = () => {
           peakHourDriving: false,
           daysUsed: 'A',
           daytimeParked: {
-            indicator: 'S'
+            indicator: 'S',
+            suburb: null,
+            postcode: null
           }
         },
         coverDetails: {
@@ -655,7 +656,9 @@ const ThirdPartyBulk = () => {
           hasWindscreenExcessWaiver: false,
           hasHireCarLimited: false,
           hasRoadAssist: false,
-          hasFireAndTheft: false
+          hasFireAndTheft: false,
+          standardExcess: null,
+          voluntaryExcess: null
         },
         riskAddress: {
           postcode: addressData.postcode,
@@ -684,118 +687,103 @@ const ThirdPartyBulk = () => {
         }
       };
       
-      // First attempt
-      let { data, error } = await supabase.functions.invoke('suncorp-proxy', {
+      // STEP 1: Create quote (POST)
+      console.log(`[Quote Step 1] Creating quote for ${record.rego}`);
+      const { data: createData, error: createError } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
-          action: 'generateQuote',
-          payload
+          action: 'createQuote',
+          payload: basePayload
         }
       });
       
-      // RETRY LOGIC: If error mentions carPurchaseIn13Months
-      if ((error || !data?.success) && shouldRetryWithCarPurchaseFlag(extractErrorMessage(error || data))) {
-        console.log(`[Retry] Adding carPurchaseIn13Months flag for ${record.rego}`);
-        
-        // @ts-ignore - Add carPurchaseIn13Months
-        payload.vehicleDetails.carPurchaseIn13Months = false;
-        
-        const retry = await supabase.functions.invoke('suncorp-proxy', {
-          body: {
-            action: 'generateQuote',
-            payload
-          }
-        });
-        
-        data = retry.data;
-        error = retry.error;
-        
-        // Log retry attempt
-        await supabase.from('bulk_quote_processing_logs').insert({
-          batch_id: batchId,
-          record_id: record.id,
-          record_identifier: record.rego,
-          action: 'quote_generation_retry',
-          status: retry.error || !retry.data?.success ? 'error' : 'success',
-          request_payload: payload,
-          response_data: retry.data,
-          error_message: retry.error?.message || retry.data?.error
-        });
+      if (createError) {
+        const errorMsg = `Create quote error: ${createError.message}`;
+        console.error('[Quote Step 1]', errorMsg);
+        throw new Error(errorMsg);
       }
+
+      if (!createData?.success || !createData?.data?.quoteDetails?.quoteNumber) {
+        const errorMsg = createData?.error || 'Failed to create quote - no quote number returned';
+        console.error('[Quote Step 1]', errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      const quoteNumber = createData.data.quoteDetails.quoteNumber;
+      const quoteId = createData.data.quoteDetails.quoteId;
+      console.log(`[Quote Step 1] Created quote: ${quoteNumber}`);
+      
+      // STEP 2: Update quote (PUT) with policyHolder flag
+      console.log(`[Quote Step 2] Updating quote ${quoteNumber}`);
+      const updatePayload = {
+        ...basePayload,
+        driverDetails: {
+          mainDriver: {
+            ...basePayload.driverDetails.mainDriver,
+            policyHolder: true
+          },
+          additionalDrivers: []
+        },
+        quoteDetails: {
+          ...basePayload.quoteDetails,
+          paymentFrequency: 'ANNUALLY',
+          quoteId: quoteId
+        },
+        coverDetails: {
+          ...basePayload.coverDetails,
+          subCoverType: null,
+          standardExcess: createData.data.coverDetails?.standardExcess || 750,
+          voluntaryExcess: 0,
+          switchCoverStatus: false,
+          bundledOptionsUnlimited: false
+        }
+      };
+
+      const { data: updateData, error: updateError } = await supabase.functions.invoke('suncorp-proxy', {
+        body: {
+          action: 'updateQuote',
+          quoteNumber: quoteNumber,
+          payload: updatePayload
+        }
+      });
       
       const executionTime = Date.now() - startTime;
       
-      console.log(`[Quote Generation] Raw response:`, { 
-        success: data?.success, 
-        quoteNumber: data?.data?.data?.quoteNumber,
-        error: error?.message,
-        hasData: !!data
-      });
-      
-      // Log final attempt
+      // Log the complete flow
       await supabase.from('bulk_quote_processing_logs').insert({
         batch_id: batchId,
         record_id: record.id,
         record_identifier: record.rego,
         action: 'quote_generation',
-        status: error || !data?.success ? 'error' : 'success',
-        request_payload: payload,
-        response_data: data,
-        error_message: error?.message || data?.error,
+        status: updateError || !updateData?.success ? 'error' : 'success',
+        request_payload: { create: basePayload, update: updatePayload },
+        response_data: { create: createData, update: updateData },
+        error_message: updateError?.message || updateData?.error,
         execution_time_ms: executionTime
       });
       
-      if (error) {
-        const errorMsg = `Edge function error: ${error.message}`;
-        console.error('[Quote Generation]', errorMsg);
-        toast({
-          title: "Quote Generation Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
+      if (updateError) {
+        const errorMsg = `Update quote error: ${updateError.message}`;
+        console.error('[Quote Step 2]', errorMsg);
         throw new Error(errorMsg);
       }
 
-      if (!data) {
-        const errorMsg = 'No data returned from edge function';
-        console.error('[Quote Generation]', errorMsg);
-        toast({
-          title: "Quote Generation Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
-      
-      if (!data.success) {
-        const errorMsg = data.error || 'Quote generation failed';
-        console.error('[Quote Generation]', errorMsg);
-        toast({
-          title: "Quote Generation Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
+      if (!updateData?.success) {
+        const errorMsg = updateData?.error || 'Failed to update quote';
+        console.error('[Quote Step 2]', errorMsg);
         throw new Error(errorMsg);
       }
 
-      if (!data.data?.data?.quoteNumber) {
-        const errorMsg = 'No quote number returned from API';
-        console.error('[Quote Generation]', errorMsg);
-        toast({
-          title: "Quote Generation Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
+      const premium = updateData.data.quoteDetails.premium;
+      console.log(`[Quote Complete] Quote ${quoteNumber} - Total: $${premium.annualPremium}`);
       
       return {
-        quoteNumber: data.data.data.quoteNumber,
-        quoteReference: data.data.data.quoteReference,
+        quoteNumber: quoteNumber,
+        quoteReference: quoteNumber,
         pricing: {
-          basePremium: parseFloat(data.data.data.pricing?.basePremium || '0'),
-          stampDuty: parseFloat(data.data.data.pricing?.stampDuty || '0'),
-          gst: parseFloat(data.data.data.pricing?.gst || '0'),
-          totalPremium: parseFloat(data.data.data.pricing?.totalPremium || '0'),
+          basePremium: premium.annualBasePremium || 0,
+          stampDuty: premium.annualStampDuty || 0,
+          gst: premium.annualGST || 0,
+          totalPremium: premium.annualPremium || 0,
         }
       };
     } catch (error: any) {
