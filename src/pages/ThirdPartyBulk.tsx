@@ -710,7 +710,7 @@ const ThirdPartyBulk = () => {
           suburb: addressData.suburb.toUpperCase(),
           state: addressData.state,
           lurn: addressData.addressId,
-          lurnScale: Number(addressData.addressQualityLevel),
+          lurnScale: String(addressData.addressQualityLevel),
           geocodedNationalAddressFileData: addressData.geocodedNationalAddressFileData || {},
           pointLevelCoordinates: addressData.pointLevelCoordinates || {},
           spatialReferenceId: 4283,
