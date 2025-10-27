@@ -45,6 +45,7 @@ const ThirdPartyBulk = () => {
   const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'failed'>('untested');
   const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
   const [batchId, setBatchId] = useState<string | null>(null);
+  const [processingLogs, setProcessingLogs] = useState<string[]>([]);
   const [statistics, setStatistics] = useState<BatchStatistics>({
     totalRecords: 0,
     processedRecords: 0,
@@ -54,6 +55,14 @@ const ThirdPartyBulk = () => {
     estimatedTimeRemaining: 0,
   });
   const { toast } = useToast();
+
+  // Helper to add logs both to console and UI
+  const addLog = (message: string, data?: any) => {
+    const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+    const logMessage = `[${timestamp}] ${message}`;
+    console.log(logMessage, data || '');
+    setProcessingLogs(prev => [...prev, logMessage + (data ? ` ${JSON.stringify(data)}` : '')]);
+  };
 
   // PARSE INPUT DATA
   const handleParseInput = () => {
@@ -205,6 +214,13 @@ const ThirdPartyBulk = () => {
       return;
     }
     
+    // Clear previous logs
+    setProcessingLogs([]);
+    addLog('═══════════════════════════════════════════');
+    addLog('🚀 BATCH PROCESSING STARTED');
+    addLog(`📊 Total records to process: ${records.length}`);
+    addLog('═══════════════════════════════════════════');
+    
     // Create batch record
     const { data: batch, error } = await supabase
       .from('bulk_quote_batches')
@@ -216,6 +232,7 @@ const ThirdPartyBulk = () => {
       .single();
     
     if (error) {
+      addLog(`❌ Failed to create batch record: ${error.message}`);
       toast({
         title: 'Database Error',
         description: error.message,
@@ -224,6 +241,7 @@ const ThirdPartyBulk = () => {
       return;
     }
     
+    addLog(`✅ Batch created with ID: ${batch.id}`);
     setBatchId(batch.id);
     setProcessing(true);
     await processBatches(batch.id);
@@ -277,6 +295,8 @@ const ThirdPartyBulk = () => {
   const processRecord = async (record: BulkRecord, batchId: string) => {
     const startTime = Date.now();
     
+    addLog(`🚀 Starting processing for ${record.rego}`);
+    
     // Update status
     setRecords(prev => 
       prev.map(r => r.id === record.id ? { ...r, status: 'processing', processingStartTime: startTime } : r)
@@ -284,16 +304,24 @@ const ThirdPartyBulk = () => {
     
     try {
       // STEP 1: Vehicle Lookup
+      addLog(`📋 Step 1/4: Vehicle Lookup for ${record.rego}`);
       const vehicleData = await callVehicleLookup(record, batchId);
+      addLog(`✅ Vehicle found: ${vehicleData.year} ${vehicleData.make} ${vehicleData.family}`);
       
       // STEP 2: Address Validation
+      addLog(`📍 Step 2/4: Address Validation for ${record.rego}`);
       const addressData = await callAddressValidation(record, batchId);
+      addLog(`✅ Address validated: ${addressData.suburb}, ${addressData.state} (Quality: ${addressData.addressQualityLevel})`);
       
       // STEP 3: Generate Quote
+      addLog(`💰 Step 3/4: Quote Generation for ${record.rego}`);
       const quoteData = await callGenerateQuote(record, vehicleData, addressData, batchId);
+      addLog(`✅ Quote generated: ${quoteData.quoteNumber} - $${quoteData.pricing.totalPremium.toFixed(2)}`);
       
       // STEP 4: Save to Database
+      addLog(`💾 Step 4/4: Saving to database for ${record.rego}`);
       await saveQuoteToDatabase(record, vehicleData, addressData, quoteData);
+      addLog(`✅ Quote saved successfully for ${record.rego}`);
       
       // Update success
       setRecords(prev =>
@@ -315,7 +343,13 @@ const ThirdPartyBulk = () => {
         averageProcessingTime: (prev.averageProcessingTime * prev.processedRecords + (Date.now() - startTime)) / (prev.processedRecords + 1),
       }));
       
+      const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+      addLog(`🎉 Completed ${record.rego} in ${totalTime}s`);
+      
     } catch (error: any) {
+      addLog(`❌ ERROR processing ${record.rego}: ${extractErrorMessage(error)}`);
+      console.error(`[ERROR] ${record.rego}:`, error);
+      
       // Update error
       setRecords(prev =>
         prev.map(r => r.id === record.id ? {
@@ -351,7 +385,7 @@ const ThirdPartyBulk = () => {
     const startTime = Date.now();
     
     try {
-      console.log(`[Vehicle Lookup] Starting for rego: ${record.rego}, state: ${record.state}`);
+      addLog(`  → Calling Suncorp vehicle API: ${record.rego}, ${record.state}`);
       
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
@@ -362,9 +396,11 @@ const ThirdPartyBulk = () => {
       });
       
       const executionTime = Date.now() - startTime;
-      
+      addLog(`  ← Vehicle API response (${executionTime}ms): ${data?.success ? 'Success' : 'Failed'}`);
+
       if (error) {
         const errorMsg = `Edge function error: ${error.message}`;
+        addLog(`  ❌ Vehicle lookup edge function error: ${errorMsg}`);
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
@@ -381,6 +417,8 @@ const ThirdPartyBulk = () => {
 
       if (!data?.success) {
         const errorMsg = data?.error || 'Vehicle lookup failed';
+        addLog(`  ❌ Vehicle API returned error: ${errorMsg}`);
+        console.error('[Vehicle API Error Details]', data);
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
@@ -400,6 +438,7 @@ const ThirdPartyBulk = () => {
       const valueInfo = data.data.vehicleValueInfo;
       
       if (!vehicle) {
+        addLog(`  ❌ No vehicle details in response`);
         throw new Error('No vehicle details in response');
       }
       
@@ -429,7 +468,7 @@ const ThirdPartyBulk = () => {
         newCarPrice: valueInfo?.marketValue || valueInfo?.retailPrice || 0
       };
     } catch (error: any) {
-      console.error('[Vehicle Lookup] Error:', error);
+      console.error('[Vehicle Lookup Full Error]', error);
       throw error;
     }
   };
@@ -439,7 +478,7 @@ const ThirdPartyBulk = () => {
     const startTime = Date.now();
     
     try {
-      console.log(`[Address Validation] Starting for: ${record.address}`);
+      addLog(`  → Calling address search API: "${record.address}"`);
       
       // Step 1: Search for address suggestions
       const { data: searchData, error: searchError } = await supabase.functions.invoke('suncorp-proxy', {
@@ -449,11 +488,16 @@ const ThirdPartyBulk = () => {
         }
       });
       
+      addLog(`  ← Address search response: ${searchData?.success ? 'Success' : 'Failed'}`);
+      
       if (searchError || !searchData?.success) {
-        throw new Error(searchData?.error || searchError?.message || 'Address search failed');
+        const errorMsg = searchData?.error || searchError?.message || 'Address search failed';
+        addLog(`  ❌ Address search error: ${errorMsg}`);
+        throw new Error(errorMsg);
       }
       
       if (!searchData.data?.data || searchData.data.data.length === 0) {
+        addLog(`  ❌ No address suggestions found`);
         throw new Error('No address suggestions found');
       }
       
@@ -461,7 +505,8 @@ const ThirdPartyBulk = () => {
       const suggestion = searchData.data.data[0];
       const addressLine1 = `${suggestion.addressInBrokenDownForm.streetNumber} ${suggestion.addressInBrokenDownForm.streetName} ${suggestion.addressInBrokenDownForm.streetType}`;
       
-      console.log(`[Address Validation] Using suggestion: ${addressLine1}, ${suggestion.suburb}`);
+      addLog(`  → Found suggestion: ${addressLine1}, ${suggestion.suburb}`);
+      addLog(`  → Calling address validate API`);
       
       // Step 2: Validate address and get GNAF data
       const { data: validateData, error: validateError } = await supabase.functions.invoke('suncorp-proxy', {
@@ -480,9 +525,12 @@ const ThirdPartyBulk = () => {
       });
       
       const executionTime = Date.now() - startTime;
+      addLog(`  ← Address validate response (${executionTime}ms): ${validateData?.success ? 'Success' : 'Failed'}`);
       
       if (validateError || !validateData?.success) {
         const errorMsg = validateData?.error || validateError?.message || 'Address validation failed';
+        addLog(`  ❌ Address validate error: ${errorMsg}`);
+        console.error('[Address Validate Error Details]', validateData);
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
@@ -500,11 +548,13 @@ const ThirdPartyBulk = () => {
       const matched = validateData.data.matchedAddress;
       
       if (!matched) {
+        addLog(`  ❌ No matched address in response`);
         throw new Error('No matched address in validation response');
       }
       
       // Require quality level 1 for best accuracy
       if (matched.addressQualityLevel !== '1') {
+        addLog(`  ❌ Address quality level ${matched.addressQualityLevel} not acceptable (need 1)`);
         throw new Error(`Address quality level ${matched.addressQualityLevel} not acceptable (need level 1)`);
       }
       
@@ -532,7 +582,7 @@ const ThirdPartyBulk = () => {
         structuredStreetAddress: matched.addressInBrokenDownForm
       };
     } catch (error: any) {
-      console.error('[Address Validation] Error:', error);
+      console.error('[Address Validation Full Error]', error);
       throw error;
     }
   };
@@ -547,12 +597,12 @@ const ThirdPartyBulk = () => {
     const startTime = Date.now();
     
     try {
-      console.log(`[Quote Generation] Starting for rego: ${record.rego}`);
-      
       const dob = convertDateFormat(record.dob);
       const gender = convertGenderFormat(record.gender);
       const policyStartDate = getDefaultPolicyStartDate();
       const showStampDutyModal = getStampDutyModalByState(record.state);
+      
+      addLog(`  → Building quote payload (DOB: ${dob}, Gender: ${gender}, Start: ${policyStartDate})`);
       
       // Build quote request payload
       const quotePayload = {
@@ -637,6 +687,8 @@ const ThirdPartyBulk = () => {
         }
       };
       
+      addLog(`  → Calling quote API with vehicle ${vehicleData.nvic}`);
+      
       // Call createQuote action (single POST returns final pricing for THIRD_PARTY)
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
@@ -646,9 +698,12 @@ const ThirdPartyBulk = () => {
       });
       
       const executionTime = Date.now() - startTime;
+      addLog(`  ← Quote API response (${executionTime}ms): ${data?.success ? 'Success' : 'Failed'}`);
       
       if (error || !data?.success) {
         const errorMsg = data?.error || error?.message || 'Quote generation failed';
+        addLog(`  ❌ Quote API error: ${errorMsg}`);
+        console.error('[Quote API Error Details]', data);
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
@@ -664,11 +719,15 @@ const ThirdPartyBulk = () => {
       }
       
       if (!data.data?.quoteDetails) {
+        addLog(`  ❌ No quote details in response`);
         throw new Error('No quote details in response');
       }
       
       const quoteDetails = data.data.quoteDetails;
       const premium = quoteDetails.premium;
+      
+      addLog(`  → Quote details received: ${quoteDetails.quoteNumber}`);
+      addLog(`  → Premium breakdown: Base $${premium.annualBasePremium}, Stamp $${premium.annualStampDuty}, GST $${premium.annualGST}`);
       
       // Log success
       await supabase.from('bulk_quote_processing_logs').insert({
@@ -683,8 +742,6 @@ const ThirdPartyBulk = () => {
         execution_time_ms: executionTime
       });
       
-      console.log(`[Quote Complete] ${quoteDetails.quoteNumber} - $${premium.annualPremium}`);
-      
       return {
         quoteNumber: quoteDetails.quoteNumber,
         quoteReference: quoteDetails.quoteNumber,
@@ -696,7 +753,7 @@ const ThirdPartyBulk = () => {
         }
       };
     } catch (error: any) {
-      console.error('[Quote Generation] Error:', error);
+      console.error('[Quote Generation Full Error]', error);
       throw error;
     }
   };
@@ -944,6 +1001,43 @@ const ThirdPartyBulk = () => {
                       <p className="text-2xl font-bold">{progressPercentage.toFixed(0)}%</p>
                       <p className="text-xs text-muted-foreground">Complete</p>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Processing Logs */}
+            {processingLogs.length > 0 && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Processing Logs</CardTitle>
+                      <CardDescription>Real-time API call logs and status</CardDescription>
+                    </div>
+                    <Button 
+                      onClick={() => setProcessingLogs([])} 
+                      variant="outline" 
+                      size="sm"
+                    >
+                      Clear Logs
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-xs max-h-96 overflow-y-auto space-y-1">
+                    {processingLogs.map((log, index) => (
+                      <div key={index} className={
+                        log.includes('❌') ? 'text-red-400' : 
+                        log.includes('✅') ? 'text-green-400' :
+                        log.includes('🚀') || log.includes('🎉') ? 'text-blue-400 font-bold' :
+                        log.includes('→') ? 'text-yellow-400' :
+                        log.includes('←') ? 'text-cyan-400' :
+                        'text-gray-400'
+                      }>
+                        {log}
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
