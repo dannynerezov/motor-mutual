@@ -29,16 +29,16 @@ export const Header = () => {
           </div>
         </Link>
         
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-2 ml-8">
           <Link 
             to="/#how-it-works" 
-            className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center"
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             How It Works
           </Link>
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center gap-1">
+            <DropdownMenuTrigger className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center gap-1">
               Values
               <ChevronDown className="w-4 h-4" />
             </DropdownMenuTrigger>
@@ -78,14 +78,14 @@ export const Header = () => {
 
           <Link 
             to="/benefits" 
-            className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center"
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Benefits
           </Link>
 
           <Link 
             to="/claims" 
-            className="px-4 py-2 text-base font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-12 flex items-center"
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Claims
           </Link>

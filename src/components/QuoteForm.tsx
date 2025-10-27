@@ -362,10 +362,10 @@ export const QuoteForm = () => {
       
       <div className="space-y-6 relative">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-accent to-primary mb-6 animate-in zoom-in-50 duration-700 shadow-lg">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-accent to-blue-500 mb-6 animate-in zoom-in-50 duration-700 shadow-lg">
             <Calculator className="w-10 h-10 text-primary-foreground animate-pulse" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-in fade-in slide-in-from-top-4 duration-700 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-accent to-blue-600 bg-clip-text text-transparent animate-in fade-in slide-in-from-top-4 duration-700 mb-4">
             Get Your Rideshare Quote
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground mt-3 animate-in fade-in slide-in-from-top-4 duration-700 delay-150">
@@ -426,15 +426,6 @@ export const QuoteForm = () => {
                 <span className="text-xs text-muted-foreground font-normal">(Step 2 of 3)</span>
               </label>
               
-              {/* Animated indicator when registration is filled but state not selected */}
-              {registration && !selectedState && (
-                <div className="absolute -left-8 top-1/2 -translate-y-1/2 hidden xl:flex xl:w-24 xl:justify-end">
-                  <div className="flex items-center gap-1 text-accent animate-bounce">
-                    <span className="text-xs font-semibold whitespace-nowrap">Next step →</span>
-                  </div>
-                </div>
-              )}
-              
               <div className="grid grid-cols-4 gap-3 p-4 bg-muted/30 rounded-lg border-2 border-dashed border-accent/30 animate-in fade-in slide-in-from-top-4 duration-500 delay-300">
                 {AUSTRALIAN_STATES.map((state) => (
                   <Button
@@ -453,6 +444,14 @@ export const QuoteForm = () => {
                 ))}
               </div>
               
+              {/* Helper text when state not selected */}
+              {registration && !selectedState && (
+                <p className="text-sm text-accent/70 flex items-center gap-2 animate-pulse">
+                  <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+                  Select your state of registration
+                </p>
+              )}
+              
               {/* Confirmation text after state selection */}
               {selectedState && (
                 <p className="text-sm text-accent/70 flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
@@ -463,15 +462,6 @@ export const QuoteForm = () => {
             </div>
 
             <div className="relative mt-6">
-              {/* Progress indicator arrow */}
-              {registration && selectedState && (
-                <div className="absolute -left-8 top-1/2 -translate-y-1/2 hidden xl:flex xl:w-24 xl:justify-end">
-                  <div className="flex items-center gap-1 text-accent animate-bounce">
-                    <span className="text-sm font-semibold">Click here →</span>
-                  </div>
-                </div>
-              )}
-              
               <div className="flex gap-3">
                 <Button
                   onClick={handleFindVehicle}
