@@ -17,7 +17,6 @@ import {
   convertDateFormat,
   convertGenderFormat,
   getStampDutyModalByState,
-  getStandardExcessByState,
   shouldIncludeCarPurchaseField,
   getDefaultPolicyStartDate,
   validateBulkRecord,
@@ -653,10 +652,9 @@ const ThirdPartyBulk = () => {
       const policyStartDate = new Date().toISOString().slice(0, 10);
       const showStampDutyModal = getStampDutyModalByState(record.state);
       const includeCarPurchase = shouldIncludeCarPurchaseField(vehicleData.year);
-      const standardExcess = getStandardExcessByState(record.state);
       
       addLog(`  → Building quote payload (DOB: ${dob}, Gender: ${gender}, Start: ${policyStartDate})`);
-      addLog(`  → Vehicle year: ${vehicleData.year}, Include carPurchase: ${includeCarPurchase}, Excess: $${standardExcess}`);
+      addLog(`  → Vehicle year: ${vehicleData.year}, Include carPurchase: ${includeCarPurchase}`);
       
       // Build vehicle details dynamically
       const vehicleDetails: any = {
@@ -718,7 +716,7 @@ const ThirdPartyBulk = () => {
           hasHireCarLimited: false,
           hasRoadAssist: false,
           hasFireAndTheft: false,
-          standardExcess,
+          standardExcess: null,
           voluntaryExcess: null
         },
         riskAddress: {
