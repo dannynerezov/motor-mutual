@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Shield, ExternalLink } from "lucide-react";
 
 export const Header = () => {
   return (
@@ -89,6 +89,19 @@ export const Header = () => {
           >
             Claims
           </Link>
+
+          <a 
+            href="https://connectonline.asic.gov.au/RegistrySearch/faces/landing/SearchRegisters.jspx" 
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Verify our ASIC licence (opens in new window)"
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center gap-2 border border-border/50"
+          >
+            <Shield className="w-4 h-4" />
+            <span className="hidden lg:inline">Verify Licence</span>
+            <span className="lg:hidden">Licence</span>
+            <ExternalLink className="w-3 h-3 opacity-70" />
+          </a>
         </nav>
 
         {/* Mobile menu - simplified */}
@@ -99,6 +112,15 @@ export const Header = () => {
           <Link to="/claims" className="text-sm font-medium hover:text-primary transition-colors">
             Claims
           </Link>
+          <a 
+            href="https://connectonline.asic.gov.au/RegistrySearch/faces/landing/SearchRegisters.jspx" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+          >
+            <Shield className="w-3 h-3" />
+            Licence
+          </a>
         </nav>
       </div>
     </header>

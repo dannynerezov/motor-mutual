@@ -7,6 +7,7 @@ import { ReliabilitySection } from "@/components/home/ReliabilitySection";
 import { HowItWorksComparison } from "@/components/home/HowItWorksComparison";
 import heroBg from "@/assets/rideshare-hero.jpg";
 import rideshareDriver from "@/assets/rideshare-driver.png";
+import { Car, ShieldAlert, Waves, Cloud, Flame, Star } from "lucide-react";
 
 const Index = () => {
   return (
@@ -29,15 +30,101 @@ const Index = () => {
 
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-5xl md:text-7xl font-bold mb-6 text-primary-foreground opacity-0 animate-fade-up [animation-delay:300ms]">
-              Cover Built for Rideshare Drivers
-            </h2>
-            <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto opacity-0 animate-fade-up [animation-delay:600ms]">
-              Protection designed for Uber, Ola, and rideshare drivers from just $500/year
-            </p>
-            <p className="text-lg text-primary-foreground/70 max-w-2xl mx-auto opacity-0 animate-fade-up [animation-delay:900ms]">
-              Your car is your business - protect it with coverage that understands the rideshare economy
-            </p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold mb-6 text-primary-foreground leading-tight opacity-0 animate-fade-up [animation-delay:300ms]">
+              <span className="block bg-gradient-to-r from-white via-accent to-white bg-clip-text text-transparent animate-pulse [animation-duration:3s]">
+                Affordable, Community-Powered Cover
+              </span>
+              <span className="block mt-2 text-3xl sm:text-4xl lg:text-5xl xl:text-6xl">
+                for Australia's Rideshare Drivers
+              </span>
+            </h1>
+            
+            <div className="mb-4 max-w-4xl mx-auto opacity-0 animate-fade-up [animation-delay:600ms]">
+              <p className="text-2xl md:text-3xl font-bold text-primary-foreground mb-3">
+                Transparent, All-Risk Cover for Uber & Ola Drivers
+              </p>
+              <p className="text-xl md:text-2xl text-accent font-semibold mb-4">
+                from $41/Month
+              </p>
+              
+              {/* Coverage Icons */}
+              <div 
+                role="list" 
+                aria-label="Coverage types included"
+                className="flex flex-wrap justify-center gap-3 md:gap-4 mt-6"
+              >
+                <div 
+                  role="listitem"
+                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:750ms]"
+                >
+                  <Car className="h-5 w-5 text-accent" aria-hidden="true" />
+                  <span className="text-sm md:text-base text-primary-foreground font-medium">Collision</span>
+                </div>
+                
+                <div 
+                  role="listitem"
+                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:800ms]"
+                >
+                  <ShieldAlert className="h-5 w-5 text-accent" aria-hidden="true" />
+                  <span className="text-sm md:text-base text-primary-foreground font-medium">Theft</span>
+                </div>
+                
+                <div 
+                  role="listitem"
+                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:850ms]"
+                >
+                  <Waves className="h-5 w-5 text-accent" aria-hidden="true" />
+                  <span className="text-sm md:text-base text-primary-foreground font-medium">Flood</span>
+                </div>
+                
+                <div 
+                  role="listitem"
+                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:900ms]"
+                >
+                  <Cloud className="h-5 w-5 text-accent" aria-hidden="true" />
+                  <span className="text-sm md:text-base text-primary-foreground font-medium">Hail</span>
+                </div>
+                
+                <div 
+                  role="listitem"
+                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:950ms]"
+                >
+                  <Flame className="h-5 w-5 text-accent" aria-hidden="true" />
+                  <span className="text-sm md:text-base text-primary-foreground font-medium">Fire</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-3xl mx-auto opacity-0 animate-fade-up [animation-delay:1100ms]">
+              <p className="text-base md:text-lg text-primary-foreground/90 leading-relaxed mb-6">
+                Join your rideshare community, backed by ASIC-regulated protection and AFCA supervision. 
+                Get your quote today and drive with confidence, knowing your livelihood is protected by a 
+                trusted, transparent mutual.
+              </p>
+              
+              {/* Google Reviews Trust Badge */}
+              <div 
+                role="img" 
+                aria-label="5 stars on Google Reviews"
+                className="flex items-center justify-center gap-3 bg-primary-foreground/10 backdrop-blur-sm px-6 py-3 rounded-xl border border-primary-foreground/20 mx-auto max-w-md hover:bg-primary-foreground/15 transition-colors duration-300"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-primary">G</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    </div>
+                    <p className="text-xs text-primary-foreground/80 font-medium">Google Reviews</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <QuoteForm />
