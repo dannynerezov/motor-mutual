@@ -229,9 +229,10 @@ export const DriverCard = ({ driver, onUpdate, onRemove, vehicleData, onQuoteGen
           <Label htmlFor={`dob-${driver.id}`}>Date of Birth</Label>
           <EnhancedDatePicker
             value={driver.date_of_birth ? new Date(driver.date_of_birth) : undefined}
-            onChange={(date) => 
-              onUpdate(driver.id, "date_of_birth", date ? date.toISOString().split('T')[0] : "")
-            }
+            onChange={(date) => {
+              if (!date) return;
+              onUpdate(driver.id, "date_of_birth", date.toISOString().split('T')[0]);
+            }}
             placeholder="Select date of birth"
             minAge={18}
             maxAge={99}

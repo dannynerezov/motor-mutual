@@ -82,6 +82,7 @@ const QuotePage = () => {
   const [finalPrice, setFinalPrice] = useState(0);
   const [showClaimsError, setShowClaimsError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [initialDriverEnsured, setInitialDriverEnsured] = useState(false);
 
   useEffect(() => {
     if (quoteId) {
@@ -94,6 +95,13 @@ const QuotePage = () => {
       calculateFinalPrice();
     }
   }, [namedDrivers, quote]);
+
+  // Auto-create first driver on page load
+  useEffect(() => {
+    if (!loading && quoteId && !initialDriverEnsured && namedDrivers.length === 0) {
+      handleAddDriver().finally(() => setInitialDriverEnsured(true));
+    }
+  }, [loading, quoteId, initialDriverEnsured, namedDrivers.length]);
 
   const loadQuoteData = async () => {
     try {
@@ -175,10 +183,10 @@ const QuotePage = () => {
         .from("named_drivers")
         .insert({
           quote_id: quoteId,
-          first_name: "",
-          last_name: "",
-          gender: "",
-          date_of_birth: new Date('2000-01-01').toISOString().split('T')[0],
+          first_name: null,
+          last_name: null,
+          gender: null,
+          date_of_birth: '2000-01-01',
           claims_count: 0,
         })
         .select()
