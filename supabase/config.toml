@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.analyze-pds]
 verify_jwt = false
+
+[functions.suncorp-proxy]
+verify_jwt = false
