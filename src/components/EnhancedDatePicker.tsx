@@ -15,44 +15,55 @@ interface EnhancedDatePickerProps {
   maxAge?: number;
 }
 
-export const EnhancedDatePicker = ({ 
-  value, 
-  onChange, 
+export const EnhancedDatePicker = ({
+  value,
+  onChange,
   placeholder = "Pick a date",
   minAge = 18,
   maxAge = 99
 }: EnhancedDatePickerProps) => {
-  const [month, setMonth] = React.useState<Date>(value || new Date());
-  
+  const [isOpen, setIsOpen] = React.useState(false);
+
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - maxAge;
   const maxYear = currentYear - minAge;
-  
+
   // Generate year options (most recent first)
   const years = Array.from(
-    { length: maxYear - minYear + 1 }, 
+    { length: maxYear - minYear + 1 },
     (_, i) => maxYear - i
   );
-  
+
   const months = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
 
+  // Use value if exists, otherwise default to a reasonable date (30 years ago)
+  const displayMonth = value || new Date(currentYear - 30, 0, 1);
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(displayMonth);
+
   const handleYearChange = (year: string) => {
-    const newDate = new Date(month);
+    const newDate = new Date(currentMonth);
     newDate.setFullYear(parseInt(year));
-    setMonth(newDate);
+    setCurrentMonth(newDate);
   };
 
   const handleMonthChange = (monthIndex: string) => {
-    const newDate = new Date(month);
+    const newDate = new Date(currentMonth);
     newDate.setMonth(parseInt(monthIndex));
-    setMonth(newDate);
+    setCurrentMonth(newDate);
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    onChange(date);
+    if (date) {
+      setIsOpen(false);
+    }
   };
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -66,16 +77,16 @@ export const EnhancedDatePicker = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
-        <div className="p-3 space-y-2 bg-background">
+        <div className="p-3 space-y-2 bg-background border-b">
           <div className="flex gap-2">
             <Select
-              value={month.getFullYear().toString()}
+              value={currentMonth.getFullYear().toString()}
               onValueChange={handleYearChange}
             >
               <SelectTrigger className="w-[110px] bg-background">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent className="bg-background z-[60]">
+              <SelectContent className="bg-background z-[60] max-h-[200px]">
                 {years.map((year) => (
                   <SelectItem key={year} value={year.toString()}>
                     {year}
@@ -83,15 +94,15 @@ export const EnhancedDatePicker = ({
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Select
-              value={month.getMonth().toString()}
+              value={currentMonth.getMonth().toString()}
               onValueChange={handleMonthChange}
             >
               <SelectTrigger className="flex-1 bg-background">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent className="bg-background z-[60]">
+              <SelectContent className="bg-background z-[60] max-h-[200px]">
                 {months.map((monthName, index) => (
                   <SelectItem key={index} value={index.toString()}>
                     {monthName}
@@ -104,11 +115,11 @@ export const EnhancedDatePicker = ({
         <Calendar
           mode="single"
           selected={value}
-          onSelect={onChange}
-          month={month}
-          onMonthChange={setMonth}
+          onSelect={handleDateSelect}
+          month={currentMonth}
+          onMonthChange={setCurrentMonth}
           disabled={(date) =>
-            date > new Date(currentYear - minAge, 11, 31) || 
+            date > new Date(currentYear - minAge, 11, 31) ||
             date < new Date(minYear, 0, 1)
           }
           initialFocus
