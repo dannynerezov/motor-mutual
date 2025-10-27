@@ -41,6 +41,8 @@ const ThirdPartyBulk = () => {
   const [bulkInput, setBulkInput] = useState('');
   const [records, setRecords] = useState<BulkRecord[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'failed'>('untested');
   const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
   const [batchId, setBatchId] = useState<string | null>(null);
   const [statistics, setStatistics] = useState<BatchStatistics>({
@@ -129,6 +131,64 @@ const ThirdPartyBulk = () => {
     });
   };
 
+  // TEST EDGE FUNCTION CONNECTION
+  const handleTestConnection = async () => {
+    setIsTestingConnection(true);
+    try {
+      console.log('[Test Connection] Testing suncorp-proxy edge function...');
+      
+      const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
+        body: { 
+          action: 'vehicleLookup',
+          registrationNumber: 'TEST123',
+          state: 'NSW',
+          entryDate: VEHICLE_LOOKUP_ENTRY_DATE
+        }
+      });
+
+      console.log('[Test Connection] Response:', { data, error });
+
+      if (error) {
+        console.error('[Test Connection] Edge function error:', error);
+        setConnectionStatus('failed');
+        toast({
+          title: "Connection Failed",
+          description: `Edge function error: ${error.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data) {
+        console.error('[Test Connection] No data returned');
+        setConnectionStatus('failed');
+        toast({
+          title: "Connection Failed",
+          description: "No response from edge function - may not be deployed",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('[Test Connection] Success - Edge function is accessible');
+      setConnectionStatus('success');
+      toast({
+        title: "Connection Successful",
+        description: "Edge function is accessible and responding",
+      });
+    } catch (error: any) {
+      console.error('[Test Connection] Fatal error:', error);
+      setConnectionStatus('failed');
+      toast({
+        title: "Connection Failed",
+        description: `Fatal error: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
   // START BATCH PROCESSING
   const handleStartProcessing = async () => {
     if (records.length === 0) {
@@ -136,6 +196,16 @@ const ThirdPartyBulk = () => {
         title: 'No Records',
         description: 'Please parse input data first',
         variant: 'destructive'
+      });
+      return;
+    }
+
+    // Check connection first
+    if (connectionStatus !== 'success') {
+      toast({
+        title: "Test Connection First",
+        description: "Please test the edge function connection before processing",
+        variant: "destructive",
       });
       return;
     }
@@ -299,8 +369,54 @@ const ThirdPartyBulk = () => {
       
       const executionTime = Date.now() - startTime;
       
-      console.log(`[Vehicle Lookup] Response:`, { success: data?.success, error: error?.message });
-      
+      console.log(`[Vehicle Lookup] Raw response:`, { data, error });
+
+      if (error) {
+        const errorMsg = `Edge function invocation failed: ${error.message}`;
+        console.error('[Vehicle Lookup] Supabase error:', errorMsg);
+        await supabase.from('bulk_quote_processing_logs').insert({
+          batch_id: batchId,
+          record_id: record.id,
+          record_identifier: record.rego,
+          timestamp: new Date().toISOString(),
+          action: 'vehicle_lookup',
+          status: 'error',
+          api_endpoint: 'vehicleLookup',
+          request_payload: { registrationNumber: record.rego, state: record.state },
+          error_message: errorMsg,
+          execution_time_ms: executionTime
+        });
+        toast({
+          title: "Vehicle Lookup Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
+      }
+
+      if (!data) {
+        const errorMsg = 'No data returned from edge function - function may not be deployed';
+        console.error('[Vehicle Lookup]', errorMsg);
+        await supabase.from('bulk_quote_processing_logs').insert({
+          batch_id: batchId,
+          record_id: record.id,
+          record_identifier: record.rego,
+          timestamp: new Date().toISOString(),
+          action: 'vehicle_lookup',
+          status: 'error',
+          api_endpoint: 'vehicleLookup',
+          request_payload: { registrationNumber: record.rego, state: record.state },
+          error_message: errorMsg,
+          execution_time_ms: executionTime
+        });
+        toast({
+          title: "Vehicle Lookup Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
+      }
+
       // Log to database
       await supabase.from('bulk_quote_processing_logs').insert({
         batch_id: batchId,
@@ -308,24 +424,34 @@ const ThirdPartyBulk = () => {
         record_identifier: record.rego,
         timestamp: new Date().toISOString(),
         action: 'vehicle_lookup',
-        status: error ? 'error' : 'success',
+        status: data.success ? 'success' : 'error',
         api_endpoint: 'vehicleLookup',
         request_payload: { registrationNumber: record.rego, state: record.state },
         response_data: data,
-        error_message: error?.message,
+        error_message: data.error,
         execution_time_ms: executionTime
       });
       
-      if (error) {
-        throw new Error(`Edge function error: ${error.message}`);
+      if (!data.success) {
+        const errorMsg = data.error || 'Vehicle lookup failed';
+        console.error('[Vehicle Lookup] API error:', errorMsg, data);
+        toast({
+          title: "Vehicle Lookup Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
-      if (!data?.success) {
-        throw new Error(`Vehicle lookup failed: ${data?.error || 'Unknown error'}`);
-      }
-      
-      if (!data?.data?.vehicleDetails) {
-        throw new Error('No vehicle details returned from API');
+      if (!data.data?.vehicleDetails) {
+        const errorMsg = 'No vehicle details returned from API';
+        console.error('[Vehicle Lookup]', errorMsg);
+        toast({
+          title: "Vehicle Lookup Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
       return data.data.vehicleDetails;
@@ -350,12 +476,39 @@ const ThirdPartyBulk = () => {
         }
       });
       
+      console.log('[Address Search] Response:', { searchData, searchError });
+      
       if (searchError) {
-        throw new Error(`Address search error: ${searchError.message}`);
+        const errorMsg = `Address search error: ${searchError.message}`;
+        console.error('[Address Search]', errorMsg);
+        toast({
+          title: "Address Search Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
+      }
+
+      if (!searchData) {
+        const errorMsg = 'No data returned from edge function';
+        console.error('[Address Search]', errorMsg);
+        toast({
+          title: "Address Search Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
-      if (!searchData?.success || !searchData?.data?.data?.addresses?.[0]) {
-        throw new Error('Address search failed - no addresses found');
+      if (!searchData.success || !searchData.data?.data?.addresses?.[0]) {
+        const errorMsg = searchData.error || 'Address search failed - no addresses found';
+        console.error('[Address Search]', errorMsg);
+        toast({
+          title: "Address Search Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
       const firstAddress = searchData.data.data.addresses[0];
@@ -395,19 +548,44 @@ const ThirdPartyBulk = () => {
         record_id: record.id,
         record_identifier: record.rego,
         action: 'address_validate',
-        status: error ? 'error' : 'success',
+        status: error || !validateData?.success ? 'error' : 'success',
         request_payload: { address: record.address },
         response_data: validateData,
-        error_message: error?.message,
+        error_message: error?.message || validateData?.error,
         execution_time_ms: executionTime
       });
       
       if (error) {
-        throw new Error(`Edge function error: ${error.message}`);
+        const errorMsg = `Edge function error: ${error.message}`;
+        console.error('[Address Validation]', errorMsg);
+        toast({
+          title: "Address Validation Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
+      }
+
+      if (!validateData) {
+        const errorMsg = 'No data returned from edge function';
+        console.error('[Address Validation]', errorMsg);
+        toast({
+          title: "Address Validation Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
-      if (!validateData?.success) {
-        throw new Error(`Address validation failed: ${validateData?.error || 'Unknown error'}`);
+      if (!validateData.success) {
+        const errorMsg = validateData.error || 'Address validation failed';
+        console.error('[Address Validation]', errorMsg);
+        toast({
+          title: "Address Validation Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
       const matchedAddress = validateData.data.data.matchedAddress;
@@ -546,10 +724,11 @@ const ThirdPartyBulk = () => {
       
       const executionTime = Date.now() - startTime;
       
-      console.log(`[Quote Generation] Response:`, { 
+      console.log(`[Quote Generation] Raw response:`, { 
         success: data?.success, 
         quoteNumber: data?.data?.data?.quoteNumber,
-        error: error?.message 
+        error: error?.message,
+        hasData: !!data
       });
       
       // Log final attempt
@@ -566,11 +745,47 @@ const ThirdPartyBulk = () => {
       });
       
       if (error) {
-        throw new Error(`Edge function error: ${error.message}`);
+        const errorMsg = `Edge function error: ${error.message}`;
+        console.error('[Quote Generation]', errorMsg);
+        toast({
+          title: "Quote Generation Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
+      }
+
+      if (!data) {
+        const errorMsg = 'No data returned from edge function';
+        console.error('[Quote Generation]', errorMsg);
+        toast({
+          title: "Quote Generation Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
-      if (!data?.success) {
-        throw new Error(`Quote generation failed: ${data?.error || 'Unknown error'}`);
+      if (!data.success) {
+        const errorMsg = data.error || 'Quote generation failed';
+        console.error('[Quote Generation]', errorMsg);
+        toast({
+          title: "Quote Generation Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
+      }
+
+      if (!data.data?.data?.quoteNumber) {
+        const errorMsg = 'No quote number returned from API';
+        console.error('[Quote Generation]', errorMsg);
+        toast({
+          title: "Quote Generation Failed",
+          description: `${record.rego}: ${errorMsg}`,
+          variant: "destructive",
+        });
+        throw new Error(errorMsg);
       }
       
       return {
@@ -721,7 +936,34 @@ const ThirdPartyBulk = () => {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleStartProcessing} disabled={processing}>
+                    <Button 
+                      onClick={handleTestConnection}
+                      disabled={isTestingConnection || processing}
+                      variant={connectionStatus === 'success' ? 'outline' : 'default'}
+                    >
+                      {isTestingConnection ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Testing...
+                        </>
+                      ) : connectionStatus === 'success' ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Connection OK
+                        </>
+                      ) : connectionStatus === 'failed' ? (
+                        <>
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Test Connection
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          Test Connection
+                        </>
+                      )}
+                    </Button>
+                    <Button onClick={handleStartProcessing} disabled={processing || connectionStatus !== 'success'}>
                       {processing ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
