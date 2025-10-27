@@ -44,11 +44,13 @@ interface NamedDriver {
 interface DriverCardProps {
   driver: NamedDriver;
   onUpdate: (id: string, field: string, value: any) => void;
+  onUpdateMany: (id: string, updates: Record<string, any>) => void;
 }
 
 export const DriverCard = ({
   driver,
   onUpdate,
+  onUpdateMany,
 }: DriverCardProps) => {
   // Local state for name fields
   const [localFirstName, setLocalFirstName] = useState(driver.first_name || "");
@@ -175,19 +177,21 @@ export const DriverCard = ({
   }) => {
     console.debug('[DriverCard] Address selected from suggestions:', address);
 
-    // Update critical fields first for immediate completion detection
-    onUpdate(driver.id, "address_suburb", address.suburb);
-    onUpdate(driver.id, "address_state", address.state);
-    onUpdate(driver.id, "address_postcode", address.postcode);
-    onUpdate(driver.id, "address_line1", address.addressLine1);
-    onUpdate(driver.id, "address_unit_type", address.unitType || null);
-    onUpdate(driver.id, "address_unit_number", address.unitNumber || null);
-    onUpdate(driver.id, "address_street_number", address.streetNumber || null);
-    onUpdate(driver.id, "address_street_name", address.streetName || null);
-    onUpdate(driver.id, "address_street_type", address.streetType || null);
-    onUpdate(driver.id, "address_lurn", null);
-    onUpdate(driver.id, "address_latitude", null);
-    onUpdate(driver.id, "address_longitude", null);
+    // Batch update all address fields at once to prevent race conditions
+    onUpdateMany(driver.id, {
+      address_suburb: address.suburb,
+      address_state: address.state,
+      address_postcode: address.postcode,
+      address_line1: address.addressLine1,
+      address_unit_type: address.unitType || null,
+      address_unit_number: address.unitNumber || null,
+      address_street_number: address.streetNumber || null,
+      address_street_name: address.streetName || null,
+      address_street_type: address.streetType || null,
+      address_lurn: null,
+      address_latitude: null,
+      address_longitude: null,
+    });
 
     // Immediately validate address to capture LURN
     try {
@@ -221,12 +225,15 @@ export const DriverCard = ({
       }
 
       const lurn = matched.addressId as string;
-      const lat = matched.pointLevelCoordinates?.latitude?.toString() || null;
-      const lng = matched.pointLevelCoordinates?.longitude?.toString() || null;
+      const lat = matched.pointLevelCoordinates?.longLatLatitude?.toString() || null;
+      const lng = matched.pointLevelCoordinates?.longLatLongitude?.toString() || null;
 
-      onUpdate(driver.id, 'address_lurn', lurn);
-      if (lat) onUpdate(driver.id, 'address_latitude', lat);
-      if (lng) onUpdate(driver.id, 'address_longitude', lng);
+      // Batch update LURN and coordinates
+      onUpdateMany(driver.id, {
+        address_lurn: lurn,
+        address_latitude: lat,
+        address_longitude: lng,
+      });
 
       console.debug('[DriverCard] Address validated. LURN (last 8):', lurn?.slice(-8));
       toast.success('Address validated');

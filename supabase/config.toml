@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.suncorp-proxy]
 verify_jwt = false
+
+[functions.suncorp-single-quote]
+verify_jwt = false

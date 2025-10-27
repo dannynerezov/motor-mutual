@@ -213,10 +213,10 @@ const QuotePage = () => {
   };
 
   const handleDriverUpdate = async (id: string, field: string, value: any) => {
-    // Optimistic update: Update UI immediately
+    // Optimistic update: Update UI immediately with functional state update
     const previousDrivers = namedDrivers;
-    setNamedDrivers(
-      namedDrivers.map((driver) =>
+    setNamedDrivers(prev =>
+      prev.map((driver) =>
         driver.id === id ? { ...driver, [field]: value } : driver
       )
     );
@@ -230,6 +230,30 @@ const QuotePage = () => {
       if (error) throw error;
     } catch (error) {
       console.error("Error updating driver:", error);
+      // Revert on failure
+      setNamedDrivers(previousDrivers);
+      toast.error("Failed to update driver");
+    }
+  };
+
+  const handleDriverUpdateMany = async (id: string, updates: Record<string, any>) => {
+    // Batch update multiple fields at once with functional state update
+    const previousDrivers = namedDrivers;
+    setNamedDrivers(prev =>
+      prev.map((driver) =>
+        driver.id === id ? { ...driver, ...updates } : driver
+      )
+    );
+
+    try {
+      const { error } = await supabase
+        .from("named_drivers")
+        .update(updates)
+        .eq("id", id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error batch updating driver:", error);
       // Revert on failure
       setNamedDrivers(previousDrivers);
       toast.error("Failed to update driver");
@@ -251,6 +275,22 @@ const QuotePage = () => {
       toast.error("Please complete all driver details before generating quote");
       return;
     }
+
+    // Guardrail: Check required address fields
+    const missingFields = [];
+    if (!driver.address_suburb) missingFields.push('suburb');
+    if (!driver.address_state) missingFields.push('state');
+    if (!driver.address_postcode) missingFields.push('postcode');
+    if (!driver.address_line1) missingFields.push('address_line1');
+    
+    if (missingFields.length > 0) {
+      console.error('[QuotePage] Missing address fields:', missingFields);
+      toast.error('Address is incomplete. Please select an address from suggestions.');
+      return;
+    }
+
+    console.assert(!!driver.address_suburb && !!driver.address_state && !!driver.address_postcode,
+      '[QuotePage] Invariant: Address fields should be present before quote generation');
 
     const policyStartDate = getDefaultPolicyStartDate();
 
@@ -276,9 +316,6 @@ const QuotePage = () => {
         address_suburb: driver.address_suburb || "",
         address_state: driver.address_state || "",
         address_postcode: driver.address_postcode || "",
-        address_lurn: driver.address_lurn || "",
-        address_latitude: driver.address_latitude,
-        address_longitude: driver.address_longitude,
       },
       policyStartDate
     );
@@ -520,6 +557,7 @@ const QuotePage = () => {
                         key={driver.id}
                         driver={driver}
                         onUpdate={handleDriverUpdate}
+                        onUpdateMany={handleDriverUpdateMany}
                       />
                     ))}
 
