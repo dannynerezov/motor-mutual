@@ -671,6 +671,7 @@ const ThirdPartyBulk = () => {
         vehicleDetails: {
           isRoadworthy: true,
           hasAccessoryAndModification: false,
+          carPurchaseIn13Months: false,
           nvic: vehicleData.nvic,
           highPerformance: null,
           hasDamage: false,
