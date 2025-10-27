@@ -36,6 +36,35 @@ import type {
   BatchStatistics,
 } from '@/types/thirdPartyBulk';
 
+// HELPER FUNCTIONS FOR UNIT ADDRESS PARSING
+const parseUnitFromAddress = (address: string): { unitNumber?: string; unitToken?: string } => {
+  // Pattern 1: Slash format "14/41 Main St" -> unit=14, street=41
+  const slashMatch = address.match(/^(\d+)\/(\d+)\s/);
+  if (slashMatch) {
+    return { unitNumber: slashMatch[1], unitToken: 'U' };
+  }
+  
+  // Pattern 2: "Unit 14" or "U 14" or "Apt 5"
+  const unitMatch = address.match(/^(Unit|U|Apt|Apartment|Flat|F)\s*(\d+)[,\s\/]/i);
+  if (unitMatch) {
+    return { unitNumber: unitMatch[2], unitToken: 'U' };
+  }
+  
+  return {};
+};
+
+const mapUnitTypeToCode = (unitType?: string): string | undefined => {
+  if (!unitType) return undefined;
+  
+  const upper = unitType.toUpperCase();
+  if (upper === 'UNIT' || upper === 'U') return 'U';
+  if (upper === 'FLAT' || upper === 'F') return 'F';
+  if (upper === 'APARTMENT' || upper === 'APT' || upper === 'APPT') return 'APT';
+  
+  // Default to 'U' for any other unit-like type
+  return 'U';
+};
+
 const ThirdPartyBulk = () => {
   // STATE MANAGEMENT
   const [bulkInput, setBulkInput] = useState('');
@@ -524,6 +553,12 @@ const ThirdPartyBulk = () => {
     const startTime = Date.now();
     
     try {
+      // Parse unit from original address
+      const parsedUnit = parseUnitFromAddress(record.address);
+      if (parsedUnit.unitNumber) {
+        addLog(`  → Unit parsed from input: ${parsedUnit.unitToken} ${parsedUnit.unitNumber}`);
+      }
+      
       addLog(`  → Calling address search API: "${record.address}"`);
       
       // Step 1: Search for address suggestions
@@ -549,7 +584,17 @@ const ThirdPartyBulk = () => {
       
       // Use first suggestion
       const suggestion = searchData.data.data[0];
-      const addressLine1 = `${suggestion.addressInBrokenDownForm.streetNumber} ${suggestion.addressInBrokenDownForm.streetName} ${suggestion.addressInBrokenDownForm.streetType}`;
+      
+      // Build addressLine1 with unit if we parsed one
+      let addressLine1: string;
+      if (parsedUnit.unitNumber) {
+        // Include unit in address line: "14/41 LAWRENSON ST"
+        addressLine1 = `${parsedUnit.unitNumber}/${suggestion.addressInBrokenDownForm.streetNumber} ${suggestion.addressInBrokenDownForm.streetName} ${suggestion.addressInBrokenDownForm.streetType}`;
+        addLog(`  → Built addressLine1 with unit: "${addressLine1}"`);
+      } else {
+        // No unit, use street address only
+        addressLine1 = `${suggestion.addressInBrokenDownForm.streetNumber} ${suggestion.addressInBrokenDownForm.streetName} ${suggestion.addressInBrokenDownForm.streetType}`;
+      }
       
       addLog(`  → Found suggestion: ${addressLine1}, ${suggestion.suburb}`);
       addLog(`  → Calling address validate API`);
@@ -620,12 +665,26 @@ const ThirdPartyBulk = () => {
         execution_time_ms: executionTime
       });
       
+      // Enrich unit data if validation didn't return it but we parsed it
+      let enrichedStreetAddress = matched.addressInBrokenDownForm;
+      if (!matched.addressInBrokenDownForm?.unitNumber && parsedUnit.unitNumber) {
+        addLog(`  → Enriching address with parsed unit: ${parsedUnit.unitToken} ${parsedUnit.unitNumber}`);
+        enrichedStreetAddress = {
+          ...matched.addressInBrokenDownForm,
+          unitNumber: parsedUnit.unitNumber,
+          unitType: 'UNIT'
+        };
+      }
+      
       // Log unit detection
-      if (matched.addressInBrokenDownForm?.unitNumber) {
-        addLog(`  → Unit detected: ${matched.addressInBrokenDownForm.unitType || 'Unit'} ${matched.addressInBrokenDownForm.unitNumber}`);
+      if (enrichedStreetAddress?.unitNumber) {
+        addLog(`  → Unit confirmed in address: ${enrichedStreetAddress.unitType || 'Unit'} ${enrichedStreetAddress.unitNumber}`);
       } else {
         addLog(`  → No unit number (house/street address)`);
       }
+      
+      // Log the LURN for tracking
+      addLog(`  → LURN (addressId): ${matched.addressId.substring(0, 30)}...${matched.addressId.substring(matched.addressId.length - 10)}`);
       
       return {
         addressId: matched.addressId,
@@ -635,7 +694,7 @@ const ThirdPartyBulk = () => {
         addressQualityLevel: matched.addressQualityLevel,
         geocodedNationalAddressFileData: matched.geocodedNationalAddressFileData,
         pointLevelCoordinates: matched.pointLevelCoordinates,
-        structuredStreetAddress: matched.addressInBrokenDownForm
+        structuredStreetAddress: enrichedStreetAddress
       };
     } catch (error: any) {
       console.error('[Address Validation Full Error]', error);
@@ -737,14 +796,16 @@ const ThirdPartyBulk = () => {
           pointLevelCoordinates: addressData.pointLevelCoordinates || {},
           spatialReferenceId: 4283,
           matchStatus: 'HAPPY',
-            structuredStreetAddress: {
-              unitNumber: addressData.structuredStreetAddress?.unitNumber || undefined,
-              unitCode: addressData.structuredStreetAddress?.unitType || undefined,
-              streetName: addressData.structuredStreetAddress?.streetName || '',
-              streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || addressData.structuredStreetAddress?.streetNumber || '',
-              streetTypeCode: addressData.structuredStreetAddress?.streetType || 
-                              (addressData.structuredStreetAddress as any)?.streetTypeCode || ''
-            }
+          structuredStreetAddress: {
+            unitNumber: addressData.structuredStreetAddress?.unitNumber || undefined,
+            unitCode: addressData.structuredStreetAddress?.unitNumber 
+              ? mapUnitTypeToCode(addressData.structuredStreetAddress?.unitType) || 'U'
+              : undefined,
+            streetName: addressData.structuredStreetAddress?.streetName || '',
+            streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || addressData.structuredStreetAddress?.streetNumber || '',
+            streetTypeCode: addressData.structuredStreetAddress?.streetType || 
+                            (addressData.structuredStreetAddress as any)?.streetTypeCode || ''
+          }
         },
         driverDetails: {
           mainDriver: {
@@ -761,12 +822,14 @@ const ThirdPartyBulk = () => {
         }
       };
       
-      // Log unit inclusion
+      // Log unit inclusion with resolved unitCode
       if (addressData.structuredStreetAddress?.unitNumber) {
-        addLog(`  → Including unit in quote: ${addressData.structuredStreetAddress.unitType || 'Unit'} ${addressData.structuredStreetAddress.unitNumber}`);
+        const resolvedUnitCode = mapUnitTypeToCode(addressData.structuredStreetAddress?.unitType) || 'U';
+        addLog(`  → Including unit in quote: ${resolvedUnitCode} ${addressData.structuredStreetAddress.unitNumber}`);
       }
       
       addLog(`  → Calling quote API with vehicle ${vehicleData.nvic}`);
+      addLog(`  → Using LURN: ${addressData.addressId.substring(addressData.addressId.length - 15)}`);
       console.log('[Quote Payload]', JSON.stringify(quotePayload, null, 2));
       
       // FIRST ATTEMPT
