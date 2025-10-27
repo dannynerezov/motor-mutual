@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      bulk_quote_batches: {
+        Row: {
+          batch_name: string | null
+          created_at: string
+          created_by: string
+          failed_records: number
+          id: string
+          processing_end_time: string | null
+          processing_start_time: string | null
+          successful_records: number
+          total_processing_time_ms: number | null
+          total_records: number
+          updated_at: string
+        }
+        Insert: {
+          batch_name?: string | null
+          created_at?: string
+          created_by?: string
+          failed_records?: number
+          id?: string
+          processing_end_time?: string | null
+          processing_start_time?: string | null
+          successful_records?: number
+          total_processing_time_ms?: number | null
+          total_records: number
+          updated_at?: string
+        }
+        Update: {
+          batch_name?: string | null
+          created_at?: string
+          created_by?: string
+          failed_records?: number
+          id?: string
+          processing_end_time?: string | null
+          processing_start_time?: string | null
+          successful_records?: number
+          total_processing_time_ms?: number | null
+          total_records?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bulk_quote_processing_logs: {
+        Row: {
+          action: string
+          api_endpoint: string | null
+          batch_id: string
+          created_at: string
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          record_id: number
+          record_identifier: string
+          request_payload: Json | null
+          response_data: Json | null
+          status: string
+          timestamp: string
+        }
+        Insert: {
+          action: string
+          api_endpoint?: string | null
+          batch_id: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          record_id: number
+          record_identifier: string
+          request_payload?: Json | null
+          response_data?: Json | null
+          status: string
+          timestamp?: string
+        }
+        Update: {
+          action?: string
+          api_endpoint?: string | null
+          batch_id?: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          record_id?: number
+          record_identifier?: string
+          request_payload?: Json | null
+          response_data?: Json | null
+          status?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_quote_processing_logs_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_quote_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claims: {
         Row: {
           claim_amount: number | null
@@ -479,6 +577,150 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      third_party_quotes: {
+        Row: {
+          agreed_value: number | null
+          api_request_payload: Json | null
+          api_response_data: Json | null
+          base_premium: number
+          cover_type: string
+          created_at: string
+          current_insurer: string
+          date_of_birth: string
+          gender: string
+          gst: number
+          id: string
+          ip_address: string | null
+          km_per_year: string
+          market_value: number | null
+          policy_start_date: string
+          primary_usage: string
+          quote_number: string
+          quote_reference: string
+          registration_number: string
+          registration_state: string
+          risk_address_latitude: string | null
+          risk_address_longitude: string | null
+          risk_address_lurn: string
+          risk_address_postcode: string
+          risk_address_state: string
+          risk_address_street_name: string
+          risk_address_street_number: string
+          risk_address_street_type: string
+          risk_address_suburb: string
+          risk_address_unit_number: string | null
+          risk_address_unit_type: string | null
+          stamp_duty: number
+          sum_insured_type: string
+          total_premium: number
+          updated_at: string
+          user_agent: string | null
+          vehicle_body_style: string | null
+          vehicle_drive_type: string | null
+          vehicle_engine_size: string | null
+          vehicle_family: string
+          vehicle_make: string
+          vehicle_nvic: string
+          vehicle_transmission: string | null
+          vehicle_variant: string
+          vehicle_year: string
+        }
+        Insert: {
+          agreed_value?: number | null
+          api_request_payload?: Json | null
+          api_response_data?: Json | null
+          base_premium: number
+          cover_type?: string
+          created_at?: string
+          current_insurer: string
+          date_of_birth: string
+          gender: string
+          gst: number
+          id?: string
+          ip_address?: string | null
+          km_per_year: string
+          market_value?: number | null
+          policy_start_date: string
+          primary_usage: string
+          quote_number: string
+          quote_reference: string
+          registration_number: string
+          registration_state: string
+          risk_address_latitude?: string | null
+          risk_address_longitude?: string | null
+          risk_address_lurn: string
+          risk_address_postcode: string
+          risk_address_state: string
+          risk_address_street_name: string
+          risk_address_street_number: string
+          risk_address_street_type: string
+          risk_address_suburb: string
+          risk_address_unit_number?: string | null
+          risk_address_unit_type?: string | null
+          stamp_duty: number
+          sum_insured_type: string
+          total_premium: number
+          updated_at?: string
+          user_agent?: string | null
+          vehicle_body_style?: string | null
+          vehicle_drive_type?: string | null
+          vehicle_engine_size?: string | null
+          vehicle_family: string
+          vehicle_make: string
+          vehicle_nvic: string
+          vehicle_transmission?: string | null
+          vehicle_variant: string
+          vehicle_year: string
+        }
+        Update: {
+          agreed_value?: number | null
+          api_request_payload?: Json | null
+          api_response_data?: Json | null
+          base_premium?: number
+          cover_type?: string
+          created_at?: string
+          current_insurer?: string
+          date_of_birth?: string
+          gender?: string
+          gst?: number
+          id?: string
+          ip_address?: string | null
+          km_per_year?: string
+          market_value?: number | null
+          policy_start_date?: string
+          primary_usage?: string
+          quote_number?: string
+          quote_reference?: string
+          registration_number?: string
+          registration_state?: string
+          risk_address_latitude?: string | null
+          risk_address_longitude?: string | null
+          risk_address_lurn?: string
+          risk_address_postcode?: string
+          risk_address_state?: string
+          risk_address_street_name?: string
+          risk_address_street_number?: string
+          risk_address_street_type?: string
+          risk_address_suburb?: string
+          risk_address_unit_number?: string | null
+          risk_address_unit_type?: string | null
+          stamp_duty?: number
+          sum_insured_type?: string
+          total_premium?: number
+          updated_at?: string
+          user_agent?: string | null
+          vehicle_body_style?: string | null
+          vehicle_drive_type?: string | null
+          vehicle_engine_size?: string | null
+          vehicle_family?: string
+          vehicle_make?: string
+          vehicle_nvic?: string
+          vehicle_transmission?: string | null
+          vehicle_variant?: string
+          vehicle_year?: string
+        }
+        Relationships: []
       }
     }
     Views: {
