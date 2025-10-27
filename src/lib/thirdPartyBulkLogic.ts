@@ -49,29 +49,54 @@ export const API_DATE_FORMAT = 'yyyy-MM-dd';
 // ============================================
 
 /**
- * Convert date from dd/mm/yyyy to yyyy-MM-dd for API
+ * Convert date to dd/mm/yyyy format for Suncorp API
+ * Accepts either dd/mm/yyyy or yyyy-mm-dd (ISO) format
  */
 export function convertDateFormat(dateString: string): string {
   try {
-    // Parse dd/mm/yyyy format
-    const parts = dateString.split('/');
-    if (parts.length !== 3) {
-      throw new Error('Invalid date format. Expected dd/mm/yyyy');
+    // Remove any whitespace
+    const cleaned = dateString.trim();
+    
+    let date: Date;
+    
+    // Check if it's ISO format (yyyy-mm-dd)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
+      // Parse ISO format: "1998-06-16"
+      const [year, month, day] = cleaned.split('-').map(n => parseInt(n, 10));
+      
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        throw new Error('Invalid date values in ISO format');
+      }
+      
+      date = new Date(year, month - 1, day);
     }
-
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10);
-    const year = parseInt(parts[2], 10);
-
-    if (isNaN(day) || isNaN(month) || isNaN(year)) {
-      throw new Error('Invalid date values');
+    // Check if it's dd/mm/yyyy format
+    else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(cleaned)) {
+      // Parse dd/mm/yyyy format: "16/06/1998"
+      const [day, month, year] = cleaned.split('/').map(n => parseInt(n, 10));
+      
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        throw new Error('Invalid date values in dd/mm/yyyy format');
+      }
+      
+      date = new Date(year, month - 1, day);
     }
-
-    // Create date object (months are 0-indexed in JS)
-    const date = new Date(year, month - 1, day);
-
-    // Format as yyyy-MM-dd
-    return format(date, API_DATE_FORMAT);
+    else {
+      throw new Error('Invalid date format. Expected dd/mm/yyyy or yyyy-mm-dd');
+    }
+    
+    // Validate the date is real (handles cases like Feb 31st)
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date');
+    }
+    
+    // Return in dd/mm/yyyy format for Suncorp API
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
+    
   } catch (error) {
     console.error('Date conversion error:', error);
     throw new Error(`Failed to convert date "${dateString}": ${error}`);
