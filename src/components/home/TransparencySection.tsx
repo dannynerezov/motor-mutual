@@ -164,30 +164,6 @@ export const TransparencySection = () => {
         {/* New Carousel Component */}
         <PricingCarousel />
 
-        {/* Formula Explanation */}
-        <Card className="border-2 bg-accent/5">
-          <CardContent className="py-6">
-            <div className="text-center space-y-4">
-              <h4 className="text-xl font-bold">The Formula (Everyone Sees This)</h4>
-              {isLoading ? (
-                <Skeleton className="h-8 w-96 mx-auto" />
-              ) : activeScheme ? (
-                <div className="space-y-2">
-                  <p className="font-mono text-sm md:text-lg bg-background px-4 py-2 rounded-lg inline-block">
-                    Linear pricing: ${activeScheme.floor_price} at ${activeScheme.floor_point.toLocaleString()} 
-                    → ${activeScheme.ceiling_price} at ${activeScheme.ceiling_point.toLocaleString()}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Valid from {new Date(activeScheme.valid_from).toLocaleDateString()}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">Formula currently unavailable</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         <p className="text-center text-sm text-muted-foreground italic max-w-2xl mx-auto">
           Base premium shown. Claims history loading may apply (transparently disclosed).
         </p>

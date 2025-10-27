@@ -3,7 +3,6 @@ import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VehiclePricingCard } from "./VehiclePricingCard";
-import { PricingCurveVisualization } from "./PricingCurveVisualization";
 import { vehicleExamples } from "@/data/vehicleExamples";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
 
@@ -151,12 +150,6 @@ export function PricingCarousel() {
         ))}
       </div>
 
-      {/* Curve Visualization */}
-      <PricingCurveVisualization
-        currentVehicleId={currentVehicle.id}
-        vehiclesWithPremiums={vehiclesWithPremiums}
-        scheme={activeScheme}
-      />
     </div>
   );
 }
