@@ -246,6 +246,18 @@ export type Database = {
       }
       named_drivers: {
         Row: {
+          address_latitude: string | null
+          address_line1: string | null
+          address_longitude: string | null
+          address_lurn: string | null
+          address_postcode: string | null
+          address_state: string | null
+          address_street_name: string | null
+          address_street_number: string | null
+          address_street_type: string | null
+          address_suburb: string | null
+          address_unit_number: string | null
+          address_unit_type: string | null
           claims_count: number
           created_at: string
           date_of_birth: string
@@ -257,6 +269,18 @@ export type Database = {
           quote_id: string
         }
         Insert: {
+          address_latitude?: string | null
+          address_line1?: string | null
+          address_longitude?: string | null
+          address_lurn?: string | null
+          address_postcode?: string | null
+          address_state?: string | null
+          address_street_name?: string | null
+          address_street_number?: string | null
+          address_street_type?: string | null
+          address_suburb?: string | null
+          address_unit_number?: string | null
+          address_unit_type?: string | null
           claims_count?: number
           created_at?: string
           date_of_birth: string
@@ -268,6 +292,18 @@ export type Database = {
           quote_id: string
         }
         Update: {
+          address_latitude?: string | null
+          address_line1?: string | null
+          address_longitude?: string | null
+          address_lurn?: string | null
+          address_postcode?: string | null
+          address_state?: string | null
+          address_street_name?: string | null
+          address_street_number?: string | null
+          address_street_type?: string | null
+          address_suburb?: string | null
+          address_unit_number?: string | null
+          address_unit_type?: string | null
           claims_count?: number
           created_at?: string
           date_of_birth?: string
@@ -513,6 +549,13 @@ export type Database = {
           quote_reference: string
           registration_number: string
           status: string
+          third_party_api_request_payload: Json | null
+          third_party_api_response_data: Json | null
+          third_party_base_premium: number | null
+          third_party_gst: number | null
+          third_party_quote_number: string | null
+          third_party_stamp_duty: number | null
+          third_party_total_premium: number | null
           total_base_price: number | null
           total_final_price: number | null
           vehicle_make: string
@@ -533,6 +576,13 @@ export type Database = {
           quote_reference: string
           registration_number: string
           status?: string
+          third_party_api_request_payload?: Json | null
+          third_party_api_response_data?: Json | null
+          third_party_base_premium?: number | null
+          third_party_gst?: number | null
+          third_party_quote_number?: string | null
+          third_party_stamp_duty?: number | null
+          third_party_total_premium?: number | null
           total_base_price?: number | null
           total_final_price?: number | null
           vehicle_make: string
@@ -553,6 +603,13 @@ export type Database = {
           quote_reference?: string
           registration_number?: string
           status?: string
+          third_party_api_request_payload?: Json | null
+          third_party_api_response_data?: Json | null
+          third_party_base_premium?: number | null
+          third_party_gst?: number | null
+          third_party_quote_number?: string | null
+          third_party_stamp_duty?: number | null
+          third_party_total_premium?: number | null
           total_base_price?: number | null
           total_final_price?: number | null
           vehicle_make?: string

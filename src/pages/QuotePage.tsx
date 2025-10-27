@@ -21,6 +21,11 @@ interface Quote {
   total_final_price: number;
   status: string;
   pricing_scheme_id: string | null;
+  third_party_quote_number?: string | null;
+  third_party_base_premium?: number | null;
+  third_party_stamp_duty?: number | null;
+  third_party_gst?: number | null;
+  third_party_total_premium?: number | null;
   pricing_schemes?: {
     scheme_number: number;
     valid_from: string;
@@ -37,6 +42,7 @@ interface Vehicle {
   vehicle_make: string;
   vehicle_model: string;
   vehicle_year: number;
+  vehicle_nvic: string | null;
   selected_coverage_value: number;
   vehicle_image_url: string | null;
 }
@@ -49,6 +55,18 @@ interface NamedDriver {
   gender: string;
   date_of_birth: string;
   claims_count: number;
+  address_line1?: string;
+  address_unit_type?: string;
+  address_unit_number?: string;
+  address_street_number?: string;
+  address_street_name?: string;
+  address_street_type?: string;
+  address_suburb?: string;
+  address_state?: string;
+  address_postcode?: string;
+  address_lurn?: string;
+  address_latitude?: string;
+  address_longitude?: string;
 }
 
 const QuotePage = () => {
@@ -217,6 +235,40 @@ const QuotePage = () => {
       toast({
         title: "Error",
         description: "Failed to remove driver",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleQuoteGenerated = async (quoteData: any) => {
+    try {
+      const { error } = await supabase
+        .from("quotes")
+        .update({
+          third_party_quote_number: quoteData.quoteNumber,
+          third_party_base_premium: quoteData.basePremium,
+          third_party_stamp_duty: quoteData.stampDuty,
+          third_party_gst: quoteData.gst,
+          third_party_total_premium: quoteData.totalPremium,
+          third_party_api_request_payload: quoteData.requestPayload,
+          third_party_api_response_data: quoteData.responseData,
+        })
+        .eq("id", quoteId);
+
+      if (error) throw error;
+
+      // Reload quote data to show updated pricing
+      await loadQuoteData();
+
+      toast({
+        title: "Third Party Quote Generated",
+        description: `Quote ${quoteData.quoteNumber} added successfully`,
+      });
+    } catch (error) {
+      console.error("Error updating quote with Suncorp data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save third party quote",
         variant: "destructive",
       });
     }
@@ -395,6 +447,14 @@ const QuotePage = () => {
                         driver={driver}
                         onUpdate={handleDriverUpdate}
                         onRemove={handleDriverRemove}
+                        vehicleData={vehicles[0] ? {
+                          registration_number: vehicles[0].registration_number,
+                          vehicle_make: vehicles[0].vehicle_make,
+                          vehicle_model: vehicles[0].vehicle_model,
+                          vehicle_year: vehicles[0].vehicle_year,
+                          vehicle_nvic: vehicles[0].vehicle_nvic,
+                        } : undefined}
+                        onQuoteGenerated={handleQuoteGenerated}
                       />
                     ))}
 
@@ -434,51 +494,107 @@ const QuotePage = () => {
                 <CardTitle>Your Membership</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Base Price</p>
-                  <p className="text-2xl font-bold">
-                    ${quote.total_base_price?.toLocaleString() || "0"}
-                  </p>
+                {/* MCM Mutual Membership Section */}
+                <div className="pb-4 border-b">
+                  <h3 className="text-lg font-semibold mb-3">MCM Mutual Membership</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <p className="text-sm text-muted-foreground">Base Price</p>
+                      <p className="text-lg font-bold">
+                        ${quote.total_base_price?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+
+                    {totalClaimsCount > 0 && (
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-muted-foreground">
+                            Claims Loading ({totalClaimsCount}{" "}
+                            {totalClaimsCount === 1 ? "claim" : "claims"})
+                          </p>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Info className="w-3 h-3 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-xs">Each claim adds 30% to base price (maximum 3 claims counted)</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <p className="text-lg font-semibold text-orange-600">
+                          +$
+                          {(
+                            ((quote.total_base_price || 0) *
+                              0.3 *
+                              Math.min(totalClaimsCount, 3))
+                          ).toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between pt-2 border-t">
+                      <p className="font-semibold">MCM Total</p>
+                      <p className="text-xl font-bold text-primary">
+                        ${finalPrice.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                {totalClaimsCount > 0 && (
-                  <div className="border-t pt-4">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-muted-foreground">
-                        Claims Loading ({totalClaimsCount}{" "}
-                        {totalClaimsCount === 1 ? "claim" : "claims"})
-                      </p>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="w-3 h-3 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">Each claim adds 30% to base price (maximum 3 claims counted)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                {/* Suncorp Third Party Section */}
+                {quote.third_party_quote_number && (
+                  <div className="pb-4 border-b">
+                    <h3 className="text-lg font-semibold mb-3">Third Party Property Damage</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <p className="text-xs text-muted-foreground">Quote Number</p>
+                        <p className="text-xs font-mono">{quote.third_party_quote_number}</p>
+                      </div>
+                      <div className="flex justify-between">
+                        <p className="text-sm text-muted-foreground">Base Premium</p>
+                        <p className="text-sm">
+                          ${quote.third_party_base_premium?.toLocaleString() || "0"}
+                        </p>
+                      </div>
+                      <div className="flex justify-between">
+                        <p className="text-sm text-muted-foreground">Stamp Duty</p>
+                        <p className="text-sm">
+                          ${quote.third_party_stamp_duty?.toLocaleString() || "0"}
+                        </p>
+                      </div>
+                      <div className="flex justify-between">
+                        <p className="text-sm text-muted-foreground">GST</p>
+                        <p className="text-sm">
+                          ${quote.third_party_gst?.toLocaleString() || "0"}
+                        </p>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t">
+                        <p className="font-semibold">Third Party Total</p>
+                        <p className="text-xl font-bold text-accent">
+                          ${quote.third_party_total_premium?.toLocaleString() || "0"}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-lg font-semibold text-orange-600">
-                      +$
-                      {(
-                        ((quote.total_base_price || 0) *
-                          0.3 *
-                          Math.min(totalClaimsCount, 3))
-                      ).toLocaleString()}
-                    </p>
                   </div>
                 )}
 
                 <Separator />
 
+                {/* Combined Total */}
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Total Annual Price
+                    {quote.third_party_quote_number ? "Combined Annual Total" : "Total Annual Price"}
                   </p>
                   <p className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    ${finalPrice.toLocaleString()}
+                    ${(finalPrice + (quote.third_party_total_premium || 0)).toLocaleString()}
                   </p>
+                  {quote.third_party_quote_number && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      MCM ${finalPrice.toLocaleString()} + Third Party ${quote.third_party_total_premium?.toLocaleString() || "0"}
+                    </p>
+                  )}
                 </div>
 
                 <Button

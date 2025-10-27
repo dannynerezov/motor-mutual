@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { EnhancedDatePicker } from "./EnhancedDatePicker";
+import { AddressAutosuggest } from "./AddressAutosuggest";
+import { useSuncorpQuote } from "@/hooks/useSuncorpQuote";
+import { getDefaultPolicyStartDate } from "@/lib/thirdPartyBulkLogic";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface NamedDriver {
   id: string;
@@ -20,18 +25,39 @@ interface NamedDriver {
   gender: string;
   date_of_birth: string;
   claims_count: number;
+  address_line1?: string;
+  address_unit_type?: string;
+  address_unit_number?: string;
+  address_street_number?: string;
+  address_street_name?: string;
+  address_street_type?: string;
+  address_suburb?: string;
+  address_state?: string;
+  address_postcode?: string;
+  address_lurn?: string;
+  address_latitude?: string;
+  address_longitude?: string;
 }
 
 interface DriverCardProps {
   driver: NamedDriver;
   onUpdate: (id: string, field: string, value: any) => void;
   onRemove: (id: string) => void;
+  vehicleData?: {
+    registration_number: string;
+    vehicle_make: string;
+    vehicle_model: string;
+    vehicle_year: number;
+    vehicle_nvic: string | null;
+  };
+  onQuoteGenerated?: (quoteData: any) => void;
 }
 
-export const DriverCard = ({ driver, onUpdate, onRemove }: DriverCardProps) => {
+export const DriverCard = ({ driver, onUpdate, onRemove, vehicleData, onQuoteGenerated }: DriverCardProps) => {
   const [firstNameError, setFirstNameError] = useState<string>("");
   const [lastNameError, setLastNameError] = useState<string>("");
   const [dobError, setDobError] = useState<string>("");
+  const { generateQuote, isGenerating } = useSuncorpQuote();
 
   // Validate first name
   useEffect(() => {
@@ -72,6 +98,78 @@ export const DriverCard = ({ driver, onUpdate, onRemove }: DriverCardProps) => {
       }
     }
   }, [driver.date_of_birth]);
+
+  // Auto-generate Suncorp quote when all driver details are complete
+  useEffect(() => {
+    const isDriverComplete = 
+      driver.first_name && 
+      driver.first_name.trim().length >= 2 &&
+      driver.last_name && 
+      driver.last_name.trim().length >= 2 &&
+      driver.gender &&
+      driver.date_of_birth &&
+      !dobError &&
+      driver.address_lurn &&
+      vehicleData &&
+      onQuoteGenerated;
+
+    if (isDriverComplete && !isGenerating) {
+      handleGenerateQuote();
+    }
+  }, [
+    driver.first_name,
+    driver.last_name,
+    driver.gender,
+    driver.date_of_birth,
+    driver.address_lurn,
+    dobError,
+  ]);
+
+  const handleAddressSelect = (address: any) => {
+    onUpdate(driver.id, "address_line1", address.addressLine1);
+    onUpdate(driver.id, "address_unit_type", address.unitType || "");
+    onUpdate(driver.id, "address_unit_number", address.unitNumber || "");
+    onUpdate(driver.id, "address_street_number", address.streetNumber);
+    onUpdate(driver.id, "address_street_name", address.streetName);
+    onUpdate(driver.id, "address_street_type", address.streetType);
+    onUpdate(driver.id, "address_suburb", address.suburb);
+    onUpdate(driver.id, "address_state", address.state);
+    onUpdate(driver.id, "address_postcode", address.postcode);
+    onUpdate(driver.id, "address_lurn", address.lurn);
+    onUpdate(driver.id, "address_latitude", address.latitude || "");
+    onUpdate(driver.id, "address_longitude", address.longitude || "");
+  };
+
+  const handleGenerateQuote = async () => {
+    if (!vehicleData || !onQuoteGenerated) return;
+
+    const policyStartDate = getDefaultPolicyStartDate();
+
+    const result = await generateQuote(vehicleData, {
+      first_name: driver.first_name,
+      last_name: driver.last_name,
+      gender: driver.gender,
+      date_of_birth: driver.date_of_birth,
+      address_line1: driver.address_line1 || "",
+      address_unit_type: driver.address_unit_type,
+      address_unit_number: driver.address_unit_number,
+      address_street_number: driver.address_street_number || "",
+      address_street_name: driver.address_street_name || "",
+      address_street_type: driver.address_street_type || "",
+      address_suburb: driver.address_suburb || "",
+      address_state: driver.address_state || "",
+      address_postcode: driver.address_postcode || "",
+      address_lurn: driver.address_lurn || "",
+      address_latitude: driver.address_latitude,
+      address_longitude: driver.address_longitude,
+    }, policyStartDate);
+
+    if (result.success) {
+      onQuoteGenerated(result);
+    } else {
+      toast.error(`Failed to generate third party quote: ${result.error}`);
+    }
+  };
 
   return (
     <Card>
@@ -164,10 +262,37 @@ export const DriverCard = ({ driver, onUpdate, onRemove }: DriverCardProps) => {
           </Select>
         </div>
 
+        <AddressAutosuggest
+          onAddressSelect={handleAddressSelect}
+          selectedAddress={driver.address_lurn ? {
+            addressLine1: driver.address_line1 || "",
+            suburb: driver.address_suburb || "",
+            state: driver.address_state || "",
+            postcode: driver.address_postcode || "",
+            lurn: driver.address_lurn || "",
+            unitType: driver.address_unit_type,
+            unitNumber: driver.address_unit_number,
+            streetNumber: driver.address_street_number || "",
+            streetName: driver.address_street_name || "",
+            streetType: driver.address_street_type || "",
+            latitude: driver.address_latitude,
+            longitude: driver.address_longitude,
+          } : null}
+          disabled={isGenerating}
+        />
+
+        {isGenerating && (
+          <div className="flex items-center justify-center gap-2 p-4 bg-accent/10 rounded-lg border border-accent/30">
+            <Loader2 className="w-5 h-5 animate-spin text-accent" />
+            <span className="text-sm font-medium text-accent">Generating third party quote...</span>
+          </div>
+        )}
+
         <Button
           variant="destructive"
           onClick={() => onRemove(driver.id)}
           className="w-full"
+          disabled={isGenerating}
         >
           Remove Driver
         </Button>
