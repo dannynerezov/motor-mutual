@@ -116,6 +116,7 @@ serve(async (req) => {
         };
         body = JSON.stringify(quotePayload);
         console.log(`[Create Quote] Starting quote creation`);
+        console.log(`[Create Quote Payload] ${JSON.stringify(quotePayload).substring(0, 2000)}`);
         break;
       }
 

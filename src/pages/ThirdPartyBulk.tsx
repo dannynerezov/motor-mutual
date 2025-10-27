@@ -648,7 +648,7 @@ const ThirdPartyBulk = () => {
     try {
       const dob = convertDateFormat(record.dob);
       const gender = convertGenderFormat(record.gender);
-      const policyStartDate = getDefaultPolicyStartDate();
+      const policyStartDate = new Date().toISOString().slice(0, 10);
       const showStampDutyModal = getStampDutyModalByState(record.state);
       
       addLog(`  → Building quote payload (DOB: ${dob}, Gender: ${gender}, Start: ${policyStartDate})`);
@@ -658,11 +658,11 @@ const ThirdPartyBulk = () => {
         quoteDetails: {
           policyStartDate,
           acceptDutyOfDisclosure: true,
-          currentInsurer: 'AAMI',
+          currentInsurer: 'TGSH',
           sumInsured: {
             marketValue: vehicleData.newCarPrice,
             agreedValue: 0,
-            sumInsuredType: 'Market Value'
+            sumInsuredType: 'Agreed Value'
           },
           campaignCode: '',
           hasFamilyPolicy: false,
