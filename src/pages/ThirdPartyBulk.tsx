@@ -357,23 +357,18 @@ const ThirdPartyBulk = () => {
         body: {
           action: 'vehicleLookup',
           registrationNumber: record.rego,
-          state: record.state,
-          entryDate: VEHICLE_LOOKUP_ENTRY_DATE
+          state: record.state
         }
       });
       
       const executionTime = Date.now() - startTime;
       
-      console.log(`[Vehicle Lookup] Raw response:`, { data, error });
-
       if (error) {
-        const errorMsg = `Edge function invocation failed: ${error.message}`;
-        console.error('[Vehicle Lookup] Supabase error:', errorMsg);
+        const errorMsg = `Edge function error: ${error.message}`;
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
           record_identifier: record.rego,
-          timestamp: new Date().toISOString(),
           action: 'vehicle_lookup',
           status: 'error',
           api_endpoint: 'vehicleLookup',
@@ -381,78 +376,61 @@ const ThirdPartyBulk = () => {
           error_message: errorMsg,
           execution_time_ms: executionTime
         });
-        toast({
-          title: "Vehicle Lookup Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
         throw new Error(errorMsg);
       }
 
-      if (!data) {
-        const errorMsg = 'No data returned from edge function - function may not be deployed';
-        console.error('[Vehicle Lookup]', errorMsg);
+      if (!data?.success) {
+        const errorMsg = data?.error || 'Vehicle lookup failed';
         await supabase.from('bulk_quote_processing_logs').insert({
           batch_id: batchId,
           record_id: record.id,
           record_identifier: record.rego,
-          timestamp: new Date().toISOString(),
           action: 'vehicle_lookup',
           status: 'error',
           api_endpoint: 'vehicleLookup',
           request_payload: { registrationNumber: record.rego, state: record.state },
+          response_data: data,
           error_message: errorMsg,
           execution_time_ms: executionTime
         });
-        toast({
-          title: "Vehicle Lookup Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
         throw new Error(errorMsg);
       }
-
-      // Log to database
+      
+      const vehicle = data.data.vehicleDetails;
+      const valueInfo = data.data.vehicleValueInfo;
+      
+      if (!vehicle) {
+        throw new Error('No vehicle details in response');
+      }
+      
+      // Log success
       await supabase.from('bulk_quote_processing_logs').insert({
         batch_id: batchId,
         record_id: record.id,
         record_identifier: record.rego,
-        timestamp: new Date().toISOString(),
         action: 'vehicle_lookup',
-        status: data.success ? 'success' : 'error',
+        status: 'success',
         api_endpoint: 'vehicleLookup',
         request_payload: { registrationNumber: record.rego, state: record.state },
         response_data: data,
-        error_message: data.error,
         execution_time_ms: executionTime
       });
       
-      if (!data.success) {
-        const errorMsg = data.error || 'Vehicle lookup failed';
-        console.error('[Vehicle Lookup] API error:', errorMsg, data);
-        toast({
-          title: "Vehicle Lookup Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
-      
-      if (!data.data?.vehicleDetails) {
-        const errorMsg = 'No vehicle details returned from API';
-        console.error('[Vehicle Lookup]', errorMsg);
-        toast({
-          title: "Vehicle Lookup Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
-      
-      return data.data.vehicleDetails;
+      return {
+        nvic: vehicle.nvic,
+        year: vehicle.year?.toString() || '',
+        make: vehicle.make,
+        family: vehicle.family,
+        variant: vehicle.variant,
+        bodyStyle: vehicle.bodyStyle || '',
+        transmissionDescription: vehicle.transmissionDescription || '',
+        driveType: vehicle.driveType || '',
+        size: vehicle.size || '',
+        newCarPrice: valueInfo?.marketValue || valueInfo?.retailPrice || 0
+      };
     } catch (error: any) {
       console.error('[Vehicle Lookup] Error:', error);
-      throw new Error(`Vehicle lookup failed: ${error.message}`);
+      throw error;
     }
   };
 
@@ -463,7 +441,7 @@ const ThirdPartyBulk = () => {
     try {
       console.log(`[Address Validation] Starting for: ${record.address}`);
       
-      // First, search for address
+      // Step 1: Search for address suggestions
       const { data: searchData, error: searchError } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
           action: 'addressSearch',
@@ -471,63 +449,31 @@ const ThirdPartyBulk = () => {
         }
       });
       
-      console.log('[Address Search] Response:', { searchData, searchError });
-      
-      if (searchError) {
-        const errorMsg = `Address search error: ${searchError.message}`;
-        console.error('[Address Search]', errorMsg);
-        toast({
-          title: "Address Search Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
-
-      if (!searchData) {
-        const errorMsg = 'No data returned from edge function';
-        console.error('[Address Search]', errorMsg);
-        toast({
-          title: "Address Search Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
+      if (searchError || !searchData?.success) {
+        throw new Error(searchData?.error || searchError?.message || 'Address search failed');
       }
       
-      if (!searchData.success || !searchData.data?.data?.addresses?.[0]) {
-        const errorMsg = searchData.error || 'Address search failed - no addresses found';
-        console.error('[Address Search]', errorMsg);
-        toast({
-          title: "Address Search Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
+      if (!searchData.data?.data || searchData.data.data.length === 0) {
+        throw new Error('No address suggestions found');
       }
       
-      const firstAddress = searchData.data.data.addresses[0];
-      console.log(`[Address Validation] Found address:`, firstAddress.singleLineAddress);
+      // Use first suggestion
+      const suggestion = searchData.data.data[0];
+      const addressLine1 = `${suggestion.addressInBrokenDownForm.streetNumber} ${suggestion.addressInBrokenDownForm.streetName} ${suggestion.addressInBrokenDownForm.streetType}`;
       
-      // Then validate (get LURN and coordinates)
-      const { data: validateData, error } = await supabase.functions.invoke('suncorp-proxy', {
+      console.log(`[Address Validation] Using suggestion: ${addressLine1}, ${suggestion.suburb}`);
+      
+      // Step 2: Validate address and get GNAF data
+      const { data: validateData, error: validateError } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
           action: 'addressValidate',
-          payload: {
-            address: {
-              country: 'AUS',
-              suburb: firstAddress.suburb || '',
-              postcode: firstAddress.postcode || '',
-              state: record.state,
-              addressInFreeForm: {
-                addressLine1: firstAddress.singleLineAddress || record.address
-              }
-            },
-            expectedQualityLevels: ['1', '2', '3', '4', '5', '6'],
-            addressSuggestionRequirements: {
-              required: true,
-              forAddressQualityLevels: ['3', '4', '5'],
-              howMany: '10'
+          address: {
+            country: 'AUS',
+            suburb: suggestion.suburb,
+            postcode: suggestion.postcode,
+            state: suggestion.state,
+            addressInFreeForm: {
+              addressLine1: addressLine1
             }
           }
         }
@@ -535,68 +481,63 @@ const ThirdPartyBulk = () => {
       
       const executionTime = Date.now() - startTime;
       
-      console.log(`[Address Validation] Response:`, { success: validateData?.success, error: error?.message });
+      if (validateError || !validateData?.success) {
+        const errorMsg = validateData?.error || validateError?.message || 'Address validation failed';
+        await supabase.from('bulk_quote_processing_logs').insert({
+          batch_id: batchId,
+          record_id: record.id,
+          record_identifier: record.rego,
+          action: 'address_validate',
+          status: 'error',
+          api_endpoint: 'addressValidate',
+          request_payload: { query: record.address },
+          error_message: errorMsg,
+          execution_time_ms: executionTime
+        });
+        throw new Error(errorMsg);
+      }
       
-      // Log
+      const matched = validateData.data.matchedAddress;
+      
+      if (!matched) {
+        throw new Error('No matched address in validation response');
+      }
+      
+      // Require quality level 1 for best accuracy
+      if (matched.addressQualityLevel !== '1') {
+        throw new Error(`Address quality level ${matched.addressQualityLevel} not acceptable (need level 1)`);
+      }
+      
+      // Log success
       await supabase.from('bulk_quote_processing_logs').insert({
         batch_id: batchId,
         record_id: record.id,
         record_identifier: record.rego,
         action: 'address_validate',
-        status: error || !validateData?.success ? 'error' : 'success',
-        request_payload: { address: record.address },
+        status: 'success',
+        api_endpoint: 'addressValidate',
+        request_payload: { query: record.address },
         response_data: validateData,
-        error_message: error?.message || validateData?.error,
         execution_time_ms: executionTime
       });
       
-      if (error) {
-        const errorMsg = `Edge function error: ${error.message}`;
-        console.error('[Address Validation]', errorMsg);
-        toast({
-          title: "Address Validation Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
-
-      if (!validateData) {
-        const errorMsg = 'No data returned from edge function';
-        console.error('[Address Validation]', errorMsg);
-        toast({
-          title: "Address Validation Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
-      
-      if (!validateData.success) {
-        const errorMsg = validateData.error || 'Address validation failed';
-        console.error('[Address Validation]', errorMsg);
-        toast({
-          title: "Address Validation Failed",
-          description: `${record.rego}: ${errorMsg}`,
-          variant: "destructive",
-        });
-        throw new Error(errorMsg);
-      }
-      
-      const matchedAddress = validateData.data.data.matchedAddress;
-      
-      if (matchedAddress.addressQualityLevel !== '1') {
-        throw new Error(`Address quality insufficient: ${matchedAddress.addressQualityLevel} (need level 1)`);
-      }
-      
-      return matchedAddress;
+      return {
+        addressId: matched.addressId,
+        postcode: matched.postcode,
+        suburb: matched.suburb,
+        state: matched.state,
+        addressQualityLevel: matched.addressQualityLevel,
+        geocodedNationalAddressFileData: matched.geocodedNationalAddressFileData,
+        pointLevelCoordinates: matched.pointLevelCoordinates,
+        structuredStreetAddress: matched.addressInBrokenDownForm
+      };
     } catch (error: any) {
       console.error('[Address Validation] Error:', error);
-      throw new Error(`Address validation failed: ${error.message}`);
+      throw error;
     }
   };
 
-  // STEP 3: GENERATE QUOTE (TWO-STEP FLOW)
+  // STEP 3: GENERATE QUOTE (SINGLE POST FOR THIRD_PARTY)
   const callGenerateQuote = async (
     record: BulkRecord,
     vehicleData: VehicleDetails,
@@ -608,16 +549,21 @@ const ThirdPartyBulk = () => {
     try {
       console.log(`[Quote Generation] Starting for rego: ${record.rego}`);
       
-      // Build the base payload
-      const basePayload = {
+      const dob = convertDateFormat(record.dob);
+      const gender = convertGenderFormat(record.gender);
+      const policyStartDate = getDefaultPolicyStartDate();
+      const showStampDutyModal = getStampDutyModalByState(record.state);
+      
+      // Build quote request payload
+      const quotePayload = {
         quoteDetails: {
-          policyStartDate: getDefaultPolicyStartDate(),
+          policyStartDate,
           acceptDutyOfDisclosure: true,
           currentInsurer: 'AAMI',
           sumInsured: {
             marketValue: vehicleData.newCarPrice,
             agreedValue: 0,
-            sumInsuredType: 'Agreed Value'
+            sumInsuredType: 'Market Value'
           },
           campaignCode: '',
           hasFamilyPolicy: false,
@@ -634,7 +580,7 @@ const ThirdPartyBulk = () => {
             primaryUsage: 'S',
             businessType: '',
             extraQuestions: {},
-            showStampDutyModal: getStampDutyModalByState(record.state)
+            showStampDutyModal
           },
           kmPerYear: '05',
           vehicleInfo: {
@@ -662,20 +608,24 @@ const ThirdPartyBulk = () => {
         },
         riskAddress: {
           postcode: addressData.postcode,
-          suburb: addressData.suburb,
+          suburb: addressData.suburb.toUpperCase(),
           state: addressData.state,
           lurn: addressData.addressId,
-          lurnScale: addressData.addressQualityLevel,
+          lurnScale: '1',
           geocodedNationalAddressFileData: addressData.geocodedNationalAddressFileData,
           pointLevelCoordinates: addressData.pointLevelCoordinates,
           spatialReferenceId: 4283,
           matchStatus: 'HAPPY',
-          structuredStreetAddress: addressData.structuredStreetAddress
+          structuredStreetAddress: {
+            streetName: addressData.structuredStreetAddress.streetName,
+            streetNumber1: addressData.structuredStreetAddress.streetNumber1,
+            streetTypeCode: addressData.structuredStreetAddress.streetType
+          }
         },
         driverDetails: {
           mainDriver: {
-            dateOfBirth: convertDateFormat(record.dob),
-            gender: convertGenderFormat(record.gender),
+            dateOfBirth: dob,
+            gender,
             hasClaimOccurrences: false,
             claimOccurrences: []
           },
@@ -687,108 +637,67 @@ const ThirdPartyBulk = () => {
         }
       };
       
-      // STEP 1: Create quote (POST)
-      console.log(`[Quote Step 1] Creating quote for ${record.rego}`);
-      const { data: createData, error: createError } = await supabase.functions.invoke('suncorp-proxy', {
+      // Call createQuote action (single POST returns final pricing for THIRD_PARTY)
+      const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
           action: 'createQuote',
-          payload: basePayload
-        }
-      });
-      
-      if (createError) {
-        const errorMsg = `Create quote error: ${createError.message}`;
-        console.error('[Quote Step 1]', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      if (!createData?.success || !createData?.data?.quoteDetails?.quoteNumber) {
-        const errorMsg = createData?.error || 'Failed to create quote - no quote number returned';
-        console.error('[Quote Step 1]', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      const quoteNumber = createData.data.quoteDetails.quoteNumber;
-      const quoteId = createData.data.quoteDetails.quoteId;
-      console.log(`[Quote Step 1] Created quote: ${quoteNumber}`);
-      
-      // STEP 2: Update quote (PUT) with policyHolder flag
-      console.log(`[Quote Step 2] Updating quote ${quoteNumber}`);
-      const updatePayload = {
-        ...basePayload,
-        driverDetails: {
-          mainDriver: {
-            ...basePayload.driverDetails.mainDriver,
-            policyHolder: true
-          },
-          additionalDrivers: []
-        },
-        quoteDetails: {
-          ...basePayload.quoteDetails,
-          paymentFrequency: 'ANNUALLY',
-          quoteId: quoteId
-        },
-        coverDetails: {
-          ...basePayload.coverDetails,
-          subCoverType: null,
-          standardExcess: createData.data.coverDetails?.standardExcess || 750,
-          voluntaryExcess: 0,
-          switchCoverStatus: false,
-          bundledOptionsUnlimited: false
-        }
-      };
-
-      const { data: updateData, error: updateError } = await supabase.functions.invoke('suncorp-proxy', {
-        body: {
-          action: 'updateQuote',
-          quoteNumber: quoteNumber,
-          payload: updatePayload
+          quotePayload
         }
       });
       
       const executionTime = Date.now() - startTime;
       
-      // Log the complete flow
+      if (error || !data?.success) {
+        const errorMsg = data?.error || error?.message || 'Quote generation failed';
+        await supabase.from('bulk_quote_processing_logs').insert({
+          batch_id: batchId,
+          record_id: record.id,
+          record_identifier: record.rego,
+          action: 'quote_generation',
+          status: 'error',
+          api_endpoint: 'createQuote',
+          request_payload: quotePayload,
+          error_message: errorMsg,
+          execution_time_ms: executionTime
+        });
+        throw new Error(errorMsg);
+      }
+      
+      if (!data.data?.quoteDetails) {
+        throw new Error('No quote details in response');
+      }
+      
+      const quoteDetails = data.data.quoteDetails;
+      const premium = quoteDetails.premium;
+      
+      // Log success
       await supabase.from('bulk_quote_processing_logs').insert({
         batch_id: batchId,
         record_id: record.id,
         record_identifier: record.rego,
         action: 'quote_generation',
-        status: updateError || !updateData?.success ? 'error' : 'success',
-        request_payload: { create: basePayload, update: updatePayload },
-        response_data: { create: createData, update: updateData },
-        error_message: updateError?.message || updateData?.error,
+        status: 'success',
+        api_endpoint: 'createQuote',
+        request_payload: quotePayload,
+        response_data: data,
         execution_time_ms: executionTime
       });
       
-      if (updateError) {
-        const errorMsg = `Update quote error: ${updateError.message}`;
-        console.error('[Quote Step 2]', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      if (!updateData?.success) {
-        const errorMsg = updateData?.error || 'Failed to update quote';
-        console.error('[Quote Step 2]', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      const premium = updateData.data.quoteDetails.premium;
-      console.log(`[Quote Complete] Quote ${quoteNumber} - Total: $${premium.annualPremium}`);
+      console.log(`[Quote Complete] ${quoteDetails.quoteNumber} - $${premium.annualPremium}`);
       
       return {
-        quoteNumber: quoteNumber,
-        quoteReference: quoteNumber,
+        quoteNumber: quoteDetails.quoteNumber,
+        quoteReference: quoteDetails.quoteNumber,
         pricing: {
-          basePremium: premium.annualBasePremium || 0,
-          stampDuty: premium.annualStampDuty || 0,
-          gst: premium.annualGST || 0,
-          totalPremium: premium.annualPremium || 0,
+          basePremium: premium.annualBasePremium,
+          stampDuty: premium.annualStampDuty,
+          gst: premium.annualGST,
+          totalPremium: premium.annualPremium
         }
       };
     } catch (error: any) {
       console.error('[Quote Generation] Error:', error);
-      throw new Error(`Quote generation failed: ${error.message}`);
+      throw error;
     }
   };
 

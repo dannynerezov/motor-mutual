@@ -15,9 +15,8 @@ serve(async (req) => {
   try {
     const { action, ...params } = await req.json();
     
-    console.log(`[Suncorp Proxy] Action: ${action}`, params);
+    console.log(`[Suncorp Proxy] Action: ${action}`);
 
-    // Base URL for Suncorp API (corrected from pf-api to api)
     const baseUrl = 'https://api.suncorp.com.au';
     
     // Handle ping action for connection testing
@@ -26,74 +25,119 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: true,
-          data: { message: 'pong', timestamp: Date.now() }
+          message: 'pong',
+          timestamp: Date.now()
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get client credentials from environment
-    const clientId = Deno.env.get('SUNCORP_CLIENT_ID') || 'sun-motor-ui';
-    const clientVersion = Deno.env.get('SUNCORP_CLIENT_VERSION') || '1.0';
+    // Get auth tokens from environment
+    const vehicleAuthToken = Deno.env.get('SUNCORP_VEHICLE_AUTH_TOKEN');
+    if (!vehicleAuthToken && action === 'vehicleLookup') {
+      throw new Error('SUNCORP_VEHICLE_AUTH_TOKEN not configured');
+    }
 
     let endpoint = '';
     let method = 'GET';
     let body = null;
     let headers: Record<string, string> = {
-      'accept': 'application/vnd.api+json',
-      'content-type': 'application/json',
-      'x-client-id': clientId,
-      'x-client-version': clientVersion,
-      'x-correlation-id': 'correlationID',
-      'x-request-id': 'requestID',
+      'accept': '*/*',
+      'origin': 'https://motor.suncorp.com.au',
+      'referer': 'https://motor.suncorp.com.au/',
     };
 
     // Route based on action
     switch (action) {
       case 'vehicleLookup': {
-        const { registrationNumber, state, entryDate } = params;
-        endpoint = `/motor/vehicle/v2/vehicle?registrationNumber=${registrationNumber}&state=${state}&entryDate=${entryDate}`;
+        const { registrationNumber, state } = params;
+        const entryDate = new Date().toISOString().split('T')[0]; // Today's date in yyyy-MM-dd
+        
+        const queryParams = new URLSearchParams({
+          state: state,
+          country: 'AUS',
+          brand: 'SUNCORP',
+          channel: 'WEB',
+          product: 'CAR',
+          entryDate: entryDate
+        });
+        
+        endpoint = `/vehicle-search-service/vehicle/rego/${registrationNumber}/details?${queryParams}`;
         method = 'GET';
+        headers['x-suncorp-vehicle-authorization'] = vehicleAuthToken!;
         console.log(`[Vehicle Lookup] Rego: ${registrationNumber}, State: ${state}`);
-        break;
-      }
-
-      case 'createQuote': {
-        const { payload } = params;
-        endpoint = '/pi-motor-quote-api/api/v1/insurance/motor/brands/sun/quotes';
-        method = 'POST';
-        body = JSON.stringify(payload);
-        console.log(`[Create Quote] Starting quote creation`);
-        break;
-      }
-
-      case 'updateQuote': {
-        const { quoteNumber, payload } = params;
-        if (!quoteNumber) {
-          throw new Error('quoteNumber is required for updateQuote action');
-        }
-        endpoint = `/pi-motor-quote-api/api/v1/insurance/motor/brands/sun/quotes/${quoteNumber}`;
-        method = 'PUT';
-        body = JSON.stringify(payload);
-        console.log(`[Update Quote] Updating quote: ${quoteNumber}`);
         break;
       }
 
       case 'addressSearch': {
         const { query } = params;
-        const encodedQuery = encodeURIComponent(query);
-        endpoint = `/address/v1/addresses?freeTextAddress=${encodedQuery}&maxNumberOfResults=10`;
+        const queryParams = new URLSearchParams({
+          isRiskAddress: 'true',
+          q: query
+        });
+        
+        endpoint = `/address-search-service/address/suggestions/v1?${queryParams}`;
         method = 'GET';
         console.log(`[Address Search] Query: ${query}`);
         break;
       }
 
       case 'addressValidate': {
-        const { payload } = params;
-        endpoint = '/address/v1/address';
+        const { address } = params;
+        endpoint = '/address-search-service/address/find/v3';
         method = 'POST';
-        body = JSON.stringify(payload);
-        console.log(`[Address Validate] Payload:`, payload);
+        headers['content-type'] = 'application/json; charset=utf-8';
+        body = JSON.stringify({
+          address: address,
+          expectedQualityLevels: ['1', '2', '3', '4', '5', '6'],
+          addressSuggestionRequirements: {
+            required: true,
+            forAddressQualityLevels: ['3', '4', '5'],
+            howMany: '10'
+          }
+        });
+        console.log(`[Address Validate] Suburb: ${address.suburb}, Postcode: ${address.postcode}`);
+        break;
+      }
+
+      case 'createQuote': {
+        const { quotePayload } = params;
+        endpoint = '/pi-motor-quote-api/api/v1/insurance/motor/brands/sun/quotes';
+        method = 'POST';
+        headers = {
+          'accept': 'application/vnd.api+json',
+          'content-type': 'application/json',
+          'x-client-id': 'sun-motor-ui',
+          'x-client-version': '1.0',
+          'x-correlation-id': crypto.randomUUID(),
+          'x-request-id': crypto.randomUUID(),
+          'origin': 'https://motor.suncorp.com.au',
+          'referer': 'https://motor.suncorp.com.au/',
+        };
+        body = JSON.stringify(quotePayload);
+        console.log(`[Create Quote] Starting quote creation`);
+        break;
+      }
+
+      case 'updateQuote': {
+        const { quoteNumber, quotePayload } = params;
+        if (!quoteNumber) {
+          throw new Error('quoteNumber is required for updateQuote action');
+        }
+        endpoint = `/pi-motor-quote-api/api/v1/insurance/motor/brands/sun/quotes/${quoteNumber}`;
+        method = 'PUT';
+        headers = {
+          'accept': 'application/vnd.api+json',
+          'content-type': 'application/json',
+          'x-client-id': 'sun-motor-ui',
+          'x-client-version': '1.0',
+          'x-correlation-id': crypto.randomUUID(),
+          'x-request-id': crypto.randomUUID(),
+          'origin': 'https://motor.suncorp.com.au',
+          'referer': 'https://motor.suncorp.com.au/',
+        };
+        body = JSON.stringify(quotePayload);
+        console.log(`[Update Quote] Updating quote: ${quoteNumber}`);
         break;
       }
 
@@ -119,7 +163,7 @@ serve(async (req) => {
     const responseText = await response.text();
     
     if (!response.ok) {
-      console.error(`[API Error] Status: ${response.status}, Body: ${responseText}`);
+      console.error(`[API Error] Status: ${response.status}, Body: ${responseText.substring(0, 500)}`);
       
       // Try to parse error response
       let errorData;
@@ -152,7 +196,7 @@ serve(async (req) => {
       data = { raw: responseText };
     }
 
-    console.log(`[Success] Action: ${action} completed successfully`);
+    console.log(`[Success] Action: ${action} completed in ${executionTime}ms`);
 
     return new Response(
       JSON.stringify({

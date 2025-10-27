@@ -40,13 +40,27 @@ export interface VehicleDetails {
 }
 
 export interface AddressData {
-  addressId: string;
+  addressId: string; // This is the lurn
   postcode: string;
   suburb: string;
   state: string;
   addressQualityLevel: string;
   geocodedNationalAddressFileData: {
-    gnafId: string;
+    gnafAddressDetailPID: string;
+    gnafLocalityPID: string;
+    gnafMbCode: string;
+    absStatisticalAreas: {
+      gnafSa1: string;
+      gnafSa2: string;
+      gnafSa3: string;
+      gnafSa4: string;
+    };
+    gnafStreetLocalityLatitude: string;
+    gnafStreetLocalityLongitude: string;
+    gnafStreetLocalityPID: string;
+    gnafSuburbLatitude: string;
+    gnafSuburbLongitude: string;
+    gnafSrid: number;
   };
   pointLevelCoordinates: {
     longLatLatitude: string;
@@ -56,6 +70,7 @@ export interface AddressData {
     unitNumber?: string;
     unitType?: string;
     streetNumber1: string;
+    streetNumber?: string;
     streetName: string;
     streetType: string;
   };
