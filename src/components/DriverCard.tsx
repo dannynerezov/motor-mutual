@@ -109,7 +109,9 @@ export const DriverCard = ({ driver, onUpdate, onRemove, vehicleData, onQuoteGen
       driver.gender &&
       driver.date_of_birth &&
       !dobError &&
-      driver.address_lurn &&
+      driver.address_suburb &&
+      driver.address_state &&
+      driver.address_postcode &&
       vehicleData &&
       onQuoteGenerated;
 
@@ -121,23 +123,25 @@ export const DriverCard = ({ driver, onUpdate, onRemove, vehicleData, onQuoteGen
     driver.last_name,
     driver.gender,
     driver.date_of_birth,
-    driver.address_lurn,
+    driver.address_suburb,
+    driver.address_state,
+    driver.address_postcode,
     dobError,
   ]);
 
   const handleAddressSelect = (address: any) => {
     onUpdate(driver.id, "address_line1", address.addressLine1);
-    onUpdate(driver.id, "address_unit_type", address.unitType || "");
-    onUpdate(driver.id, "address_unit_number", address.unitNumber || "");
-    onUpdate(driver.id, "address_street_number", address.streetNumber);
-    onUpdate(driver.id, "address_street_name", address.streetName);
-    onUpdate(driver.id, "address_street_type", address.streetType);
     onUpdate(driver.id, "address_suburb", address.suburb);
     onUpdate(driver.id, "address_state", address.state);
     onUpdate(driver.id, "address_postcode", address.postcode);
-    onUpdate(driver.id, "address_lurn", address.lurn);
-    onUpdate(driver.id, "address_latitude", address.latitude || "");
-    onUpdate(driver.id, "address_longitude", address.longitude || "");
+    onUpdate(driver.id, "address_lurn", null);
+    onUpdate(driver.id, "address_latitude", null);
+    onUpdate(driver.id, "address_longitude", null);
+    onUpdate(driver.id, "address_unit_type", address.unitType || null);
+    onUpdate(driver.id, "address_unit_number", address.unitNumber || null);
+    onUpdate(driver.id, "address_street_number", address.streetNumber || null);
+    onUpdate(driver.id, "address_street_name", address.streetName || null);
+    onUpdate(driver.id, "address_street_type", address.streetType || null);
   };
 
   const handleGenerateQuote = async () => {
@@ -265,19 +269,18 @@ export const DriverCard = ({ driver, onUpdate, onRemove, vehicleData, onQuoteGen
 
         <AddressAutosuggest
           onAddressSelect={handleAddressSelect}
-          selectedAddress={driver.address_lurn ? {
+          selectedAddress={driver.address_suburb ? {
             addressLine1: driver.address_line1 || "",
             suburb: driver.address_suburb || "",
             state: driver.address_state || "",
             postcode: driver.address_postcode || "",
-            lurn: driver.address_lurn || "",
             unitType: driver.address_unit_type,
             unitNumber: driver.address_unit_number,
-            streetNumber: driver.address_street_number || "",
-            streetName: driver.address_street_name || "",
-            streetType: driver.address_street_type || "",
-            latitude: driver.address_latitude,
-            longitude: driver.address_longitude,
+            streetNumber: driver.address_street_number,
+            streetName: driver.address_street_name,
+            streetType: driver.address_street_type,
+            buildingName: undefined,
+            country: 'AU',
           } : null}
           disabled={isGenerating}
         />

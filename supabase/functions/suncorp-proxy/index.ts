@@ -70,15 +70,16 @@ serve(async (req) => {
       }
 
       case 'addressSearch': {
-        const { query } = params;
+        const { query, searchText } = params;
+        const searchQuery = searchText || query; // Support both parameters
         const queryParams = new URLSearchParams({
           isRiskAddress: 'true',
-          q: query
+          q: searchQuery
         });
         
         endpoint = `/address-search-service/address/suggestions/v1?${queryParams}`;
         method = 'GET';
-        console.log(`[Address Search] Query: ${query}`);
+        console.log(`[Address Search] Query: ${searchQuery}`);
         break;
       }
 

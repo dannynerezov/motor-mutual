@@ -12,14 +12,13 @@ interface AddressSuggestion {
   suburb: string;
   state: string;
   postcode: string;
-  lurn: string;
   unitType?: string;
   unitNumber?: string;
-  streetNumber: string;
-  streetName: string;
-  streetType: string;
-  latitude?: string;
-  longitude?: string;
+  streetNumber?: string;
+  streetName?: string;
+  streetType?: string;
+  buildingName?: string;
+  country?: string;
 }
 
 interface AddressAutosuggestProps {
@@ -36,7 +35,6 @@ export const AddressAutosuggest = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [validatedAddress, setValidatedAddress] = useState<AddressSuggestion | null>(selectedAddress || null);
 
@@ -68,32 +66,46 @@ export const AddressAutosuggest = ({
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
           action: 'addressSearch',
-          parameters: {
-            searchText: searchTerm,
-          }
+          searchText: searchTerm,
         }
       });
 
       if (error) throw error;
 
-      if (data.addresses && Array.isArray(data.addresses)) {
-        const formattedSuggestions: AddressSuggestion[] = data.addresses.map((addr: any) => ({
-          addressLine1: addr.addressLine1 || '',
-          suburb: addr.suburb || '',
-          state: addr.state || '',
-          postcode: addr.postcode || '',
-          lurn: addr.lurn || '',
-          unitType: addr.unitType,
-          unitNumber: addr.unitNumber,
-          streetNumber: addr.streetNumber || '',
-          streetName: addr.streetName || '',
-          streetType: addr.streetType || '',
-          latitude: addr.latitude,
-          longitude: addr.longitude,
-        }));
+      if (data?.success && data.data?.data && Array.isArray(data.data.data)) {
+        const formattedSuggestions: AddressSuggestion[] = data.data.data.map((addr: any) => {
+          const broken = addr.addressInBrokenDownForm || {};
+          
+          // Build addressLine1 from components
+          let addressParts = [];
+          if (broken.unitNumber && broken.unitType) {
+            addressParts.push(`${broken.unitType}${broken.unitNumber}`);
+          }
+          if (broken.buildingName) addressParts.push(broken.buildingName);
+          if (broken.streetNumber) addressParts.push(broken.streetNumber);
+          if (broken.streetName) addressParts.push(broken.streetName);
+          if (broken.streetType) addressParts.push(broken.streetType);
+          
+          return {
+            addressLine1: addressParts.join(' '),
+            suburb: addr.suburb || '',
+            state: addr.state || '',
+            postcode: addr.postcode || '',
+            unitType: broken.unitType,
+            unitNumber: broken.unitNumber,
+            streetNumber: broken.streetNumber,
+            streetName: broken.streetName,
+            streetType: broken.streetType,
+            buildingName: broken.buildingName,
+            country: addr.country || 'AU',
+          };
+        });
 
         setSuggestions(formattedSuggestions);
         setShowSuggestions(formattedSuggestions.length > 0);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
       }
     } catch (error: any) {
       console.error('Address search error:', error);
@@ -103,61 +115,19 @@ export const AddressAutosuggest = ({
     }
   };
 
-  const handleAddressValidation = async (address: AddressSuggestion) => {
-    setIsValidating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
-        body: {
-          action: 'addressValidate',
-          parameters: {
-            lurn: address.lurn,
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      if (data.validatedAddress) {
-        const validated: AddressSuggestion = {
-          addressLine1: data.validatedAddress.addressLine1 || address.addressLine1,
-          suburb: data.validatedAddress.suburb || address.suburb,
-          state: data.validatedAddress.state || address.state,
-          postcode: data.validatedAddress.postcode || address.postcode,
-          lurn: data.validatedAddress.lurn || address.lurn,
-          unitType: data.validatedAddress.unitType || address.unitType,
-          unitNumber: data.validatedAddress.unitNumber || address.unitNumber,
-          streetNumber: data.validatedAddress.streetNumber || address.streetNumber,
-          streetName: data.validatedAddress.streetName || address.streetName,
-          streetType: data.validatedAddress.streetType || address.streetType,
-          latitude: data.validatedAddress.latitude || address.latitude,
-          longitude: data.validatedAddress.longitude || address.longitude,
-        };
-
-        setValidatedAddress(validated);
-        setSearchTerm(validated.addressLine1);
-        setShowSuggestions(false);
-        onAddressSelect(validated);
-        toast.success('Address validated successfully');
-      } else {
-        throw new Error('Address validation failed');
-      }
-    } catch (error: any) {
-      console.error('Address validation error:', error);
-      toast.error('Failed to validate address');
-    } finally {
-      setIsValidating(false);
-    }
-  };
-
   const handleSuggestionClick = (suggestion: AddressSuggestion) => {
-    handleAddressValidation(suggestion);
+    setValidatedAddress(suggestion);
+    setSearchTerm(suggestion.addressLine1);
+    setShowSuggestions(false);
+    onAddressSelect(suggestion);
+    toast.success('Address selected');
   };
 
   return (
     <div className="space-y-2 relative">
       <Label htmlFor="address-search" className="flex items-center gap-2">
         <MapPin className="w-4 h-4" />
-        Residential Address
+        Overnight Parking Address
         {validatedAddress && (
           <CheckCircle2 className="w-4 h-4 text-green-600" />
         )}
@@ -175,11 +145,11 @@ export const AddressAutosuggest = ({
               setValidatedAddress(null);
             }
           }}
-          disabled={disabled || isValidating}
+          disabled={disabled}
           className={validatedAddress ? "border-green-500" : ""}
         />
         
-        {(isSearching || isValidating) && (
+        {isSearching && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
           </div>
