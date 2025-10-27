@@ -620,6 +620,13 @@ const ThirdPartyBulk = () => {
         execution_time_ms: executionTime
       });
       
+      // Log unit detection
+      if (matched.addressInBrokenDownForm?.unitNumber) {
+        addLog(`  → Unit detected: ${matched.addressInBrokenDownForm.unitType || 'Unit'} ${matched.addressInBrokenDownForm.unitNumber}`);
+      } else {
+        addLog(`  → No unit number (house/street address)`);
+      }
+      
       return {
         addressId: matched.addressId,
         postcode: matched.postcode,
@@ -717,8 +724,8 @@ const ThirdPartyBulk = () => {
           hasHireCarLimited: false,
           hasRoadAssist: false,
           hasFireAndTheft: false,
-          standardExcess: null,
-          voluntaryExcess: null
+          standardExcess: undefined,
+          voluntaryExcess: 0
         },
         riskAddress: {
           postcode: addressData.postcode,
@@ -731,6 +738,8 @@ const ThirdPartyBulk = () => {
           spatialReferenceId: 4283,
           matchStatus: 'HAPPY',
             structuredStreetAddress: {
+              unitNumber: addressData.structuredStreetAddress?.unitNumber || undefined,
+              unitCode: addressData.structuredStreetAddress?.unitType || undefined,
               streetName: addressData.structuredStreetAddress?.streetName || '',
               streetNumber1: addressData.structuredStreetAddress?.streetNumber1 || addressData.structuredStreetAddress?.streetNumber || '',
               streetTypeCode: addressData.structuredStreetAddress?.streetType || 
@@ -751,6 +760,11 @@ const ThirdPartyBulk = () => {
           hasCriminalHistory: false
         }
       };
+      
+      // Log unit inclusion
+      if (addressData.structuredStreetAddress?.unitNumber) {
+        addLog(`  → Including unit in quote: ${addressData.structuredStreetAddress.unitType || 'Unit'} ${addressData.structuredStreetAddress.unitNumber}`);
+      }
       
       addLog(`  → Calling quote API with vehicle ${vehicleData.nvic}`);
       console.log('[Quote Payload]', JSON.stringify(quotePayload, null, 2));
