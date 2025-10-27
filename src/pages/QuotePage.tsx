@@ -178,7 +178,7 @@ const QuotePage = () => {
           first_name: "",
           last_name: "",
           gender: "",
-          date_of_birth: "",
+          date_of_birth: new Date('2000-01-01').toISOString().split('T')[0],
           claims_count: 0,
         })
         .select()
