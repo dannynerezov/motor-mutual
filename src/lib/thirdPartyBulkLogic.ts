@@ -177,6 +177,28 @@ export function shouldIncludeCarPurchaseField(vehicleYear: string): boolean {
 // ============================================
 
 /**
+ * Map unit type to code for Suncorp API
+ */
+export function mapUnitTypeToCode(unitType?: string): string | undefined {
+  if (!unitType) return undefined;
+  
+  const normalized = unitType.toUpperCase().trim();
+  
+  const typeMap: Record<string, string> = {
+    'UNIT': 'U',
+    'APARTMENT': 'APT',
+    'FLAT': 'F',
+    'VILLA': 'VL',
+    'TOWNHOUSE': 'TH',
+    'SUITE': 'SE',
+    'SHOP': 'SH',
+    'OFFICE': 'OFF',
+  };
+  
+  return typeMap[normalized] || 'U'; // Default to 'U' for UNIT
+}
+
+/**
  * Build address line 1 from components
  */
 export function buildAddressLine1(
