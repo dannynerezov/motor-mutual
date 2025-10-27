@@ -66,12 +66,31 @@ const ThirdPartyBulk = () => {
 
   // PARSE INPUT DATA
   const handleParseInput = () => {
-    const lines = bulkInput.trim().split('\n');
+    const lines = bulkInput.trim().split('\n').filter(line => line.trim().length > 0);
     const parsed: BulkRecord[] = [];
     let errors = 0;
+    const errorMessages: string[] = [];
     
     lines.forEach((line, index) => {
-      const [rego, address, dob, gender] = line.split('\t');
+      const rowNumber = index + 1;
+      
+      // Check if line contains tabs
+      if (!line.includes('\t')) {
+        errors++;
+        errorMessages.push(`Row ${rowNumber}: Missing tab separators. Expected format: rego[TAB]address[TAB]dob[TAB]gender`);
+        return;
+      }
+      
+      const parts = line.split('\t');
+      
+      // Check if we have all 4 fields
+      if (parts.length < 4) {
+        errors++;
+        errorMessages.push(`Row ${rowNumber}: Missing fields. Found ${parts.length} fields, need 4: rego, address, dob, gender`);
+        return;
+      }
+      
+      const [rego, address, dob, gender] = parts;
       
       // Extract state from address (regex pattern)
       const stateMatch = address?.match(/\b(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b/i);
@@ -88,7 +107,7 @@ const ThirdPartyBulk = () => {
       
       if (validation.isValid && isValidAustralianState(state)) {
         parsed.push({
-          id: index + 1,
+          id: rowNumber,
           rego: rego.trim(),
           state: state as AustralianState,
           address: address.trim(),
@@ -98,13 +117,28 @@ const ThirdPartyBulk = () => {
         });
       } else {
         errors++;
+        errorMessages.push(`Row ${rowNumber}: ${validation.error || 'Invalid state in address'}`);
+      }
+    });
+    
+    // Show all error messages
+    if (errorMessages.length > 0) {
+      errorMessages.slice(0, 5).forEach(msg => {
         toast({
           title: 'Validation Error',
-          description: `Row ${index + 1}: ${validation.error}`,
+          description: msg,
+          variant: 'destructive'
+        });
+      });
+      
+      if (errorMessages.length > 5) {
+        toast({
+          title: 'Additional Errors',
+          description: `${errorMessages.length - 5} more validation errors found`,
           variant: 'destructive'
         });
       }
-    });
+    }
     
     if (parsed.length > BATCH_CONFIG.MAX_RECORDS) {
       toast({
@@ -118,7 +152,9 @@ const ThirdPartyBulk = () => {
     if (parsed.length === 0) {
       toast({
         title: 'No Valid Records',
-        description: errors > 0 ? `${errors} records had validation errors` : 'Please enter valid data',
+        description: errors > 0 
+          ? `All ${errors} records had validation errors. Check format: rego[TAB]address[TAB]dd/mm/yyyy[TAB]gender` 
+          : 'Please enter valid data in tab-separated format',
         variant: 'destructive'
       });
       return;
@@ -871,22 +907,46 @@ const ThirdPartyBulk = () => {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Bulk Input (Tab-Separated Format)</CardTitle>
-            <CardDescription>
-              Format: rego[TAB]address[TAB]dob[TAB]gender (e.g., ABC123[TAB]123 Main St, Brisbane QLD 4000[TAB]15/03/1985[TAB]Male)
+            <CardDescription className="space-y-2">
+              <div>Required format: <code className="bg-muted px-2 py-1 rounded">rego[TAB]address[TAB]dob[TAB]gender</code></div>
+              <div className="text-xs">Each row must have 4 fields separated by TAB characters (not spaces)</div>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Example format:</strong><br/>
+                <code className="text-xs">ABC123[TAB]123 Main St, Brisbane QLD 4000[TAB]15/03/1985[TAB]Male</code>
+                <br/><br/>
+                <strong>Your data must include:</strong>
+                <ul className="list-disc list-inside text-xs mt-2 space-y-1">
+                  <li>Registration number (e.g., ABC123)</li>
+                  <li>Full address with state (must contain NSW, VIC, QLD, WA, SA, TAS, ACT, or NT)</li>
+                  <li>Date of birth in dd/mm/yyyy format (e.g., 15/03/1985)</li>
+                  <li>Gender (Male or Female)</li>
+                </ul>
+              </AlertDescription>
+            </Alert>
             <Textarea
-              placeholder="ABC123	123 Main Street, Brisbane QLD 4000	15/03/1985	Male"
+              placeholder="ABC123	123 Main Street, Brisbane QLD 4000	15/03/1985	Male&#10;XYZ789	456 High St, Melbourne VIC 3000	20/06/1990	Female"
               value={bulkInput}
               onChange={(e) => setBulkInput(e.target.value)}
               rows={10}
               className="font-mono text-sm"
             />
-            <Button onClick={handleParseInput} disabled={processing}>
-              <Upload className="w-4 h-4 mr-2" />
-              Parse & Preview Records
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleParseInput} disabled={processing}>
+                <Upload className="w-4 h-4 mr-2" />
+                Parse & Preview Records
+              </Button>
+              <Button 
+                onClick={() => setBulkInput('YLD31Q\t6C Carr Crescent, Wanniassa, ACT\t15/03/1985\tMale\nYOC13W\t19 Watkins Street, Wanniassa, ACT\t20/06/1990\tFemale')}
+                variant="outline"
+              >
+                Load Example Data
+              </Button>
+            </div>
           </CardContent>
         </Card>
         
