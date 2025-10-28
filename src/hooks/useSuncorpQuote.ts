@@ -28,6 +28,7 @@ interface DriverData {
   address_lurn?: string;
   address_latitude?: string;
   address_longitude?: string;
+  address_gnaf_data?: any;
 }
 
 interface SuncorpQuoteResult {
@@ -90,6 +91,7 @@ export const useSuncorpQuote = () => {
             address_lurn: driver.address_lurn,
             address_latitude: driver.address_latitude,
             address_longitude: driver.address_longitude,
+            address_gnaf_data: driver.address_gnaf_data,
           },
           policyStartDate,
         },

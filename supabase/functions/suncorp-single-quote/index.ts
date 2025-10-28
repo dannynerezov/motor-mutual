@@ -154,6 +154,7 @@ serve(async (req) => {
         state: driver.address_state,
         latitude: driver.address_latitude,
         longitude: driver.address_longitude,
+        geocodedNationalAddressFileData: driver.address_gnaf_data || {},
         structuredStreetAddress: {
           streetNumber1: driver.address_street_number,
           streetName: driver.address_street_name,
@@ -276,6 +277,7 @@ serve(async (req) => {
         state: matched.addressInBrokenDownForm?.state || driver.address_state,
         latitude: matched.latitude,
         longitude: matched.longitude,
+        geocodedNationalAddressFileData: matched.geocodedNationalAddressFileData || {},
         structuredStreetAddress: {
           streetNumber1: matched.addressInBrokenDownForm?.streetNumber,
           streetName: matched.addressInBrokenDownForm?.streetName,

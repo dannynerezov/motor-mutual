@@ -20,6 +20,10 @@ interface AddressSuggestion {
   streetType?: string;
   buildingName?: string;
   country?: string;
+  lurn?: string;
+  latitude?: string;
+  longitude?: string;
+  geocodedNationalAddressFileData?: any;
 }
 
 interface AddressAutosuggestProps {
@@ -177,13 +181,50 @@ export const AddressAutosuggest = ({
     }
   };
 
-  const handleSuggestionClick = (suggestion: AddressSuggestion) => {
+  const handleSuggestionClick = async (suggestion: AddressSuggestion) => {
     console.log('[AddressAutosuggest] Suggestion clicked:', suggestion);
-    setValidatedAddress(suggestion);
     setSearchTerm(suggestion.addressLine1);
     setShowSuggestions(false);
-    onAddressSelect(suggestion);
-    toast({ title: 'Address selected' });
+    
+    // Validate the address to get GNAF data
+    try {
+      const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
+        body: {
+          action: 'addressValidate',
+          suburb: suggestion.suburb,
+          postcode: suggestion.postcode,
+          state: suggestion.state,
+          streetNumber: suggestion.streetNumber,
+          streetName: suggestion.streetName,
+          streetType: suggestion.streetType,
+          unitType: suggestion.unitType,
+          unitNumber: suggestion.unitNumber,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data.data) {
+        const validatedData = data.data;
+        const completeAddress = {
+          ...suggestion,
+          lurn: validatedData.lurn,
+          latitude: validatedData.pointLevelCoordinates?.latitude,
+          longitude: validatedData.pointLevelCoordinates?.longitude,
+          geocodedNationalAddressFileData: validatedData.geocodedNationalAddressFileData,
+        };
+        
+        console.log('[AddressAutosuggest] Address validated with GNAF data:', completeAddress);
+        setValidatedAddress(completeAddress);
+        onAddressSelect(completeAddress);
+        toast({ title: 'Address validated' });
+      }
+    } catch (error) {
+      console.error('[AddressAutosuggest] Validation error:', error);
+      toast({ title: 'Address validation failed', description: 'Using address without validation', variant: 'destructive' });
+      setValidatedAddress(suggestion);
+      onAddressSelect(suggestion);
+    }
   };
 
   return (

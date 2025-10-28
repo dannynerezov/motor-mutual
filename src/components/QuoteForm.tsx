@@ -284,6 +284,7 @@ export const QuoteForm = () => {
           vehicle_model: v.vehicleData.vehicleDetails.family,
           vehicle_year: v.vehicleData.vehicleDetails.year,
           vehicle_nvic: v.vehicleData.vehicleDetails.nvic || null,
+          vehicle_variant: v.vehicleData.vehicleDetails.variant || null,
           vehicle_value: v.vehicleData.vehicleValueInfo.marketValue,
           selected_coverage_value: v.selectedValue,
           vehicle_image_url: v.vehicleData.imageUrl || null,

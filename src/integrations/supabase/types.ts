@@ -496,6 +496,7 @@ export type Database = {
           vehicle_model: string
           vehicle_nvic: string | null
           vehicle_value: number
+          vehicle_variant: string | null
           vehicle_year: number
         }
         Insert: {
@@ -510,6 +511,7 @@ export type Database = {
           vehicle_model: string
           vehicle_nvic?: string | null
           vehicle_value: number
+          vehicle_variant?: string | null
           vehicle_year: number
         }
         Update: {
@@ -524,6 +526,7 @@ export type Database = {
           vehicle_model?: string
           vehicle_nvic?: string | null
           vehicle_value?: number
+          vehicle_variant?: string | null
           vehicle_year?: number
         }
         Relationships: [
@@ -538,6 +541,7 @@ export type Database = {
       }
       quotes: {
         Row: {
+          address_gnaf_data: Json | null
           claim_loading_percentage: number | null
           created_at: string
           customer_id: string
@@ -565,6 +569,7 @@ export type Database = {
           vehicle_year: number
         }
         Insert: {
+          address_gnaf_data?: Json | null
           claim_loading_percentage?: number | null
           created_at?: string
           customer_id: string
@@ -592,6 +597,7 @@ export type Database = {
           vehicle_year: number
         }
         Update: {
+          address_gnaf_data?: Json | null
           claim_loading_percentage?: number | null
           created_at?: string
           customer_id?: string

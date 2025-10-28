@@ -51,6 +51,8 @@ interface Vehicle {
   vehicle_model: string;
   vehicle_year: number;
   vehicle_nvic: string | null;
+  vehicle_variant: string | null;
+  vehicle_value: number;
   selected_coverage_value: number;
   vehicle_image_url: string | null;
 }
@@ -306,8 +308,8 @@ const QuotePage = () => {
         vehicle_model: vehicles[0].vehicle_model,
         vehicle_year: vehicles[0].vehicle_year,
         vehicle_nvic: vehicles[0].vehicle_nvic,
-        vehicle_value: quote?.vehicle_value || 0,  // ✅ Pass market value from quote
-        vehicle_variant: '',  // Variant not currently stored, will be empty for now
+        vehicle_value: vehicles[0].vehicle_value || quote?.vehicle_value || 0,
+        vehicle_variant: vehicles[0].vehicle_variant || '',
       },
       {
         first_name: driver.first_name,
@@ -326,6 +328,7 @@ const QuotePage = () => {
         address_lurn: driver.address_lurn || "",
         address_latitude: driver.address_latitude,
         address_longitude: driver.address_longitude,
+        address_gnaf_data: (quote as any)?.address_gnaf_data || null,
       },
       policyStartDate
     );
