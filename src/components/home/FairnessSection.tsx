@@ -17,30 +17,36 @@ export const FairnessSection = () => {
         </div>
       </div>
 
-      {/* Floating Synonyms (Subtle Accents) */}
-      <div className="absolute top-20 left-10 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+      {/* Background Synonyms - Scattered tastefully */}
+      <div className="absolute top-16 left-8 text-sm text-muted-foreground/8 font-light italic rotate-[-2deg]" aria-hidden="true">
         equity
       </div>
-      <div className="absolute bottom-32 right-16 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+      <div className="absolute top-32 right-12 text-xs text-muted-foreground/6 font-light rotate-[1deg]" aria-hidden="true">
         justice
       </div>
-      <div className="absolute top-40 right-32 text-xs text-muted-foreground/10 font-light italic" aria-hidden="true">
+      <div className="absolute top-1/4 left-1/4 text-lg text-muted-foreground/5 font-normal italic rotate-[-1deg]" aria-hidden="true">
         impartiality
       </div>
-
-      {/* Dictionary Definition Card (Desktop Only) */}
-      <div className="hidden xl:block absolute top-24 right-8 w-64 sticky">
-        <div className="bg-background/95 backdrop-blur-sm border-2 border-accent/20 rounded-lg p-6 shadow-lg">
-          <div className="space-y-2">
-            <h3 className="font-serif text-2xl font-bold text-accent">Fairness</h3>
-            <p className="font-serif text-xs text-muted-foreground italic">/ˈfer-nəs/</p>
-            <div className="border-t border-accent/20 pt-2 mt-2">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                <em className="not-italic font-medium">noun</em> — The quality of treating everyone equally, without discrimination based on irrelevant factors like location or demographics.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="absolute bottom-40 left-16 text-base text-muted-foreground/7 font-light italic rotate-[2deg]" aria-hidden="true">
+        evenhandedness
+      </div>
+      <div className="absolute top-2/3 right-1/4 text-sm text-muted-foreground/9 font-normal rotate-[-2deg]" aria-hidden="true">
+        egalitarianism
+      </div>
+      <div className="absolute bottom-24 right-20 text-xs text-muted-foreground/6 font-light italic rotate-[1deg]" aria-hidden="true">
+        objectivity
+      </div>
+      <div className="absolute top-48 left-1/3 text-sm text-muted-foreground/8 font-light rotate-[-1deg]" aria-hidden="true">
+        neutrality
+      </div>
+      <div className="absolute bottom-1/3 right-1/3 text-base text-muted-foreground/7 font-normal italic rotate-[2deg]" aria-hidden="true">
+        equality
+      </div>
+      <div className="absolute top-1/3 right-16 text-xs text-muted-foreground/10 font-light italic rotate-[-1deg]" aria-hidden="true">
+        balance
+      </div>
+      <div className="absolute bottom-48 left-1/4 text-sm text-muted-foreground/6 font-light rotate-[1deg]" aria-hidden="true">
+        equitability
       </div>
 
       {/* Main Content */}

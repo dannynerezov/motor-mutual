@@ -16,30 +16,36 @@ export const ReliabilitySection = () => {
         </div>
       </div>
 
-      {/* Floating Synonyms */}
-      <div className="absolute top-28 left-14 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+      {/* Background Synonyms - Scattered tastefully */}
+      <div className="absolute top-24 left-12 text-base text-muted-foreground/8 font-light italic rotate-[-2deg]" aria-hidden="true">
         dependability
       </div>
-      <div className="absolute bottom-36 right-24 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+      <div className="absolute bottom-32 right-20 text-sm text-muted-foreground/7 font-normal rotate-[1deg]" aria-hidden="true">
         trustworthiness
       </div>
-      <div className="absolute top-44 right-20 text-xs text-muted-foreground/10 font-light italic" aria-hidden="true">
+      <div className="absolute top-40 right-16 text-xs text-muted-foreground/6 font-light italic rotate-[-1deg]" aria-hidden="true">
         consistency
       </div>
-
-      {/* Dictionary Definition Card (Desktop Only) */}
-      <div className="hidden xl:block absolute top-24 right-8 w-64 sticky">
-        <div className="bg-background/95 backdrop-blur-sm border-2 border-accent/20 rounded-lg p-6 shadow-lg">
-          <div className="space-y-2">
-            <h3 className="font-serif text-2xl font-bold text-accent">Reliability</h3>
-            <p className="font-serif text-xs text-muted-foreground italic">/ri-ˌlī-ə-ˈbi-lə-tē/</p>
-            <div className="border-t border-accent/20 pt-2 mt-2">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                <em className="not-italic font-medium">noun</em> — The quality of consistently delivering on promises, providing dependable service and fast, fair outcomes that members can trust.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="absolute top-1/4 left-1/3 text-lg text-muted-foreground/5 font-normal italic rotate-[2deg]" aria-hidden="true">
+        steadfastness
+      </div>
+      <div className="absolute bottom-1/3 left-20 text-sm text-muted-foreground/9 font-light rotate-[-2deg]" aria-hidden="true">
+        faithfulness
+      </div>
+      <div className="absolute top-2/3 right-1/4 text-base text-muted-foreground/7 font-light italic rotate-[1deg]" aria-hidden="true">
+        accountability
+      </div>
+      <div className="absolute bottom-40 right-1/3 text-xs text-muted-foreground/10 font-normal italic rotate-[-1deg]" aria-hidden="true">
+        predictability
+      </div>
+      <div className="absolute top-48 left-1/4 text-sm text-muted-foreground/6 font-light rotate-[2deg]" aria-hidden="true">
+        stability
+      </div>
+      <div className="absolute bottom-48 left-1/3 text-base text-muted-foreground/8 font-normal italic rotate-[-2deg]" aria-hidden="true">
+        solidity
+      </div>
+      <div className="absolute top-1/3 right-20 text-xs text-muted-foreground/7 font-light italic rotate-[1deg]" aria-hidden="true">
+        sureness
       </div>
 
       {/* Main Content */}

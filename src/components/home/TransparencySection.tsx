@@ -19,30 +19,36 @@ export const TransparencySection = () => {
         </div>
       </div>
 
-      {/* Floating Synonyms */}
-      <div className="absolute top-24 left-12 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+      {/* Background Synonyms - Scattered tastefully */}
+      <div className="absolute top-20 left-10 text-base text-muted-foreground/7 font-light italic rotate-[-1deg]" aria-hidden="true">
         clarity
       </div>
-      <div className="absolute bottom-28 right-20 text-sm text-muted-foreground/10 font-light italic" aria-hidden="true">
+      <div className="absolute bottom-28 right-20 text-sm text-muted-foreground/8 font-normal rotate-[2deg]" aria-hidden="true">
         openness
       </div>
-      <div className="absolute top-48 right-28 text-xs text-muted-foreground/10 font-light italic" aria-hidden="true">
+      <div className="absolute top-44 right-24 text-xs text-muted-foreground/6 font-light italic rotate-[-2deg]" aria-hidden="true">
         honesty
       </div>
-
-      {/* Dictionary Definition Card (Desktop Only) */}
-      <div className="hidden xl:block absolute top-24 right-8 w-64 sticky">
-        <div className="bg-background/95 backdrop-blur-sm border-2 border-accent/20 rounded-lg p-6 shadow-lg">
-          <div className="space-y-2">
-            <h3 className="font-serif text-2xl font-bold text-accent">Transparency</h3>
-            <p className="font-serif text-xs text-muted-foreground italic">/tran(t)sˈper-ən-sē/</p>
-            <div className="border-t border-accent/20 pt-2 mt-2">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                <em className="not-italic font-medium">noun</em> — Operating with complete openness and honesty, making all factors, formulas, and decisions visible and understandable.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="absolute top-1/3 left-1/4 text-lg text-muted-foreground/5 font-normal italic rotate-[1deg]" aria-hidden="true">
+        lucidity
+      </div>
+      <div className="absolute bottom-1/3 left-16 text-sm text-muted-foreground/9 font-light rotate-[-1deg]" aria-hidden="true">
+        candidness
+      </div>
+      <div className="absolute top-2/3 right-1/3 text-base text-muted-foreground/7 font-light italic rotate-[2deg]" aria-hidden="true">
+        frankness
+      </div>
+      <div className="absolute bottom-44 right-16 text-xs text-muted-foreground/10 font-normal italic rotate-[-2deg]" aria-hidden="true">
+        explicitness
+      </div>
+      <div className="absolute top-52 left-1/3 text-sm text-muted-foreground/6 font-light rotate-[1deg]" aria-hidden="true">
+        visibility
+      </div>
+      <div className="absolute bottom-52 left-1/4 text-base text-muted-foreground/8 font-normal italic rotate-[-1deg]" aria-hidden="true">
+        directness
+      </div>
+      <div className="absolute top-1/4 right-20 text-xs text-muted-foreground/7 font-light italic rotate-[2deg]" aria-hidden="true">
+        forthrightness
       </div>
 
       {/* Main Content */}
