@@ -289,14 +289,6 @@ serve(async (req) => {
     }
 
     // Step 3: Build quote payload
-    const convertDateFormat = (dateString: string): string => {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
-
     const convertGender = (gender: string): string => {
       return gender.toLowerCase() === 'male' ? 'M' : 'F';
     };
@@ -322,7 +314,6 @@ serve(async (req) => {
       return yearNum >= 2024 && yearNum <= 2025;
     };
 
-    const dob = convertDateFormat(driver.date_of_birth);
     const gender = convertGender(driver.gender);
     const showStampDutyModal = getStampDutyModal(driver.address_state);
     const includeCarPurchase = shouldIncludeCarPurchase(vehicleYear);
@@ -414,7 +405,7 @@ serve(async (req) => {
       },
       driverDetails: {
         mainDriver: {
-          dateOfBirth: dob,
+          dateOfBirth: driver.date_of_birth,
           gender,
           hasClaimOccurrences: false,
           claimOccurrences: [],
