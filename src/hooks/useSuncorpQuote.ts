@@ -40,6 +40,7 @@ interface SuncorpQuoteResult {
   totalPremium?: number;
   requestPayload?: any;
   responseData?: any;
+  sentPayload?: any; // Complete payload sent to Suncorp
   error?: string;
 }
 
@@ -130,6 +131,7 @@ export const useSuncorpQuote = () => {
         totalPremium: parseFloat(data.totalPremium || '0'),
         requestPayload: data.requestPayload,
         responseData: data.responseData,
+        sentPayload: data.sentPayload, // Include complete sent payload
       };
     } catch (error: any) {
       console.error('[Quote Generation] ❌ Fatal error:', error);

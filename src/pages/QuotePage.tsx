@@ -98,6 +98,7 @@ const QuotePage = () => {
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [showPayloadDialog, setShowPayloadDialog] = useState(false);
+  const [actualSentPayload, setActualSentPayload] = useState<any>(null);
   const [errorDetails, setErrorDetails] = useState({
     error: "",
     requestPayload: null,
@@ -334,6 +335,9 @@ const QuotePage = () => {
     );
 
     if (result.success) {
+      // Store the actual sent payload
+      setActualSentPayload(result.sentPayload);
+      
       // Save to database
       try {
         const { error } = await supabase
@@ -898,6 +902,34 @@ const QuotePage = () => {
                 </CollapsibleContent>
               </Collapsible>
 
+              {/* Actual Sent Payload (After Quote Generation) */}
+              {actualSentPayload && (
+                <Collapsible defaultOpen>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline text-blue-600">
+                    <ChevronDown className="w-4 h-4" />
+                    📤 Actual Suncorp Payload (Sent)
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-2 space-y-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          navigator.clipboard.writeText(JSON.stringify(actualSentPayload, null, 2));
+                          toast.success("Payload copied to clipboard!");
+                        }}
+                      >
+                        📋 Copy to Clipboard
+                      </Button>
+                      <pre className="p-3 bg-gray-900 text-blue-400 rounded text-xs overflow-x-auto max-h-96">
+                        {JSON.stringify(actualSentPayload, null, 2)}
+                      </pre>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
                       {/* Status Message */}
                       {isPayloadReady() ? (
                         <Alert className="bg-green-100 border-green-600">
@@ -953,6 +985,7 @@ const QuotePage = () => {
                 vehicle_model: vehicles[0].vehicle_model,
                 vehicle_year: vehicles[0].vehicle_year,
                 vehicle_nvic: vehicles[0].vehicle_nvic,
+                vehicle_variant: vehicles[0].vehicle_variant,
               }}
               driver={{
                 first_name: namedDrivers[0].first_name,
@@ -971,8 +1004,10 @@ const QuotePage = () => {
                 address_lurn: namedDrivers[0].address_lurn,
                 address_latitude: namedDrivers[0].address_latitude,
                 address_longitude: namedDrivers[0].address_longitude,
+                address_gnaf_data: (quote as any)?.address_gnaf_data,
               }}
               policyStartDate={getDefaultPolicyStartDate()}
+              actualSentPayload={actualSentPayload}
             />
           )}
         </DialogContent>

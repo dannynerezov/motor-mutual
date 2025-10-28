@@ -33,9 +33,10 @@ interface PayloadInspectorProps {
     address_gnaf_data?: any;
   };
   policyStartDate?: string;
+  actualSentPayload?: any; // The actual payload sent to Suncorp
 }
 
-export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadInspectorProps) => {
+export const PayloadInspector = ({ vehicle, driver, policyStartDate, actualSentPayload }: PayloadInspectorProps) => {
   const defaultPolicyDate = policyStartDate || getDefaultPolicyStartDate();
 
   // Stage 1: Frontend Input Payload
@@ -283,8 +284,8 @@ export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadIn
         </div>
 
         {/* Payload Tabs */}
-        <Tabs defaultValue="frontend" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue={actualSentPayload ? "actual" : "frontend"} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="frontend">
               Stage 1: Frontend
             </TabsTrigger>
@@ -293,6 +294,9 @@ export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadIn
             </TabsTrigger>
             <TabsTrigger value="diff">
               Transformations
+            </TabsTrigger>
+            <TabsTrigger value="actual" className="text-blue-600">
+              ✅ Actual Sent
             </TabsTrigger>
           </TabsList>
 
@@ -371,6 +375,35 @@ export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadIn
                 </div>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="actual" className="space-y-2">
+            {actualSentPayload ? (
+              <>
+                <div className="text-sm text-muted-foreground mb-2 space-y-1">
+                  <div className="text-green-600 font-semibold">✅ Actual Payload Sent to Suncorp API</div>
+                  <div>This is the exact JSON that was sent to Suncorp. Copy this for comparison with working payloads.</div>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(actualSentPayload, null, 2));
+                    alert("Payload copied to clipboard!");
+                  }}
+                  className="mb-2 text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium"
+                >
+                  📋 Copy to Clipboard
+                </button>
+                <pre className="text-xs bg-gray-900 text-blue-400 p-4 rounded-lg overflow-auto max-h-[500px] border">
+                  {JSON.stringify(actualSentPayload, null, 2)}
+                </pre>
+              </>
+            ) : (
+              <div className="p-4 border border-yellow-500 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  ⚠️ Not yet sent. Click "Recalculate Quote" to generate and send the payload to Suncorp.
+                </p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

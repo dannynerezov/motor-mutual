@@ -474,6 +474,10 @@ serve(async (req) => {
       payloadSize: (JSON.stringify(quotePayload).length / 1024).toFixed(2) + ' KB'
     }, null, 2));
 
+    // 🔍 LOG COMPLETE PAYLOAD FOR EXACT JSON COMPARISON
+    console.log('[SingleQuote] 🔍 COMPLETE SUNCORP PAYLOAD (Full JSON):',
+      JSON.stringify(quotePayload, null, 2));
+
     // Step 4: Create quote with smart retry
     const createQuote = async (payload: any): Promise<Response> => {
       return await fetch(
@@ -600,6 +604,7 @@ serve(async (req) => {
         totalPremium: quoteData.totalPremium,
         requestPayload: quotePayload,
         responseData: quoteData,
+        sentPayload: quotePayload, // Include complete sent payload
       }),
       {
         status: 200,
