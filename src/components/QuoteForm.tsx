@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Shield, Car, Calculator, AlertCircle, Info } from "lucide-react";
+import { Shield, Car, AlertCircle, Info } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
@@ -225,24 +225,12 @@ export const QuoteForm = () => {
 
   return (
     <Card className="w-full max-w-4xl mx-auto p-8 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-xl border-2 border-primary/30 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700 relative overflow-hidden">
-      {/* Watermark logo */}
-      <div className="absolute top-4 right-4 opacity-8 pointer-events-none">
-        <img 
-          src={watermarkLogo} 
-          alt="" 
-          className="w-20 h-20 object-contain"
-        />
-      </div>
-
       {/* Decorative corner accents */}
       <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4 border-accent/30 rounded-tl-2xl pointer-events-none"></div>
       <div className="absolute bottom-0 right-0 w-24 h-24 border-b-4 border-r-4 border-accent/30 rounded-br-2xl pointer-events-none"></div>
       
       <div className="space-y-6 relative">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-accent to-blue-500 mb-6 animate-in zoom-in-50 duration-700 shadow-lg">
-            <Calculator className="w-10 h-10 text-primary-foreground animate-pulse" />
-          </div>
           <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-accent to-blue-600 bg-clip-text text-transparent animate-in fade-in slide-in-from-top-4 duration-700 mb-4">
             Get Your Rideshare Quote
           </h2>
@@ -255,19 +243,6 @@ export const QuoteForm = () => {
               Quick • Simple • Transparent
             </span>
           </div>
-          {activeScheme && (
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-4 animate-in fade-in duration-700 delay-500">
-              <Info className="w-4 h-4" />
-              <span>
-                Using Pricing Scheme #{activeScheme.scheme_number} 
-                {' '}(Active since {new Date(activeScheme.valid_from).toLocaleDateString('en-AU', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric'
-                })})
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Vehicle Entry Section */}
@@ -362,6 +337,20 @@ export const QuoteForm = () => {
               <div className="absolute inset-0 rounded-md border-4 border-accent animate-ping opacity-20 pointer-events-none"></div>
             )}
           </div>
+
+          {activeScheme && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-4 animate-in fade-in duration-700 delay-500">
+              <Info className="w-4 h-4" />
+              <span>
+                Using Pricing Scheme #{activeScheme.scheme_number} 
+                {' '}(Active since {new Date(activeScheme.valid_from).toLocaleDateString('en-AU', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                })})
+              </span>
+            </div>
+          )}
 
           {showManualEntry && (
             <Card className="p-4 bg-muted/50 border-muted-foreground/20 animate-in fade-in slide-in-from-top-4 duration-300">

@@ -1,4 +1,4 @@
-import { Scale, MapPin, CheckCircle, TrendingDown } from "lucide-react";
+import { Handshake, MapPin, CheckCircle, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompactPricingWidget } from "./CompactPricingWidget";
 import { Link } from "react-router-dom";
@@ -53,7 +53,7 @@ export const FairnessSection = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 px-6 py-3 bg-accent/10 backdrop-blur-md border-2 border-accent/40 rounded-full text-lg md:text-xl font-bold text-accent mb-6 shadow-lg hover:shadow-accent/20 transition-all duration-300 animate-pulse [animation-duration:3s]">
-            <Scale className="h-6 w-6" />
+            <Handshake className="h-6 w-6" />
             <span className="tracking-wide">FAIRNESS</span>
           </div>
         <h2 className="text-4xl md:text-5xl font-bold mb-4">

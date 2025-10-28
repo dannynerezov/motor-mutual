@@ -8,7 +8,7 @@ import { HowItWorksComparison } from "@/components/home/HowItWorksComparison";
 import heroBg from "@/assets/rideshare-hero.jpg";
 import watermarkLogo from "@/assets/mcm-logo-small-watermark.webp";
 import rideshareDriver from "@/assets/rideshare-driver.png";
-import { Car, Shield, TrendingUp, Clock } from "lucide-react";
+import { Car, Shield, TrendingUp, Clock, BadgeCheck } from "lucide-react";
 
 const Index = () => {
   return (
@@ -39,7 +39,7 @@ const Index = () => {
         <div className="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 text-white animate-in fade-in slide-in-from-left-8 duration-1000">
             <div>
-              <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-4">
+              <h1 className="text-3xl sm:text-4xl md:text-7xl font-bold leading-tight mb-4">
                 <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent animate-shimmer bg-[length:200%_100%]">
                   Affordable, Community-Powered Rideshare Cover
                 </span>
@@ -59,10 +59,10 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Car className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+                <BadgeCheck className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
                 <div>
-                  <p className="font-semibold text-lg">No Deductibles</p>
-                  <p className="text-sm text-gray-300">Zero out-of-pocket costs when you're on the clock</p>
+                  <p className="font-semibold text-lg">Fully Licenced</p>
+                  <p className="text-sm text-gray-300">ASIC regulated and supervised</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
