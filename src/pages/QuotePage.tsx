@@ -28,6 +28,7 @@ interface Quote {
   total_final_price: number;
   status: string;
   pricing_scheme_id: string | null;
+  vehicle_value: number;  // ✅ Add market value field
   third_party_quote_number?: string | null;
   third_party_base_premium?: number | null;
   third_party_stamp_duty?: number | null;
@@ -305,6 +306,8 @@ const QuotePage = () => {
         vehicle_model: vehicles[0].vehicle_model,
         vehicle_year: vehicles[0].vehicle_year,
         vehicle_nvic: vehicles[0].vehicle_nvic,
+        vehicle_value: quote?.vehicle_value || 0,  // ✅ Pass market value from quote
+        vehicle_variant: '',  // Variant not currently stored, will be empty for now
       },
       {
         first_name: driver.first_name,

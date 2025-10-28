@@ -7,6 +7,8 @@ interface VehicleData {
   vehicle_model: string;
   vehicle_year: number;
   vehicle_nvic: string | null;
+  vehicle_value?: number;  // ✅ Market value for sumInsured
+  vehicle_variant?: string;  // ✅ Variant for vehicleInfo
 }
 
 interface DriverData {
@@ -68,6 +70,8 @@ export const useSuncorpQuote = () => {
             vehicle_model: vehicle.vehicle_model,
             vehicle_year: vehicle.vehicle_year,
             vehicle_nvic: vehicle.vehicle_nvic,
+            vehicle_value: vehicle.vehicle_value,  // ✅ Pass market value
+            vehicle_variant: vehicle.vehicle_variant,  // ✅ Pass variant
           },
           driver: {
             first_name: driver.first_name,

@@ -19,6 +19,15 @@ serve(async (req) => {
     const body = await req.json();
     const { vehicle, driver, policyStartDate } = body;
 
+    console.log('[SingleQuote] Received vehicle data:', {
+      nvic: vehicle.vehicle_nvic,
+      variant: vehicle.vehicle_variant,
+      value: vehicle.vehicle_value,
+      make: vehicle.vehicle_make,
+      model: vehicle.vehicle_model,
+      year: vehicle.vehicle_year,
+    });
+
     console.log('[SingleQuote] Starting quote generation for:', {
       registration: vehicle.registration_number,
       vehicle: `${vehicle.vehicle_year} ${vehicle.vehicle_make} ${vehicle.vehicle_model}`,
@@ -59,7 +68,7 @@ serve(async (req) => {
     let vehicleYear = vehicle.vehicle_year.toString();
     let vehicleMake = vehicle.vehicle_make;
     let vehicleFamily = vehicle.vehicle_model;
-    let vehicleVariant = '';
+    let vehicleVariant = vehicle.vehicle_variant || '';  // ✅ Use variant from frontend if available
 
     if (!nvic) {
       console.log('[SingleQuote] Looking up vehicle by registration...');
@@ -324,10 +333,10 @@ serve(async (req) => {
       hasDamage: false,
       financed: false,
       usage: {
-        primaryUsage: 'RIDE_SHARE',
+        primaryUsage: 'S',  // ✅ FIXED: Use code 'S' for rideshare
         businessType: '',
         extraQuestions: {},
-        showStampDutyModal,
+        showStampDutyModal: false,  // ✅ FIXED: Always false for THIRD_PARTY quotes
       },
       kmPerYear: '05',
       vehicleInfo: {
@@ -349,13 +358,16 @@ serve(async (req) => {
       vehiclePayload.carPurchaseIn13Months = false;
     }
 
+    // Get market value from vehicle data (passed from frontend or from lookup)
+    const marketValue = vehicle.vehicle_value || 0;
+
     const quotePayload = {
       quoteDetails: {
         policyStartDate,
         acceptDutyOfDisclosure: true,
         currentInsurer: 'TGSH',
         sumInsured: {
-          marketValue: 0,
+          marketValue: marketValue,  // ✅ FIXED: Use actual vehicle market value
           agreedValue: 0,
           sumInsuredType: 'Agreed Value',
         },
@@ -378,11 +390,11 @@ serve(async (req) => {
         suburb: validatedAddress.suburb.toUpperCase(),
         state: validatedAddress.state,
         lurn: validatedAddress.lurn,
-        lurnScale: validatedAddress.lurnScale || '6',
+        lurnScale: '1',  // ✅ FIXED: Always use '1' as per working payload
         geocodedNationalAddressFileData: validatedAddress.geocodedNationalAddressFileData || {},
         pointLevelCoordinates: {
-          latitude: validatedAddress.latitude,
-          longitude: validatedAddress.longitude
+          longLatLatitude: String(validatedAddress.latitude),  // ✅ FIXED: Correct field name + string type
+          longLatLongitude: String(validatedAddress.longitude)  // ✅ FIXED: Correct field name + string type
         },
         spatialReferenceId: 4283,
         matchStatus: 'HAPPY',
@@ -505,7 +517,41 @@ serve(async (req) => {
       }
     }
 
-    const quoteData = await quoteResponse.json();
+    // ✅ FIXED: Safe response parsing to avoid "Unexpected end of JSON input"
+    let quoteData;
+    let rawResponseText = '';
+    try {
+      rawResponseText = await quoteResponse.text();
+      quoteData = JSON.parse(rawResponseText);
+    } catch (parseError) {
+      console.error('[SingleQuote] Failed to parse Suncorp response:', {
+        error: parseError,
+        status: quoteResponse.status,
+        statusText: quoteResponse.statusText,
+        rawBody: rawResponseText.substring(0, 1000),
+        headers: Object.fromEntries(quoteResponse.headers.entries())
+      });
+      
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Failed to parse Suncorp API response',
+          details: {
+            parseError: parseError instanceof Error ? parseError.message : String(parseError),
+            status: quoteResponse.status,
+            statusText: quoteResponse.statusText,
+            rawBody: rawResponseText.substring(0, 500),
+            correlationId: quoteResponse.headers.get('x-correlationid') || null
+          },
+          requestPayload: quotePayload,
+          responseData: null,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     // 📩 LOG API RESPONSE
     console.log('[SingleQuote] 📩 SUNCORP API RESPONSE:', {
