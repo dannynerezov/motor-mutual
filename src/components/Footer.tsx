@@ -5,6 +5,24 @@ import iconLogo from "@/assets/mcm-logo-new-small.png";
 export const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground mt-16">
+      {/* Trust Banner Section */}
+      <div className="bg-primary/95 border-b border-primary-foreground/10 relative overflow-hidden">
+        {/* Watermark */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-5 pointer-events-none">
+          <img 
+            src={iconLogo} 
+            alt="" 
+            className="w-32 h-32 object-contain"
+          />
+        </div>
+        
+        <div className="container mx-auto px-4 py-8 relative z-10">
+          <p className="text-center text-primary-foreground text-lg max-w-4xl mx-auto leading-relaxed">
+            Join your rideshare community, backed by ASIC-regulated protection and AFCA supervision. Get your quote today and drive with confidence, knowing your livelihood is protected by a trusted, transparent mutual.
+          </p>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-3 gap-8">
           <div>

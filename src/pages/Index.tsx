@@ -6,8 +6,9 @@ import { TransparencySection } from "@/components/home/TransparencySection";
 import { ReliabilitySection } from "@/components/home/ReliabilitySection";
 import { HowItWorksComparison } from "@/components/home/HowItWorksComparison";
 import heroBg from "@/assets/rideshare-hero.jpg";
+import watermarkLogo from "@/assets/mcm-logo-small-watermark.webp";
 import rideshareDriver from "@/assets/rideshare-driver.png";
-import { Car, ShieldAlert, Waves, Cloud, Flame, Star } from "lucide-react";
+import { Car, Shield, TrendingUp, Clock } from "lucide-react";
 
 const Index = () => {
   return (
@@ -15,119 +16,75 @@ const Index = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-        <div 
-          className="absolute inset-0 z-0"
+      <section className="min-h-[85vh] flex items-center justify-center relative overflow-hidden px-4 py-20">
+        {/* Background image with overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: `url(${heroBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            filter: 'brightness(0.6)',
           }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/80 to-background"></div>
-        </div>
+        />
 
-        <div className="container mx-auto px-6 py-20 relative z-10">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold mb-6 text-primary-foreground leading-tight opacity-0 animate-fade-up [animation-delay:300ms]">
-              <span className="block bg-gradient-to-r from-white via-accent to-white bg-clip-text text-transparent animate-pulse [animation-duration:3s]">
-                Affordable, Community-Powered Cover
-              </span>
-              <span className="block mt-2 text-3xl sm:text-4xl lg:text-5xl xl:text-6xl">
-                for Australia's Rideshare Drivers
-              </span>
-            </h1>
-            
-            <div className="mb-4 max-w-4xl mx-auto opacity-0 animate-fade-up [animation-delay:600ms]">
-              <p className="text-2xl md:text-3xl font-bold text-primary-foreground mb-3">
-                Transparent, All-Risk Cover for Uber & Ola Drivers
-              </p>
-              <p className="text-xl md:text-2xl text-accent font-semibold mb-4">
-                from $41/Month
-              </p>
+        {/* Watermark logo - bottom right */}
+        <div className="absolute bottom-8 right-8 opacity-15 pointer-events-none">
+          <img 
+            src={watermarkLogo} 
+            alt="" 
+            className="w-32 h-32 object-contain"
+          />
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8 text-white animate-in fade-in slide-in-from-left-8 duration-1000">
+            <div>
+              <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-4">
+                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent animate-shimmer bg-[length:200%_100%]">
+                  Affordable, Community-Powered Rideshare Cover
+                </span>
+              </h1>
               
-              {/* Coverage Icons */}
-              <div 
-                role="list" 
-                aria-label="Coverage types included"
-                className="flex flex-wrap justify-center gap-3 md:gap-4 mt-6"
-              >
-                <div 
-                  role="listitem"
-                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:750ms]"
-                >
-                  <Car className="h-5 w-5 text-accent" aria-hidden="true" />
-                  <span className="text-sm md:text-base text-primary-foreground font-medium">Collision</span>
-                </div>
-                
-                <div 
-                  role="listitem"
-                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:800ms]"
-                >
-                  <ShieldAlert className="h-5 w-5 text-accent" aria-hidden="true" />
-                  <span className="text-sm md:text-base text-primary-foreground font-medium">Theft</span>
-                </div>
-                
-                <div 
-                  role="listitem"
-                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:850ms]"
-                >
-                  <Waves className="h-5 w-5 text-accent" aria-hidden="true" />
-                  <span className="text-sm md:text-base text-primary-foreground font-medium">Flood</span>
-                </div>
-                
-                <div 
-                  role="listitem"
-                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:900ms]"
-                >
-                  <Cloud className="h-5 w-5 text-accent" aria-hidden="true" />
-                  <span className="text-sm md:text-base text-primary-foreground font-medium">Hail</span>
-                </div>
-                
-                <div 
-                  role="listitem"
-                  className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full border border-primary-foreground/20 hover:scale-105 transition-transform duration-300 opacity-0 animate-fade-up [animation-delay:950ms]"
-                >
-                  <Flame className="h-5 w-5 text-accent" aria-hidden="true" />
-                  <span className="text-sm md:text-base text-primary-foreground font-medium">Fire</span>
+              <h2 className="text-2xl md:text-3xl text-blue-100 leading-relaxed font-semibold">
+                Transparent, All-Risk Protection for Uber & Ola Drivers
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 pt-4">
+              <div className="flex items-start gap-3">
+                <Shield className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+                <div>
+                  <p className="font-semibold text-lg">Comprehensive Cover</p>
+                  <p className="text-sm text-gray-300">All-risk protection that doesn't exclude rideshare</p>
                 </div>
               </div>
-            </div>
-
-            <div className="max-w-3xl mx-auto opacity-0 animate-fade-up [animation-delay:1100ms]">
-              <p className="text-base md:text-lg text-primary-foreground/90 leading-relaxed mb-6">
-                Join your rideshare community, backed by ASIC-regulated protection and AFCA supervision. 
-                Get your quote today and drive with confidence, knowing your livelihood is protected by a 
-                trusted, transparent mutual.
-              </p>
-              
-              {/* Google Reviews Trust Badge */}
-              <div 
-                role="img" 
-                aria-label="5 stars on Google Reviews"
-                className="flex items-center justify-center gap-3 bg-primary-foreground/10 backdrop-blur-sm px-6 py-3 rounded-xl border border-primary-foreground/20 mx-auto max-w-md hover:bg-primary-foreground/15 transition-colors duration-300"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">G</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    </div>
-                    <p className="text-xs text-primary-foreground/80 font-medium">Google Reviews</p>
-                  </div>
+              <div className="flex items-start gap-3">
+                <Car className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+                <div>
+                  <p className="font-semibold text-lg">No Deductibles</p>
+                  <p className="text-sm text-gray-300">Zero out-of-pocket costs when you're on the clock</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <TrendingUp className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+                <div>
+                  <p className="font-semibold text-lg">Fair Pricing</p>
+                  <p className="text-sm text-gray-300">Predictable premiums based on vehicle value</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Clock className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+                <div>
+                  <p className="font-semibold text-lg">24/7 Support</p>
+                  <p className="text-sm text-gray-300">Always available when you need us</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <QuoteForm />
+          <div className="animate-in fade-in slide-in-from-right-8 duration-1000 delay-300">
+            <QuoteForm />
+          </div>
         </div>
       </section>
 
