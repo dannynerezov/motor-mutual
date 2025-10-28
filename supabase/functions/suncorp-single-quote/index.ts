@@ -129,101 +129,153 @@ serve(async (req) => {
 
     console.log('[SingleQuote] Address validation passed - all fields present');
 
-    // Step 2: Address search + validate
-    console.log('[SingleQuote] Searching address...');
-    console.log('[SingleQuote] Address input:', {
-      line1: driver.address_line1,
-      suburb: driver.address_suburb,
-      state: driver.address_state,
-      postcode: driver.address_postcode,
-    });
+    // Step 2: Smart Address Validation - Skip if LURN already provided
+    let validatedAddress: any;
     
-    const addressSearchResponse = await fetch(
-      `${SUNCORP_BASE_URL}/address-search-service/address/suggestions/v1?isRiskAddress=true&q=${encodeURIComponent(driver.address_line1)}`,
-      {
-        headers: {
-          'x-api-key': API_TOKEN || '',
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (!addressSearchResponse.ok) {
-      throw new Error(`Address search failed: ${addressSearchResponse.status}`);
-    }
-
-    const searchData = await addressSearchResponse.json();
-    const suggestions = searchData?.data || [];
-    if (!Array.isArray(suggestions) || suggestions.length === 0) {
-      throw new Error('No address suggestions found');
-    }
-
-    const suggestion = suggestions[0];
-    const broken = suggestion.addressInBrokenDownForm || {};
-
-    let addressLine1: string;
-    if (broken.unitNumber || driver.address_unit_number) {
-      const unit = broken.unitNumber || driver.address_unit_number;
-      addressLine1 = `${unit}/${broken.streetNumber || driver.address_street_number} ${broken.streetName || driver.address_street_name} ${broken.streetType || driver.address_street_type}`.trim();
+    if (driver.address_lurn && driver.address_lurn.length > 0) {
+      // Frontend already validated the address, use it directly
+      console.log('[SingleQuote] ✅ Using pre-validated address from frontend');
+      console.log(`[SingleQuote] LURN: ${driver.address_lurn.substring(0, 30)}...`);
+      console.log(`[SingleQuote] Coordinates: ${driver.address_latitude}, ${driver.address_longitude}`);
+      
+      validatedAddress = {
+        lurn: driver.address_lurn,
+        suburb: driver.address_suburb,
+        postcode: driver.address_postcode,
+        state: driver.address_state,
+        latitude: driver.address_latitude,
+        longitude: driver.address_longitude,
+        structuredStreetAddress: {
+          streetNumber1: driver.address_street_number,
+          streetName: driver.address_street_name,
+          streetTypeCode: driver.address_street_type,
+          unitNumber: driver.address_unit_number,
+          unitTypeCode: driver.address_unit_type
+        }
+      };
     } else {
-      addressLine1 = `${broken.streetNumber || driver.address_street_number} ${broken.streetName || driver.address_street_name} ${broken.streetType || driver.address_street_type}`.trim();
-    }
-
-    console.log('[SingleQuote] Validating address:', addressLine1);
-    
-    let validateData;
-    try {
-      const addressValidateResponse = await fetch(
-        `${SUNCORP_BASE_URL}/address-search-service/address/find/v3`,
+      // No LURN provided, perform address search and validation
+      console.log('[SingleQuote] ⚠️ No LURN provided, performing address validation');
+      console.log('[SingleQuote] Address input:', {
+        line1: driver.address_line1,
+        suburb: driver.address_suburb,
+        state: driver.address_state,
+        postcode: driver.address_postcode,
+      });
+      
+      const addressSearchResponse = await fetch(
+        `${SUNCORP_BASE_URL}/address-search-service/address/suggestions/v1?isRiskAddress=true&q=${encodeURIComponent(driver.address_line1)}`,
         {
-          method: 'POST',
           headers: {
             'x-api-key': API_TOKEN || '',
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            country: 'AUS',
-            suburb: suggestion.suburb,
-            postcode: suggestion.postcode,
-            state: suggestion.state,
-            addressInFreeForm: { addressLine1 },
-          }),
         }
       );
 
-      if (!addressValidateResponse.ok) {
-        const errorBody = await addressValidateResponse.text();
-        console.error('[SingleQuote] Address validation failed:', {
-          status: addressValidateResponse.status,
-          statusText: addressValidateResponse.statusText,
-          body: errorBody,
-          requestBody: {
-            country: 'AUS',
-            suburb: suggestion.suburb,
-            postcode: suggestion.postcode,
-            state: suggestion.state,
-            addressInFreeForm: { addressLine1 },
-          },
-        });
-        throw new Error(`Address validation failed: ${addressValidateResponse.status}`);
+      if (!addressSearchResponse.ok) {
+        throw new Error(`Address search failed: ${addressSearchResponse.status}`);
       }
 
-      validateData = await addressValidateResponse.json();
-    } catch (error) {
-      console.error('[SingleQuote] Address validation exception:', error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Address validation failed: ${errorMessage}`);
-    }
+      const searchData = await addressSearchResponse.json();
+      const suggestions = searchData?.data || [];
+      if (!Array.isArray(suggestions) || suggestions.length === 0) {
+        throw new Error('No address suggestions found');
+      }
 
-    const matched = validateData?.matchedAddress;
-    if (!matched) {
-      throw new Error('No matched address in validation response');
-    }
+      const suggestion = suggestions[0];
+      const broken = suggestion.addressInBrokenDownForm || {};
 
-    console.log('[SingleQuote] Address validated:', {
-      lurn: matched.addressId?.substring(0, 30) + '...',
-      quality: matched.addressQualityLevel,
-    });
+      let addressLine1: string;
+      if (broken.unitNumber || driver.address_unit_number) {
+        const unit = broken.unitNumber || driver.address_unit_number;
+        addressLine1 = `${unit}/${broken.streetNumber || driver.address_street_number} ${broken.streetName || driver.address_street_name} ${broken.streetType || driver.address_street_type}`.trim();
+      } else {
+        addressLine1 = `${broken.streetNumber || driver.address_street_number} ${broken.streetName || driver.address_street_name} ${broken.streetType || driver.address_street_type}`.trim();
+      }
+
+      console.log('[SingleQuote] Validating address:', addressLine1);
+      
+      let validateData;
+      try {
+        const addressValidateResponse = await fetch(
+          `${SUNCORP_BASE_URL}/address-search-service/address/find/v3`,
+          {
+            method: 'POST',
+            headers: {
+              'x-api-key': API_TOKEN || '',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              address: {
+                country: 'AUS',
+                suburb: suggestion.suburb,
+                postcode: suggestion.postcode,
+                state: suggestion.state,
+                addressInFreeForm: { addressLine1 },
+              },
+              expectedQualityLevels: ['1', '2', '3', '4', '5', '6'],
+              addressSuggestionRequirements: {
+                required: true,
+                forAddressQualityLevels: ['3', '4', '5'],
+                howMany: '10'
+              }
+            }),
+          }
+        );
+
+        if (!addressValidateResponse.ok) {
+          const errorBody = await addressValidateResponse.text();
+          console.error('[SingleQuote] Address validation failed:', {
+            status: addressValidateResponse.status,
+            statusText: addressValidateResponse.statusText,
+            body: errorBody,
+            requestBody: {
+              address: {
+                country: 'AUS',
+                suburb: suggestion.suburb,
+                postcode: suggestion.postcode,
+                state: suggestion.state,
+                addressInFreeForm: { addressLine1 },
+              }
+            },
+          });
+          throw new Error(`Address validation failed: ${addressValidateResponse.status}`);
+        }
+
+        validateData = await addressValidateResponse.json();
+      } catch (error) {
+        console.error('[SingleQuote] Address validation exception:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        throw new Error(`Address validation failed: ${errorMessage}`);
+      }
+
+      const matched = validateData?.matchedAddress;
+      if (!matched) {
+        throw new Error('No matched address in validation response');
+      }
+
+      console.log('[SingleQuote] Address validated:', {
+        lurn: matched.addressId?.substring(0, 30) + '...',
+        quality: matched.addressQualityLevel,
+      });
+
+      validatedAddress = {
+        lurn: matched.addressId,
+        suburb: matched.addressInBrokenDownForm?.suburb || driver.address_suburb,
+        postcode: matched.addressInBrokenDownForm?.postcode || driver.address_postcode,
+        state: matched.addressInBrokenDownForm?.state || driver.address_state,
+        latitude: matched.latitude,
+        longitude: matched.longitude,
+        structuredStreetAddress: {
+          streetNumber1: matched.addressInBrokenDownForm?.streetNumber,
+          streetName: matched.addressInBrokenDownForm?.streetName,
+          streetTypeCode: matched.addressInBrokenDownForm?.streetType,
+          unitNumber: matched.addressInBrokenDownForm?.unitNumber,
+          unitTypeCode: matched.addressInBrokenDownForm?.unitType
+        }
+      };
+    }
 
     // Step 3: Build quote payload
     const convertDateFormat = (dateString: string): string => {
@@ -322,25 +374,27 @@ serve(async (req) => {
         voluntaryExcess: null,
       },
       riskAddress: {
-        postcode: matched.postcode,
-        suburb: matched.suburb.toUpperCase(),
-        state: matched.state,
-        lurn: matched.addressId,
-        lurnScale: String(matched.addressQualityLevel),
-        geocodedNationalAddressFileData: matched.geocodedNationalAddressFileData || {},
-        pointLevelCoordinates: matched.pointLevelCoordinates || {},
+        postcode: validatedAddress.postcode,
+        suburb: validatedAddress.suburb.toUpperCase(),
+        state: validatedAddress.state,
+        lurn: validatedAddress.lurn,
+        lurnScale: validatedAddress.lurnScale || '6',
+        geocodedNationalAddressFileData: validatedAddress.geocodedNationalAddressFileData || {},
+        pointLevelCoordinates: {
+          latitude: validatedAddress.latitude,
+          longitude: validatedAddress.longitude
+        },
         spatialReferenceId: 4283,
         matchStatus: 'HAPPY',
         structuredStreetAddress: {
-          unitNumber: matched.addressInBrokenDownForm?.unitNumber || driver.address_unit_number || undefined,
-          unitCode: (matched.addressInBrokenDownForm?.unitNumber || driver.address_unit_number)
-            ? mapUnitType(matched.addressInBrokenDownForm?.unitType || driver.address_unit_type)
+          unitNumber: validatedAddress.structuredStreetAddress?.unitNumber || driver.address_unit_number || undefined,
+          unitCode: (validatedAddress.structuredStreetAddress?.unitNumber || driver.address_unit_number)
+            ? mapUnitType(validatedAddress.structuredStreetAddress?.unitTypeCode || driver.address_unit_type)
             : undefined,
-          streetName: matched.addressInBrokenDownForm?.streetName || driver.address_street_name || '',
-          streetNumber1: matched.addressInBrokenDownForm?.streetNumber1 || 
-                        matched.addressInBrokenDownForm?.streetNumber || 
+          streetName: validatedAddress.structuredStreetAddress?.streetName || driver.address_street_name || '',
+          streetNumber1: validatedAddress.structuredStreetAddress?.streetNumber1 || 
                         driver.address_street_number || '',
-          streetTypeCode: matched.addressInBrokenDownForm?.streetType || 
+          streetTypeCode: validatedAddress.structuredStreetAddress?.streetTypeCode || 
                          driver.address_street_type || '',
         },
       },
@@ -452,6 +506,17 @@ serve(async (req) => {
     }
 
     const quoteData = await quoteResponse.json();
+
+    // 📩 LOG API RESPONSE
+    console.log('[SingleQuote] 📩 SUNCORP API RESPONSE:', {
+      status: quoteResponse.status,
+      statusText: quoteResponse.statusText,
+      success: quoteResponse.ok,
+      quoteNumber: quoteData?.quoteNumber || 'N/A',
+      responseSize: (JSON.stringify(quoteData).length / 1024).toFixed(2) + ' KB',
+      hasErrors: !!quoteData?.errorKey,
+      errorKey: quoteData?.errorKey || 'None'
+    });
 
     if (!quoteResponse.ok) {
       console.error('[SingleQuote] Quote creation failed:', quoteResponse.status, quoteData);
