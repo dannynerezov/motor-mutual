@@ -17,36 +17,36 @@ export const FairnessSection = () => {
         </div>
       </div>
 
-      {/* Background Synonyms - Scattered tastefully */}
-      <div className="absolute top-16 left-8 text-sm text-muted-foreground/8 font-light italic rotate-[-2deg]" aria-hidden="true">
-        equity
+      {/* Background Synonyms - Stylized & barely visible */}
+      <div className="absolute top-16 left-8 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase tracking-wider rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        EK-wi-tee
       </div>
-      <div className="absolute top-32 right-12 text-xs text-muted-foreground/6 font-light rotate-[1deg]" aria-hidden="true">
-        justice
+      <div className="absolute top-32 right-12 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        JUS-tis
       </div>
-      <div className="absolute top-1/4 left-1/4 text-lg text-muted-foreground/5 font-normal italic rotate-[-1deg]" aria-hidden="true">
-        impartiality
+      <div className="absolute top-1/4 left-1/4 text-5xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        im-pahr-shee-AL-i-tee
       </div>
-      <div className="absolute bottom-40 left-16 text-base text-muted-foreground/7 font-light italic rotate-[2deg]" aria-hidden="true">
-        evenhandedness
+      <div className="absolute bottom-40 left-16 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        EE-vun-HAN-did-ness
       </div>
-      <div className="absolute top-2/3 right-1/4 text-sm text-muted-foreground/9 font-normal rotate-[-2deg]" aria-hidden="true">
-        egalitarianism
+      <div className="absolute top-2/3 right-1/4 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        ih-gal-i-TAIR-ee-uh-niz-um
       </div>
-      <div className="absolute bottom-24 right-20 text-xs text-muted-foreground/6 font-light italic rotate-[1deg]" aria-hidden="true">
-        objectivity
+      <div className="absolute bottom-24 right-20 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        ob-jek-TIV-i-tee
       </div>
-      <div className="absolute top-48 left-1/3 text-sm text-muted-foreground/8 font-light rotate-[-1deg]" aria-hidden="true">
-        neutrality
+      <div className="absolute top-48 left-1/3 text-5xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        noo-TRAL-i-tee
       </div>
-      <div className="absolute bottom-1/3 right-1/3 text-base text-muted-foreground/7 font-normal italic rotate-[2deg]" aria-hidden="true">
-        equality
+      <div className="absolute bottom-1/3 right-1/3 text-6xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        ih-KWOL-i-tee
       </div>
-      <div className="absolute top-1/3 right-16 text-xs text-muted-foreground/10 font-light italic rotate-[-1deg]" aria-hidden="true">
-        balance
+      <div className="absolute top-1/3 right-16 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        BAL-uns
       </div>
-      <div className="absolute bottom-48 left-1/4 text-sm text-muted-foreground/6 font-light rotate-[1deg]" aria-hidden="true">
-        equitability
+      <div className="absolute bottom-48 left-1/4 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        ek-wi-tuh-BIL-i-tee
       </div>
 
       {/* Main Content */}

@@ -19,36 +19,36 @@ export const TransparencySection = () => {
         </div>
       </div>
 
-      {/* Background Synonyms - Scattered tastefully */}
-      <div className="absolute top-20 left-10 text-base text-muted-foreground/7 font-light italic rotate-[-1deg]" aria-hidden="true">
-        clarity
+      {/* Background Synonyms - Stylized & barely visible */}
+      <div className="absolute top-20 left-10 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase tracking-wider rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        KLAIR-i-tee
       </div>
-      <div className="absolute bottom-28 right-20 text-sm text-muted-foreground/8 font-normal rotate-[2deg]" aria-hidden="true">
-        openness
+      <div className="absolute bottom-28 right-20 text-5xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        OH-pun-ness
       </div>
-      <div className="absolute top-44 right-24 text-xs text-muted-foreground/6 font-light italic rotate-[-2deg]" aria-hidden="true">
-        honesty
+      <div className="absolute top-44 right-24 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        ON-is-tee
       </div>
-      <div className="absolute top-1/3 left-1/4 text-lg text-muted-foreground/5 font-normal italic rotate-[1deg]" aria-hidden="true">
-        lucidity
+      <div className="absolute top-1/3 left-1/4 text-6xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        loo-SID-i-tee
       </div>
-      <div className="absolute bottom-1/3 left-16 text-sm text-muted-foreground/9 font-light rotate-[-1deg]" aria-hidden="true">
-        candidness
+      <div className="absolute bottom-1/3 left-16 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        KAN-did-ness
       </div>
-      <div className="absolute top-2/3 right-1/3 text-base text-muted-foreground/7 font-light italic rotate-[2deg]" aria-hidden="true">
-        frankness
+      <div className="absolute top-2/3 right-1/3 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        FRANK-ness
       </div>
-      <div className="absolute bottom-44 right-16 text-xs text-muted-foreground/10 font-normal italic rotate-[-2deg]" aria-hidden="true">
-        explicitness
+      <div className="absolute bottom-44 right-16 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        ik-SPLIS-it-ness
       </div>
-      <div className="absolute top-52 left-1/3 text-sm text-muted-foreground/6 font-light rotate-[1deg]" aria-hidden="true">
-        visibility
+      <div className="absolute top-52 left-1/3 text-5xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        viz-i-BIL-i-tee
       </div>
-      <div className="absolute bottom-52 left-1/4 text-base text-muted-foreground/8 font-normal italic rotate-[-1deg]" aria-hidden="true">
-        directness
+      <div className="absolute bottom-52 left-1/4 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        di-REKT-ness
       </div>
-      <div className="absolute top-1/4 right-20 text-xs text-muted-foreground/7 font-light italic rotate-[2deg]" aria-hidden="true">
-        forthrightness
+      <div className="absolute top-1/4 right-20 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        FOHRTH-ryt-ness
       </div>
 
       {/* Main Content */}
