@@ -4,11 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertCircle, Info, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DriverCard } from "@/components/DriverCard";
 import { Header } from "@/components/Header";
@@ -18,8 +18,10 @@ import { QuoteGenerationOverlay } from "@/components/QuoteGenerationOverlay";
 import { QuoteErrorDialog } from "@/components/QuoteErrorDialog";
 import { PayloadInspector } from "@/components/PayloadInspector";
 import { useSuncorpQuote } from "@/hooks/useSuncorpQuote";
+import { usePricingScheme } from "@/hooks/usePricingScheme";
 import { getDefaultPolicyStartDate } from "@/lib/thirdPartyBulkLogic";
 import { toast } from "sonner";
+import watermarkLogo from "@/assets/mcm-logo-small-watermark.webp";
 
 interface Quote {
   id: string;
@@ -28,7 +30,7 @@ interface Quote {
   total_final_price: number;
   status: string;
   pricing_scheme_id: string | null;
-  vehicle_value: number;  // ✅ Add market value field
+  vehicle_value: number;
   third_party_quote_number?: string | null;
   third_party_base_premium?: number | null;
   third_party_stamp_duty?: number | null;
@@ -55,6 +57,8 @@ interface Vehicle {
   vehicle_value: number;
   selected_coverage_value: number;
   vehicle_image_url: string | null;
+  trade_low_price: number | null;
+  retail_price: number | null;
 }
 
 interface NamedDriver {
@@ -111,6 +115,7 @@ const QuotePage = () => {
   const { quoteId } = useParams();
   const navigate = useNavigate();
   const { generateQuote, isGenerating } = useSuncorpQuote();
+  const { calculatePrice } = usePricingScheme();
   const [showContactDialog, setShowContactDialog] = useState(false);
   
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -122,6 +127,10 @@ const QuotePage = () => {
   const [loading, setLoading] = useState(true);
   const [initialDriverEnsured, setInitialDriverEnsured] = useState(false);
   const [suncorpDetails, setSuncorpDetails] = useState<SuncorpQuoteDetails | null>(null);
+
+  // Stepped flow state
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedValue, setSelectedValue] = useState(0);
 
   // Quote generation states
   const [quoteGenerated, setQuoteGenerated] = useState(false);
@@ -141,14 +150,15 @@ const QuotePage = () => {
   }, [quoteId]);
 
   useEffect(() => {
-    if (quote) {
+    if (quote && vehicles[0]) {
+      // Initialize selected value from vehicle market value
+      setSelectedValue(vehicles[0].selected_coverage_value || vehicles[0].vehicle_value);
       calculateFinalPrice();
-      // Check if third party quote already exists
       setQuoteGenerated(!!quote.third_party_quote_number);
     }
-  }, [namedDrivers, quote]);
+  }, [namedDrivers, quote, vehicles]);
 
-  // Auto-create first driver on page load (single driver only)
+  // Auto-create first driver on page load
   useEffect(() => {
     if (!loading && quoteId && !initialDriverEnsured && namedDrivers.length === 0) {
       handleAddDriver().finally(() => setInitialDriverEnsured(true));
@@ -157,7 +167,6 @@ const QuotePage = () => {
 
   const loadQuoteData = async () => {
     try {
-      // Load quote
       const { data: quoteData, error: quoteError } = await supabase
         .from("quotes")
         .select(`
@@ -177,7 +186,6 @@ const QuotePage = () => {
       if (quoteError) throw quoteError;
       setQuote(quoteData);
 
-      // Load vehicles
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from("quote_vehicles")
         .select("*")
@@ -186,7 +194,6 @@ const QuotePage = () => {
       if (vehiclesError) throw vehiclesError;
       setVehicles(vehiclesData || []);
 
-      // Load named drivers
       const { data: driversData, error: driversError } = await supabase
         .from("named_drivers")
         .select("*")
@@ -195,7 +202,6 @@ const QuotePage = () => {
       if (driversError) throw driversError;
       setNamedDrivers(driversData || []);
 
-      // Load Suncorp quote details
       const { data: suncorpData, error: suncorpError } = await supabase
         .from("suncorp_quote_details")
         .select("*")
@@ -218,11 +224,10 @@ const QuotePage = () => {
   const calculateFinalPrice = () => {
     if (!quote) return;
 
-    const basePrice = quote.total_base_price || 0;
+    const basePrice = calculatePrice(selectedValue);
     const totalClaims = namedDrivers.reduce((sum, driver) => sum + (driver.claims_count || 0), 0);
     setTotalClaimsCount(totalClaims);
 
-    // 30% loading per claim, max 3 claims
     const claimsCount = Math.min(totalClaims, 3);
     const loadingPercentage = claimsCount * 0.3;
     const loading = basePrice * loadingPercentage;
@@ -230,7 +235,6 @@ const QuotePage = () => {
 
     setFinalPrice(final);
 
-    // Check if too many claims
     if (totalClaims >= 4) {
       setShowClaimsError(true);
     } else {
@@ -262,7 +266,6 @@ const QuotePage = () => {
   };
 
   const handleDriverUpdate = async (id: string, field: string, value: any) => {
-    // Optimistic update: Update UI immediately with functional state update
     const previousDrivers = namedDrivers;
     setNamedDrivers(prev =>
       prev.map((driver) =>
@@ -279,14 +282,12 @@ const QuotePage = () => {
       if (error) throw error;
     } catch (error) {
       console.error("Error updating driver:", error);
-      // Revert on failure
       setNamedDrivers(previousDrivers);
       toast.error("Failed to update driver");
     }
   };
 
   const handleDriverUpdateMany = async (id: string, updates: Record<string, any>) => {
-    // Batch update multiple fields at once with functional state update
     const previousDrivers = namedDrivers;
     setNamedDrivers(prev =>
       prev.map((driver) =>
@@ -303,9 +304,31 @@ const QuotePage = () => {
       if (error) throw error;
     } catch (error) {
       console.error("Error batch updating driver:", error);
-      // Revert on failure
       setNamedDrivers(previousDrivers);
       toast.error("Failed to update driver");
+    }
+  };
+
+  const handleValueChange = async (values: number[]) => {
+    const newValue = values[0];
+    setSelectedValue(newValue);
+    
+    // Recalculate price
+    const newPrice = calculatePrice(newValue);
+    setFinalPrice(newPrice);
+
+    // Update vehicle in database
+    if (vehicles[0]) {
+      try {
+        const { error } = await supabase
+          .from("quote_vehicles")
+          .update({ selected_coverage_value: newValue })
+          .eq("id", vehicles[0].id);
+
+        if (error) throw error;
+      } catch (error) {
+        console.error("Error updating vehicle value:", error);
+      }
     }
   };
 
@@ -317,7 +340,6 @@ const QuotePage = () => {
 
     const driver = namedDrivers[0];
 
-    // Validate driver is complete
     if (!driver.first_name || !driver.last_name || !driver.date_of_birth || 
         !driver.gender || !driver.address_suburb || !driver.address_state || 
         !driver.address_postcode) {
@@ -325,7 +347,6 @@ const QuotePage = () => {
       return;
     }
 
-    // Guardrail: Check required address fields
     const missingFields = [];
     if (!driver.address_suburb) missingFields.push('suburb');
     if (!driver.address_state) missingFields.push('state');
@@ -339,9 +360,6 @@ const QuotePage = () => {
       return;
     }
 
-    console.assert(!!driver.address_suburb && !!driver.address_state && !!driver.address_postcode,
-      '[QuotePage] Invariant: Address fields should be present before quote generation');
-
     const policyStartDate = getDefaultPolicyStartDate();
 
     const result = await generateQuote(
@@ -351,7 +369,7 @@ const QuotePage = () => {
         vehicle_model: vehicles[0].vehicle_model,
         vehicle_year: vehicles[0].vehicle_year,
         vehicle_nvic: vehicles[0].vehicle_nvic,
-        vehicle_value: vehicles[0].vehicle_value || quote?.vehicle_value || 0,
+        vehicle_value: selectedValue,
         vehicle_variant: vehicles[0].vehicle_variant || '',
       },
       {
@@ -378,10 +396,8 @@ const QuotePage = () => {
     );
 
     if (result.success) {
-      // Store the actual sent payload
       setActualSentPayload(result.sentPayload);
       
-      // Save to database
       try {
         const { error } = await supabase
           .from("quotes")
@@ -398,7 +414,6 @@ const QuotePage = () => {
 
         if (error) throw error;
 
-        // Reload quote data
         await loadQuoteData();
         setQuoteGenerated(true);
         toast.success(`Third party quote generated: ${result.quoteNumber}`);
@@ -407,7 +422,6 @@ const QuotePage = () => {
         toast.error("Failed to save third party quote");
       }
     } else {
-      // Show error dialog
       setErrorDetails({
         error: result.error || "Unknown error",
         requestPayload: result.requestPayload || null,
@@ -417,727 +431,491 @@ const QuotePage = () => {
     }
   };
 
-  // Check if driver is complete
-  const isDriverComplete = namedDrivers[0] && 
-    namedDrivers[0].first_name && 
-    namedDrivers[0].last_name && 
-    namedDrivers[0].date_of_birth && 
-    namedDrivers[0].gender && 
-    namedDrivers[0].address_suburb && 
-    namedDrivers[0].address_state && 
-    namedDrivers[0].address_postcode &&
-    namedDrivers[0].address_lurn; // Require LURN now
-
-  // Payload readiness checks
-  const buildPayloadPreview = () => {
-    if (!namedDrivers[0] || !vehicles[0]) return null;
-    const defaultPolicyDate = getDefaultPolicyStartDate();
-    return {
-      vehicle: {
-        registration_number: vehicles[0].registration_number,
-        vehicle_make: vehicles[0].vehicle_make,
-        vehicle_model: vehicles[0].vehicle_model,
-        vehicle_year: vehicles[0].vehicle_year,
-        vehicle_nvic: vehicles[0].vehicle_nvic || null,
-      },
-      driver: {
-        first_name: namedDrivers[0].first_name || null,
-        last_name: namedDrivers[0].last_name || null,
-        gender: namedDrivers[0].gender || null,
-        date_of_birth: namedDrivers[0].date_of_birth || null,
-        address_line1: namedDrivers[0].address_line1 || null,
-        address_unit_type: namedDrivers[0].address_unit_type,
-        address_unit_number: namedDrivers[0].address_unit_number,
-        address_street_number: namedDrivers[0].address_street_number || null,
-        address_street_name: namedDrivers[0].address_street_name || null,
-        address_street_type: namedDrivers[0].address_street_type || null,
-        address_suburb: namedDrivers[0].address_suburb || null,
-        address_state: namedDrivers[0].address_state || null,
-        address_postcode: namedDrivers[0].address_postcode || null,
-        address_lurn: namedDrivers[0].address_lurn || null,
-      },
-      policyStartDate: defaultPolicyDate,
-    };
-  };
-
-  const getMissingFields = (): string[] => {
-    const missing: string[] = [];
-    if (!vehicles[0]) {
-      missing.push('Vehicle');
-      return missing;
-    }
-    if (!namedDrivers[0]) {
-      missing.push('Driver');
-      return missing;
-    }
-    const driver = namedDrivers[0];
-    if (!driver.first_name) missing.push('First Name');
-    if (!driver.last_name) missing.push('Last Name');
-    if (!driver.date_of_birth) missing.push('Date of Birth');
-    if (!driver.gender) missing.push('Gender');
-    if (!driver.address_lurn) missing.push('Validated Address');
-    return missing;
-  };
-
-  const isPayloadReady = () => {
-    return vehicles[0] && namedDrivers[0] && 
-      namedDrivers[0].first_name && 
-      namedDrivers[0].last_name && 
-      namedDrivers[0].date_of_birth && 
-      namedDrivers[0].gender && 
-      namedDrivers[0].address_lurn;
-  };
-
-  // Debug completion status (temporary)
-  if (namedDrivers[0] && !isDriverComplete) {
-    const missing = [];
-    if (!namedDrivers[0].first_name) missing.push('first_name');
-    if (!namedDrivers[0].last_name) missing.push('last_name');
-    if (!namedDrivers[0].date_of_birth) missing.push('date_of_birth');
-    if (!namedDrivers[0].gender) missing.push('gender');
-    if (!namedDrivers[0].address_suburb) missing.push('address_suburb');
-    if (!namedDrivers[0].address_state) missing.push('address_state');
-    if (!namedDrivers[0].address_postcode) missing.push('address_postcode');
-    if (!namedDrivers[0].address_lurn) missing.push('address_lurn');
-    if (missing.length > 0) {
-      console.debug('Driver incomplete, missing:', missing.join(', '));
-    }
-  }
+  const isStep1Complete = selectedValue > 0;
+  const isStep2Complete = namedDrivers[0] && namedDrivers[0].address_lurn;
+  const isStep3Complete = namedDrivers[0] && namedDrivers[0].first_name && namedDrivers[0].last_name && namedDrivers[0].date_of_birth && namedDrivers[0].gender;
+  const isStep4Complete = true; // Policy date always has default
+  
+  const canProceedToStep2 = isStep1Complete;
+  const canProceedToStep3 = isStep2Complete;
+  const canProceedToStep4 = isStep3Complete;
+  const canGenerateQuote = isStep1Complete && isStep2Complete && isStep3Complete && isStep4Complete;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading quote...</p>
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (!quote) {
+  if (!quote || vehicles.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Quote not found</p>
-            <Button className="w-full mt-4" onClick={() => navigate("/")}>
-              Return Home
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Quote Not Found</h1>
+          <p className="text-muted-foreground mb-6">We couldn't find the quote you're looking for.</p>
+          <Button onClick={() => navigate("/")}>Return Home</Button>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  // Calculate completion progress for the interactive section
-  const getDriverCompletion = (driver: NamedDriver) => {
-    const steps = [
-      driver.first_name && driver.last_name,
-      driver.date_of_birth,
-      driver.gender,
-      true, // claims always has default
-      driver.address_suburb && driver.address_state && driver.address_postcode,
-    ];
-    return steps.filter(Boolean).length;
-  };
-
-  const totalSteps = 5;
-  const completedSteps = namedDrivers[0] ? getDriverCompletion(namedDrivers[0]) : 0;
+  const vehicle = vehicles[0];
+  const driver = namedDrivers[0];
+  const tradeLow = vehicle.trade_low_price || vehicle.vehicle_value * 0.8;
+  const retail = vehicle.retail_price || vehicle.vehicle_value * 1.2;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Loading Overlay */}
-      <QuoteGenerationOverlay isVisible={isGenerating} />
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
 
-      {/* Error Dialog */}
-        <QuoteErrorDialog
-          isOpen={showErrorDialog}
-          onClose={() => setShowErrorDialog(false)}
-          error={errorDetails.error}
-          requestPayload={errorDetails.requestPayload}
-          responseData={errorDetails.responseData}
-          sentPayload={actualSentPayload}
-        />
-      
-      {/* Header Bar - Above Grid */}
-      <div className="bg-muted/30 border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <Button variant="ghost" onClick={() => navigate("/")} className="w-fit">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Vehicle Selection
-            </Button>
-            
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Quote Number</p>
-                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {quote.quote_number}
-                </h1>
-              </div>
-              <Badge variant="outline" className="text-base md:text-lg px-3 md:px-4 py-1">Draft</Badge>
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {[1, 2, 3, 4, 5].map((step) => (
+            <div
+              key={step}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                step === currentStep
+                  ? 'bg-primary text-primary-foreground font-bold scale-110'
+                  : step < currentStep
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {step < currentStep ? <CheckCircle className="w-5 h-5" /> : step}
             </div>
-          </div>
+          ))}
         </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Interactive Progress Alert */}
-            {namedDrivers.length > 0 && (
-              <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5 overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
+            {/* Vehicle Display */}
+            <Card className="relative overflow-hidden">
+              <div className="absolute top-0 right-0 opacity-5 pointer-events-none">
+                <img src={watermarkLogo} alt="" className="w-40 h-40 object-contain" />
+              </div>
+              
+              <CardHeader>
+                <CardTitle className="text-2xl">Your Vehicle</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4 items-start">
+                  {vehicle.vehicle_image_url && (
+                    <img
+                      src={vehicle.vehicle_image_url}
+                      alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
+                      className="w-32 h-24 object-cover rounded-lg"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold">
+                      {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
+                    </h3>
+                    <p className="text-muted-foreground">{vehicle.registration_number}</p>
+                    {vehicle.vehicle_variant && (
+                      <p className="text-sm text-muted-foreground">{vehicle.vehicle_variant}</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 1: Vehicle Valuation */}
+            {currentStep >= 1 && (
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-4 right-4 opacity-8 pointer-events-none">
+                  <img src={watermarkLogo} alt="" className="w-16 h-16 object-contain" />
+                </div>
                 
-                <CardContent className="pt-6 relative z-10">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Info className="w-6 h-6 text-primary" />
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Step 1: Vehicle Valuation</CardTitle>
+                    {isStep1Complete && <Badge variant="default">Complete</Badge>}
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground">Trade Low</p>
+                      <p className="text-lg font-bold">${Math.round(tradeLow).toLocaleString()}</p>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold mb-2">Complete Your Quote</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Fill in driver details below. Click "Recalculate Quote" when complete to get third-party pricing.
-                      </p>
+                    <div className="text-center p-3 bg-primary/10 rounded-lg border-2 border-primary">
+                      <p className="text-xs text-muted-foreground">Market Value</p>
+                      <p className="text-lg font-bold text-primary">${vehicle.vehicle_value.toLocaleString()}</p>
+                    </div>
+                    <div className="text-center p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground">Retail</p>
+                      <p className="text-lg font-bold">${Math.round(retail).toLocaleString()}</p>
                     </div>
                   </div>
                   
-                  {/* Progress Bar */}
-                  <div className="mt-4">
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 ease-out"
-                        style={{ width: `${totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0}%` }}
-                      />
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label>Selected Coverage Value</Label>
+                      <Badge variant="outline" className="text-lg">${selectedValue.toLocaleString()}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground text-center mt-2">
-                      {completedSteps} of {totalSteps} steps completed
-                    </p>
+                    
+                    <Slider
+                      min={Math.round(tradeLow)}
+                      max={Math.round(retail)}
+                      step={100}
+                      value={[selectedValue]}
+                      onValueChange={handleValueChange}
+                      className="w-full"
+                    />
+                    
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>${Math.round(tradeLow).toLocaleString()}</span>
+                      <span>${Math.round(retail).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  {canProceedToStep2 && currentStep === 1 && (
+                    <Button
+                      onClick={() => setCurrentStep(2)}
+                      className="w-full"
+                      size="lg"
+                    >
+                      Continue to Driver Address
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Step 2: Driver Address */}
+            {currentStep >= 2 && driver && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Step 2: Driver Address</CardTitle>
+                    {isStep2Complete && <Badge variant="default">Complete</Badge>}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <DriverCard
+                    driver={driver}
+                    index={0}
+                    onUpdate={handleDriverUpdate}
+                    onUpdateMany={handleDriverUpdateMany}
+                    showOnlyAddress
+                  />
+
+                  <div className="flex gap-3">
+                    {currentStep === 2 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentStep(1)}
+                        className="flex-1"
+                      >
+                        Back
+                      </Button>
+                    )}
+                    {canProceedToStep3 && currentStep === 2 && (
+                      <Button
+                        onClick={() => setCurrentStep(3)}
+                        className="flex-1"
+                      >
+                        Continue to Personal Details
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Vehicle Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Vehicle</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {vehicles.map((vehicle) => (
-                  <div key={vehicle.id}>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Rego</p>
-                        <p className="font-semibold">
-                          {vehicle.registration_number}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          Make/Model
-                        </p>
-                        <p className="font-semibold">
-                          {vehicle.vehicle_make} {vehicle.vehicle_model}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Year</p>
-                        <p className="font-semibold">{vehicle.vehicle_year}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          Sum Covered
-                        </p>
-                        <p className="font-semibold">
-                          ${vehicle.selected_coverage_value.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
+            {/* Step 3: Personal Details */}
+            {currentStep >= 3 && driver && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Step 3: Personal Details</CardTitle>
+                    {isStep3Complete && <Badge variant="default">Complete</Badge>}
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <DriverCard
+                    driver={driver}
+                    index={0}
+                    onUpdate={handleDriverUpdate}
+                    onUpdateMany={handleDriverUpdateMany}
+                    showOnlyPersonal
+                  />
 
-            {/* Primary Driver Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Primary Driver</CardTitle>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Complete all driver details to generate your third-party property damage quote.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {namedDrivers.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Loading driver form...</p>
-                  </div>
-                ) : (
-                  <>
-                    {namedDrivers.map((driver) => (
-                      <DriverCard
-                        key={driver.id}
-                        driver={driver}
-                        onUpdate={handleDriverUpdate}
-                        onUpdateMany={handleDriverUpdateMany}
-                      />
-                    ))}
-
-                    {showClaimsError && (
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Unable to Provide Cover</AlertTitle>
-                        <AlertDescription>
-                          Memberships cannot be offered to drivers with 4 or more
-                          claims in the last 3 years.
-                        </AlertDescription>
-                      </Alert>
+                  <div className="flex gap-3">
+                    {currentStep === 3 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentStep(2)}
+                        className="flex-1"
+                      >
+                        Back
+                      </Button>
                     )}
-                  </>
-                )}
+                    {canProceedToStep4 && currentStep === 3 && (
+                      <Button
+                        onClick={() => setCurrentStep(4)}
+                        className="flex-1"
+                      >
+                        Continue to Policy Date
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-              </CardContent>
-            </Card>
+            {/* Step 4: Policy Start Date */}
+            {currentStep >= 4 && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Step 4: Policy Start Date</CardTitle>
+                    {isStep4Complete && <Badge variant="default">Complete</Badge>}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">Policy will start on:</p>
+                    <p className="text-xl font-bold">{new Date(getDefaultPolicyStartDate()).toLocaleDateString('en-AU')}</p>
+                    <p className="text-xs text-muted-foreground mt-2">Default: Tomorrow at 12:01 AM</p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    {currentStep === 4 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentStep(3)}
+                        className="flex-1"
+                      >
+                        Back
+                      </Button>
+                    )}
+                    {currentStep === 4 && (
+                      <Button
+                        onClick={() => setCurrentStep(5)}
+                        className="flex-1"
+                      >
+                        Continue to Quote Generation
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Step 5: Generate Quote */}
+            {currentStep >= 5 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Step 5: Generate Your Quote</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {!quoteGenerated ? (
+                    <>
+                      <p className="text-muted-foreground">
+                        All information is complete. Click below to get your third-party quote and see the final pricing.
+                      </p>
+                      
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setCurrentStep(4)}
+                          className="flex-1"
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          onClick={handleRecalculateQuote}
+                          disabled={!canGenerateQuote || isGenerating}
+                          className="flex-1"
+                          size="lg"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            "Generate Quote"
+                          )}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="w-5 h-5" />
+                        <p className="font-semibold">Quote Generated Successfully!</p>
+                      </div>
+                      <p className="text-muted-foreground">View the complete pricing breakdown in the sidebar.</p>
+                      <Button
+                        onClick={() => setShowContactDialog(true)}
+                        size="lg"
+                        className="w-full"
+                      >
+                        Contact Broker to Continue
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Price Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-8">
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <Card className="sticky top-4 relative overflow-hidden">
+              {/* Watermark */}
+              <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
+                <img src={watermarkLogo} alt="" className="w-24 h-24 object-contain" />
+              </div>
+
               <CardHeader>
-                <CardTitle>Your Membership</CardTitle>
+                <CardTitle>Your Quote</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* MCM Mutual Membership Section */}
-                <div className="pb-4 border-b">
-                  <h3 className="text-lg font-semibold mb-3">MCM Rideshare Coverage</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <p className="text-sm text-muted-foreground">Base Premium</p>
-                      <p className="font-semibold">
-                        ${quote.total_base_price?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-
-                    {totalClaimsCount > 0 && (
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm text-muted-foreground">
-                            Claims Loading ({totalClaimsCount}{" "}
-                            {totalClaimsCount === 1 ? "claim" : "claims"})
-                          </p>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-3 h-3 text-muted-foreground" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">Each claim adds 30% to base price (maximum 3 claims counted)</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                        <p className="font-semibold text-orange-600">
-                          +$
-                          {(
-                            ((quote.total_base_price || 0) *
-                              0.3 *
-                              Math.min(totalClaimsCount, 3))
-                          ).toLocaleString()}
-                        </p>
-                      </div>
-                    )}
-
-                    <Separator />
-
-                    <div className="flex justify-between pt-2">
-                      <p className="font-bold">Total MCM Premium</p>
-                      <p className="text-xl font-bold text-primary">
-                        ${finalPrice.toFixed(2)}
-                      </p>
-                    </div>
+              <CardContent className="space-y-6 relative z-10">
+                {/* MCM Membership Price */}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">MCM Membership Price</p>
+                  <div className="text-3xl font-bold text-primary">
+                    ${finalPrice.toFixed(2)}
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">per year</p>
                 </div>
 
-                {/* Enhanced Suncorp Quote Details */}
-                {suncorpDetails && (
-                  <div className="pb-4 border-b space-y-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Third Party Property Damage</h3>
-                      <Badge variant="outline" className="text-xs">
-                        {suncorpDetails.suncorp_quote_number}
-                      </Badge>
-                    </div>
-
-                    {/* Financial Breakdown */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <p className="text-muted-foreground">Base Premium</p>
-                        <p>${suncorpDetails.annual_base_premium?.toFixed(2)}</p>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <p className="text-muted-foreground">Stamp Duty</p>
-                        <p>${suncorpDetails.annual_stamp_duty?.toFixed(2)}</p>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <p className="text-muted-foreground">FSL</p>
-                        <p>${suncorpDetails.annual_fsl?.toFixed(2)}</p>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <p className="text-muted-foreground">GST</p>
-                        <p>${suncorpDetails.annual_gst?.toFixed(2)}</p>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between pt-2">
-                        <p className="font-bold">Total Third Party</p>
-                        <p className="text-xl font-bold text-accent">
-                          ${suncorpDetails.annual_premium?.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Policy Details - Collapsible */}
-                    <Collapsible>
-                      <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline w-full">
-                        <ChevronDown className="w-4 h-4" />
-                        View Policy Details
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-3 space-y-3">
-                        {/* Cover Information */}
-                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-                          <h4 className="font-semibold text-xs text-muted-foreground">COVER INFORMATION</h4>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <p className="text-muted-foreground">Cover Type</p>
-                              <p className="font-medium">{suncorpDetails.cover_type}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Sum Insured</p>
-                              <p className="font-medium">{suncorpDetails.sum_insured_type}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Market Value</p>
-                              <p className="font-medium">${suncorpDetails.market_value?.toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Excess</p>
-                              <p className="font-medium">${suncorpDetails.standard_excess}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Policy Dates */}
-                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-                          <h4 className="font-semibold text-xs text-muted-foreground">POLICY PERIOD</h4>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <p className="text-muted-foreground">Start Date</p>
-                              <p className="font-medium">
-                                {new Date(suncorpDetails.policy_start_date).toLocaleDateString('en-AU')}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Expiry Date</p>
-                              <p className="font-medium">
-                                {new Date(suncorpDetails.policy_expiry_date).toLocaleDateString('en-AU')}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Vehicle Usage */}
-                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-                          <h4 className="font-semibold text-xs text-muted-foreground">VEHICLE USAGE</h4>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <p className="text-muted-foreground">Primary Use</p>
-                              <p className="font-medium">{suncorpDetails.primary_usage}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">KM per Year</p>
-                              <p className="font-medium">{suncorpDetails.km_per_year}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Risk Address */}
-                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-                          <h4 className="font-semibold text-xs text-muted-foreground">RISK ADDRESS</h4>
-                          <p className="text-xs">
-                            {suncorpDetails.street_number} {suncorpDetails.street_name}<br />
-                            {suncorpDetails.suburb} {suncorpDetails.state} {suncorpDetails.postcode}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
-                )}
-
-                {/* Combined Total */}
-                {suncorpDetails && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold">Combined Annual Premium</span>
-                      <span className="text-3xl font-bold text-primary">
-                        ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      MCM ${finalPrice.toFixed(2)} + Third Party ${suncorpDetails.annual_premium?.toFixed(2)}
+                {totalClaimsCount > 0 && (
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                      Claims Loading Applied
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      {Math.min(totalClaimsCount, 3)} claim(s) × 30% = +{Math.min(totalClaimsCount * 30, 90)}%
                     </p>
                   </div>
                 )}
 
                 <Separator />
 
-                {/* Action Buttons */}
-                {isPayloadReady() && !quoteGenerated && (
-                  <div className="space-y-2">
-                    <Button 
-                      size="lg" 
-                      className="w-full"
-                      onClick={handleRecalculateQuote}
-                      disabled={isGenerating || showClaimsError}
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Calculating...
-                        </>
-                      ) : (
-                        'Recalculate Quote'
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => setShowPayloadDialog(true)}
-                    >
-                      <FileCode className="w-4 h-4 mr-2" />
-                      Check Payload
-                    </Button>
-                  </div>
-                )}
-
-                {/* Contact Broker Button - Only show after quote generated */}
-                {quoteGenerated && (
-                  <Button 
-                    size="lg" 
-                    className="w-full"
-                    disabled={showClaimsError}
-                    onClick={() => setShowContactDialog(true)}
-                  >
-                    Contact Broker to Buy
-                  </Button>
-                )}
-
-                {/* Pricing Scheme Info - Collapsible */}
-                {quote.pricing_schemes && (
-                  <Collapsible className="mt-4">
-                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <Info className="w-4 h-4" />
-                      <span>Pricing Details</span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-3">
-                      <div className="text-xs bg-muted/30 rounded-lg p-3 space-y-1">
-                        <p className="font-semibold">
-                          Pricing Scheme #{quote.pricing_schemes.scheme_number}
-                        </p>
-                        <p className="text-muted-foreground">
-                          Active from {new Date(quote.pricing_schemes.valid_from).toLocaleDateString('en-AU')}
-                        </p>
-                        <p className="font-mono text-xs mt-2">
-                          Base: ${quote.pricing_schemes.floor_price} + linear adjustment up to ${quote.pricing_schemes.ceiling_price}
-                        </p>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
-
-                {/* API Payload Review Section */}
-                {namedDrivers.length > 0 && (
-                  <Card className="border-blue-200 bg-blue-50/50 mt-4">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <FileCode className="w-5 h-5" />
-                        API Request Preview
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Readiness Checklist */}
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Payload Readiness</h4>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            {vehicles[0] ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Vehicle Data</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.address_lurn ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Address LURN</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.first_name && namedDrivers[0]?.last_name ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Driver Name</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.date_of_birth ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Date of Birth</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.gender ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Gender</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                            <span>Policy Start Date</span>
-                          </div>
+                {/* Third Party Section */}
+                {suncorpDetails && (
+                  <>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Third Party (Suncorp) Quote</p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Base Premium</span>
+                          <span className="font-semibold">${suncorpDetails.annual_base_premium?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Stamp Duty</span>
+                          <span className="font-semibold">${suncorpDetails.annual_stamp_duty?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>FSL</span>
+                          <span className="font-semibold">${suncorpDetails.annual_fsl?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>GST</span>
+                          <span className="font-semibold">${suncorpDetails.annual_gst?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between text-base">
+                          <span className="font-semibold">Third Party Total</span>
+                          <span className="font-bold">${suncorpDetails.annual_premium?.toFixed(2) || '0.00'}</span>
                         </div>
                       </div>
-
-                      <Separator />
-
-              {/* Payload Preview (Collapsible) */}
-              <Collapsible>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline">
-                  <ChevronDown className="w-4 h-4" />
-                  View JSON Payload
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <pre className="mt-2 p-3 bg-gray-900 text-green-400 rounded text-xs overflow-x-auto max-h-64">
-                    {JSON.stringify(buildPayloadPreview(), null, 2)}
-                  </pre>
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* Raw Driver Data for Debugging */}
-              <Collapsible>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline text-muted-foreground">
-                  <ChevronDown className="w-4 h-4" />
-                  Show Raw Driver Data
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <pre className="mt-2 p-3 bg-gray-900 text-amber-400 rounded text-xs overflow-x-auto max-h-64">
-                    {JSON.stringify(namedDrivers[0] || {}, null, 2)}
-                  </pre>
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* Actual Sent Payload (After Quote Generation) */}
-              {actualSentPayload && (
-                <Collapsible defaultOpen>
-                  <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline text-blue-600">
-                    <ChevronDown className="w-4 h-4" />
-                    📤 Actual Suncorp Payload (Sent)
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="mt-2 space-y-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => {
-                          navigator.clipboard.writeText(JSON.stringify(actualSentPayload, null, 2));
-                          toast.success("Payload copied to clipboard!");
-                        }}
-                      >
-                        📋 Copy to Clipboard
-                      </Button>
-                      <pre className="p-3 bg-gray-900 text-blue-400 rounded text-xs overflow-x-auto max-h-96">
-                        {JSON.stringify(actualSentPayload, null, 2)}
-                      </pre>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
 
-                      {/* Status Message */}
-                      {isPayloadReady() ? (
-                        <Alert className="bg-green-100 border-green-600">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <AlertDescription>
-                            Payload is ready. You can click "Recalculate Quote" to send the API request.
-                          </AlertDescription>
-                        </Alert>
-                      ) : (
-                        <Alert className="bg-amber-100 border-amber-600">
-                          <AlertCircle className="h-4 w-4 text-amber-600" />
-                          <AlertDescription>
-                            Please complete all required fields above before generating a quote.
-                            {getMissingFields().length > 0 && (
-                              <span className="block mt-1 font-medium">
-                                Missing: {getMissingFields().join(', ')}
-                              </span>
-                            )}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                    </CardContent>
-                  </Card>
+                    <Separator />
+
+                    {/* Combined Total */}
+                    <div className="p-4 bg-primary/5 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">Combined Annual Premium</p>
+                      <div className="text-2xl font-bold">
+                        ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        MCM + Third Party comprehensive coverage
+                      </p>
+                    </div>
+
+                    {/* Policy Details Collapsible */}
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-semibold">
+                        <span>Policy Details</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3 space-y-3 text-sm">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Quote Number</p>
+                          <p className="font-mono text-xs">{suncorpDetails.suncorp_quote_number}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Cover Type</p>
+                          <p>{suncorpDetails.cover_type}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Policy Period</p>
+                          <p>{new Date(suncorpDetails.policy_start_date).toLocaleDateString()} - {new Date(suncorpDetails.policy_expiry_date).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Risk Address</p>
+                          <p>{suncorpDetails.street_number} {suncorpDetails.street_name}, {suncorpDetails.suburb} {suncorpDetails.state} {suncorpDetails.postcode}</p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </>
                 )}
 
-                <p className="text-xs text-muted-foreground text-center mt-4">
-                  This is an indicative price. Final price confirmed after
-                  acceptance.
-                </p>
+                {quoteGenerated && (
+                  <Button
+                    onClick={() => setShowContactDialog(true)}
+                    size="lg"
+                    className="w-full"
+                  >
+                    Contact Broker
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-      
-      <ContactBrokerDialog 
-        open={showContactDialog} 
-        onOpenChange={setShowContactDialog} 
-      />
 
-      {/* Pre-Flight Payload Validation Dialog */}
-      <Dialog open={showPayloadDialog} onOpenChange={setShowPayloadDialog}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Complete Payload Inspector</DialogTitle>
-          </DialogHeader>
-          
-          {vehicles[0] && namedDrivers[0] && (
-            <PayloadInspector
-              vehicle={{
-                registration_number: vehicles[0].registration_number,
-                vehicle_make: vehicles[0].vehicle_make,
-                vehicle_model: vehicles[0].vehicle_model,
-                vehicle_year: vehicles[0].vehicle_year,
-                vehicle_nvic: vehicles[0].vehicle_nvic,
-                vehicle_variant: vehicles[0].vehicle_variant,
-              }}
-              driver={{
-                first_name: namedDrivers[0].first_name,
-                last_name: namedDrivers[0].last_name,
-                gender: namedDrivers[0].gender,
-                date_of_birth: namedDrivers[0].date_of_birth,
-                address_line1: namedDrivers[0].address_line1,
-                address_unit_type: namedDrivers[0].address_unit_type,
-                address_unit_number: namedDrivers[0].address_unit_number,
-                address_street_number: namedDrivers[0].address_street_number,
-                address_street_name: namedDrivers[0].address_street_name,
-                address_street_type: namedDrivers[0].address_street_type,
-                address_suburb: namedDrivers[0].address_suburb,
-                address_state: namedDrivers[0].address_state,
-                address_postcode: namedDrivers[0].address_postcode,
-                address_lurn: namedDrivers[0].address_lurn,
-                address_latitude: namedDrivers[0].address_latitude,
-                address_longitude: namedDrivers[0].address_longitude,
-                address_gnaf_data: (quote as any)?.address_gnaf_data,
-              }}
-              policyStartDate={getDefaultPolicyStartDate()}
-              actualSentPayload={actualSentPayload}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-      
       <Footer />
+
+      {/* Dialogs */}
+      <QuoteGenerationOverlay isVisible={isGenerating} />
+      <ContactBrokerDialog open={showContactDialog} onOpenChange={setShowContactDialog} />
+      <QuoteErrorDialog
+        open={showErrorDialog}
+        onOpenChange={setShowErrorDialog}
+        error={errorDetails.error}
+        requestPayload={errorDetails.requestPayload}
+        responseData={errorDetails.responseData}
+      />
+      <PayloadInspector
+        open={showPayloadDialog}
+        onOpenChange={setShowPayloadDialog}
+        payload={actualSentPayload}
+      />
     </div>
   );
 };

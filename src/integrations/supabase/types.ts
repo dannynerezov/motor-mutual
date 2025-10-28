@@ -490,7 +490,9 @@ export type Database = {
           id: string
           quote_id: string
           registration_number: string
+          retail_price: number | null
           selected_coverage_value: number
+          trade_low_price: number | null
           vehicle_image_url: string | null
           vehicle_make: string
           vehicle_model: string
@@ -505,7 +507,9 @@ export type Database = {
           id?: string
           quote_id: string
           registration_number: string
+          retail_price?: number | null
           selected_coverage_value: number
+          trade_low_price?: number | null
           vehicle_image_url?: string | null
           vehicle_make: string
           vehicle_model: string
@@ -520,7 +524,9 @@ export type Database = {
           id?: string
           quote_id?: string
           registration_number?: string
+          retail_price?: number | null
           selected_coverage_value?: number
+          trade_low_price?: number | null
           vehicle_image_url?: string | null
           vehicle_make?: string
           vehicle_model?: string
