@@ -88,21 +88,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Fairness Section */}
-      <section id="fairness" className="py-20 bg-background">
-        <FairnessSection />
-      </section>
-
-      {/* Transparency Section */}
-      <section id="transparency" className="py-20 bg-card">
-        <TransparencySection />
-      </section>
-
-      {/* Reliability Section */}
-      <section id="reliability" className="py-20 bg-gradient-to-br from-accent/5 to-primary/5">
-        <ReliabilitySection />
-      </section>
-
       {/* How It Works */}
       <section id="how-it-works" className="py-20 bg-background">
         <div className="container mx-auto px-6">
@@ -166,6 +151,21 @@ const Index = () => {
             <HowItWorksComparison />
           </div>
         </div>
+      </section>
+
+      {/* Fairness Section */}
+      <section id="fairness" className="py-20 bg-card">
+        <FairnessSection />
+      </section>
+
+      {/* Transparency Section */}
+      <section id="transparency" className="py-20 bg-background">
+        <TransparencySection />
+      </section>
+
+      {/* Reliability Section */}
+      <section id="reliability" className="py-20 bg-gradient-to-br from-accent/5 to-primary/5">
+        <ReliabilitySection />
       </section>
 
       <Footer />
