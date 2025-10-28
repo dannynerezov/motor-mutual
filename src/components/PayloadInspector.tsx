@@ -11,6 +11,7 @@ interface PayloadInspectorProps {
     vehicle_model: string;
     vehicle_year: number;
     vehicle_nvic: string | null;
+    vehicle_variant?: string;
   };
   driver: {
     first_name: string;
@@ -29,6 +30,7 @@ interface PayloadInspectorProps {
     address_lurn?: string;
     address_latitude?: string;
     address_longitude?: string;
+    address_gnaf_data?: any;
   };
   policyStartDate?: string;
 }
@@ -67,13 +69,7 @@ export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadIn
   };
 
   // Stage 2: Simulated Edge Function Transform (Complete Suncorp Payload)
-  const convertDateFormat = (dateString: string): string => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  // ✅ No conversion needed - Suncorp expects YYYY-MM-DD format
 
   const convertGender = (gender: string): string => {
     return gender?.toLowerCase() === 'male' ? 'M' : 'F';
@@ -151,7 +147,7 @@ export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadIn
     },
     driverDetails: {
       mainDriver: {
-        dateOfBirth: driver.date_of_birth ? convertDateFormat(driver.date_of_birth) : "MISSING",
+        dateOfBirth: driver.date_of_birth || "MISSING",  // ✅ Keep ISO format YYYY-MM-DD
         gender: driver.gender ? convertGender(driver.gender) : "MISSING",
         hasClaimOccurrences: false,
         claimOccurrences: [],
@@ -164,19 +160,27 @@ export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadIn
     },
   };
 
+  // GNAF data analysis
+  const gnafData = driver.address_gnaf_data || {};
+  const gnafKeysCount = Object.keys(gnafData).length;
+  const hasAbsStats = !!gnafData.absStatisticalAreas;
+  const gnafComplete = gnafKeysCount > 5 && hasAbsStats;
+
   // Validation checks
   const validationChecks = [
     { field: 'Vehicle NVIC', path: 'vehicleDetails.nvic', value: vehicle.vehicle_nvic, required: true },
+    { field: 'Vehicle Variant', path: 'vehicleDetails.vehicleInfo.variant', value: vehicle.vehicle_variant, required: false },
     { field: 'Policy Start Date', path: 'quoteDetails.policyStartDate', value: defaultPolicyDate, required: true },
     { field: 'Driver First Name', path: 'driver.first_name', value: driver.first_name, required: true },
     { field: 'Driver Last Name', path: 'driver.last_name', value: driver.last_name, required: true },
-    { field: 'Driver DOB', path: 'driverDetails.mainDriver.dateOfBirth', value: driver.date_of_birth, required: true },
+    { field: 'Driver DOB (ISO)', path: 'driverDetails.mainDriver.dateOfBirth', value: driver.date_of_birth, required: true },
     { field: 'Driver Gender', path: 'driverDetails.mainDriver.gender', value: driver.gender, required: true },
     { field: 'Address Line 1', path: 'driver.address_line1', value: driver.address_line1, required: true },
     { field: 'Suburb', path: 'riskAddress.suburb', value: driver.address_suburb, required: true },
     { field: 'State', path: 'riskAddress.state', value: driver.address_state, required: true },
     { field: 'Postcode', path: 'riskAddress.postcode', value: driver.address_postcode, required: true },
     { field: 'LURN (Address ID)', path: 'riskAddress.lurn', value: driver.address_lurn, required: true, critical: true },
+    { field: 'GNAF Data Complete', path: 'riskAddress.geocodedNationalAddressFileData', value: gnafComplete ? 'YES' : null, required: true, critical: true },
     { field: 'Latitude', path: 'riskAddress.pointLevelCoordinates.longLatLatitude', value: driver.address_latitude, required: false },
     { field: 'Longitude', path: 'riskAddress.pointLevelCoordinates.longLatLongitude', value: driver.address_longitude, required: false },
     { field: 'Street Name', path: 'riskAddress.structuredStreetAddress.streetName', value: driver.address_street_name, required: true },
@@ -324,10 +328,24 @@ export const PayloadInspector = ({ vehicle, driver, policyStartDate }: PayloadIn
             </div>
             <div className="space-y-2 text-sm">
               <div className="p-3 border rounded bg-muted/50">
-                <strong>Date Format:</strong>
+                <strong>Date Format (ISO):</strong>
                 <div className="ml-4 mt-1 font-mono text-xs">
                   <div>Input: {driver.date_of_birth || 'MISSING'}</div>
-                  <div>Output: {driver.date_of_birth ? convertDateFormat(driver.date_of_birth) : 'MISSING'}</div>
+                  <div>Output: {driver.date_of_birth || 'MISSING'} (No conversion - already ISO)</div>
+                </div>
+              </div>
+              <div className="p-3 border rounded bg-muted/50">
+                <strong>GNAF Data:</strong>
+                <div className="ml-4 mt-1 font-mono text-xs">
+                  <div>Keys: {gnafKeysCount}</div>
+                  <div>Has absStatisticalAreas: {hasAbsStats ? '✓' : '✗'}</div>
+                  <div>Complete: {gnafComplete ? '✓ YES' : '✗ MISSING'}</div>
+                </div>
+              </div>
+              <div className="p-3 border rounded bg-muted/50">
+                <strong>Vehicle Variant:</strong>
+                <div className="ml-4 mt-1 font-mono text-xs">
+                  <div>Value: {vehicle.vehicle_variant || 'NOT PROVIDED'}</div>
                 </div>
               </div>
               <div className="p-3 border rounded bg-muted/50">

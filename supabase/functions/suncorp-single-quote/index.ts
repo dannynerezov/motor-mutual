@@ -138,12 +138,21 @@ serve(async (req) => {
 
     console.log('[SingleQuote] Address validation passed - all fields present');
 
-    // Step 2: Smart Address Validation - Skip if LURN already provided
+    // Step 2: Smart Address Validation - Only skip if BOTH lurn AND complete GNAF data present
     let validatedAddress: any;
     
-    if (driver.address_lurn && driver.address_lurn.length > 0) {
-      // Frontend already validated the address, use it directly
-      console.log('[SingleQuote] ✅ Using pre-validated address from frontend');
+    const hasCompleteGnafData = driver.address_gnaf_data && 
+                                Object.keys(driver.address_gnaf_data).length > 5 &&
+                                driver.address_gnaf_data.gnafSrid;
+    
+    if (driver.address_lurn && hasCompleteGnafData) {
+      // Frontend already validated the address with complete GNAF data
+      console.log('[SingleQuote] ✅ Using pre-validated address from frontend with complete GNAF data');
+      console.log('[SingleQuote] GNAF data keys:', Object.keys(driver.address_gnaf_data).length);
+      console.log('[SingleQuote] Has absStatisticalAreas:', !!driver.address_gnaf_data.absStatisticalAreas);
+      if (driver.address_gnaf_data.absStatisticalAreas) {
+        console.log('[SingleQuote] GNAF SA keys:', Object.keys(driver.address_gnaf_data.absStatisticalAreas));
+      }
       console.log(`[SingleQuote] LURN: ${driver.address_lurn.substring(0, 30)}...`);
       console.log(`[SingleQuote] Coordinates: ${driver.address_latitude}, ${driver.address_longitude}`);
       
@@ -154,7 +163,7 @@ serve(async (req) => {
         state: driver.address_state,
         latitude: driver.address_latitude,
         longitude: driver.address_longitude,
-        geocodedNationalAddressFileData: driver.address_gnaf_data || {},
+        geocodedNationalAddressFileData: driver.address_gnaf_data,
         structuredStreetAddress: {
           streetNumber1: driver.address_street_number,
           streetName: driver.address_street_name,
@@ -164,8 +173,10 @@ serve(async (req) => {
         }
       };
     } else {
-      // No LURN provided, perform address search and validation
-      console.log('[SingleQuote] ⚠️ No LURN provided, performing address validation');
+      // Incomplete GNAF data or no LURN - perform full validation
+      console.log('[SingleQuote] ⚠️ Incomplete GNAF data from frontend, performing full validation');
+      console.log('[SingleQuote] Has LURN:', !!driver.address_lurn);
+      console.log('[SingleQuote] Has complete GNAF data:', hasCompleteGnafData);
       console.log('[SingleQuote] Address input:', {
         line1: driver.address_line1,
         suburb: driver.address_suburb,
@@ -270,6 +281,10 @@ serve(async (req) => {
         quality: matched.addressQualityLevel,
       });
 
+      const gnafData = matched.geocodedNationalAddressFileData || {};
+      console.log('[SingleQuote] GNAF data keys from validation:', Object.keys(gnafData).length);
+      console.log('[SingleQuote] GNAF has absStatisticalAreas:', !!gnafData.absStatisticalAreas);
+
       validatedAddress = {
         lurn: matched.addressId,
         suburb: matched.addressInBrokenDownForm?.suburb || driver.address_suburb,
@@ -277,7 +292,7 @@ serve(async (req) => {
         state: matched.addressInBrokenDownForm?.state || driver.address_state,
         latitude: matched.latitude,
         longitude: matched.longitude,
-        geocodedNationalAddressFileData: matched.geocodedNationalAddressFileData || {},
+        geocodedNationalAddressFileData: gnafData,
         structuredStreetAddress: {
           streetNumber1: matched.addressInBrokenDownForm?.streetNumber,
           streetName: matched.addressInBrokenDownForm?.streetName,
