@@ -154,7 +154,7 @@ serve(async (req) => {
         console.log('[SingleQuote] GNAF SA keys:', Object.keys(driver.address_gnaf_data.absStatisticalAreas));
       }
       console.log(`[SingleQuote] LURN: ${driver.address_lurn.substring(0, 30)}...`);
-      console.log(`[SingleQuote] Coordinates: ${driver.address_latitude}, ${driver.address_longitude}`);
+      console.log(`[SingleQuote] Coordinates from frontend: lat=${driver.address_latitude}, lng=${driver.address_longitude}`);
       
       validatedAddress = {
         lurn: driver.address_lurn,
@@ -172,6 +172,13 @@ serve(async (req) => {
           unitTypeCode: driver.address_unit_type
         }
       };
+      
+      console.log('[SingleQuote] Validated address object:', {
+        hasLatitude: !!validatedAddress.latitude,
+        hasLongitude: !!validatedAddress.longitude,
+        latitude: validatedAddress.latitude,
+        longitude: validatedAddress.longitude
+      });
     } else {
       // Incomplete GNAF data or no LURN - perform full validation
       console.log('[SingleQuote] ⚠️ Incomplete GNAF data from frontend, performing full validation');
@@ -276,32 +283,62 @@ serve(async (req) => {
         throw new Error('No matched address in validation response');
       }
 
-      console.log('[SingleQuote] Address validated:', {
-        lurn: matched.addressId?.substring(0, 30) + '...',
-        quality: matched.addressQualityLevel,
-      });
+    console.log('[SingleQuote] Address validated:', {
+      lurn: matched.addressId?.substring(0, 30) + '...',
+      quality: matched.addressQualityLevel,
+    });
 
-      const gnafData = matched.geocodedNationalAddressFileData || {};
-      console.log('[SingleQuote] GNAF data keys from validation:', Object.keys(gnafData).length);
-      console.log('[SingleQuote] GNAF has absStatisticalAreas:', !!gnafData.absStatisticalAreas);
+    const gnafData = matched.geocodedNationalAddressFileData || {};
+    console.log('[SingleQuote] GNAF data keys from validation:', Object.keys(gnafData).length);
+    console.log('[SingleQuote] GNAF has absStatisticalAreas:', !!gnafData.absStatisticalAreas);
 
-      validatedAddress = {
-        lurn: matched.addressId,
-        suburb: matched.addressInBrokenDownForm?.suburb || driver.address_suburb,
-        postcode: matched.addressInBrokenDownForm?.postcode || driver.address_postcode,
-        state: matched.addressInBrokenDownForm?.state || driver.address_state,
-        latitude: matched.latitude,
-        longitude: matched.longitude,
-        geocodedNationalAddressFileData: gnafData,
-        structuredStreetAddress: {
-          streetNumber1: matched.addressInBrokenDownForm?.streetNumber,
-          streetName: matched.addressInBrokenDownForm?.streetName,
-          streetTypeCode: matched.addressInBrokenDownForm?.streetType,
-          unitNumber: matched.addressInBrokenDownForm?.unitNumber,
-          unitTypeCode: matched.addressInBrokenDownForm?.unitType
-        }
-      };
-    }
+    // Extract coordinates from multiple possible sources
+    const extractedLatitude = matched.latitude || 
+                              matched.pointLevelCoordinates?.latitude ||
+                              gnafData.latitude ||
+                              null;
+    const extractedLongitude = matched.longitude || 
+                               matched.pointLevelCoordinates?.longitude ||
+                               gnafData.longitude ||
+                               null;
+
+    console.log('[SingleQuote] Extracted coordinates from validation:', {
+      latitude: extractedLatitude,
+      longitude: extractedLongitude,
+      source: matched.latitude ? 'matched.latitude' : 
+              matched.pointLevelCoordinates?.latitude ? 'pointLevelCoordinates' : 
+              gnafData.latitude ? 'gnafData' : 'none'
+    });
+
+    validatedAddress = {
+      lurn: matched.addressId,
+      suburb: matched.addressInBrokenDownForm?.suburb || driver.address_suburb,
+      postcode: matched.addressInBrokenDownForm?.postcode || driver.address_postcode,
+      state: matched.addressInBrokenDownForm?.state || driver.address_state,
+      latitude: extractedLatitude,
+      longitude: extractedLongitude,
+      geocodedNationalAddressFileData: gnafData,
+      structuredStreetAddress: {
+        streetNumber1: matched.addressInBrokenDownForm?.streetNumber,
+        streetName: matched.addressInBrokenDownForm?.streetName,
+        streetTypeCode: matched.addressInBrokenDownForm?.streetType,
+        unitNumber: matched.addressInBrokenDownForm?.unitNumber,
+        unitTypeCode: matched.addressInBrokenDownForm?.unitType
+      }
+    };
+  }
+
+  // Log final validated address before building payload
+  console.log('[SingleQuote] Final validated address before payload construction:', {
+    hasLatitude: !!validatedAddress.latitude,
+    hasLongitude: !!validatedAddress.longitude,
+    latitude: validatedAddress.latitude,
+    longitude: validatedAddress.longitude,
+    lurn: validatedAddress.lurn?.substring(0, 30) + '...',
+    suburb: validatedAddress.suburb,
+    postcode: validatedAddress.postcode,
+    state: validatedAddress.state
+  });
 
     // Step 3: Build quote payload
     const convertGender = (gender: string): string => {
@@ -400,10 +437,10 @@ serve(async (req) => {
         lurn: validatedAddress.lurn,
         lurnScale: '1',  // ✅ FIXED: Always use '1' as per working payload
         geocodedNationalAddressFileData: validatedAddress.geocodedNationalAddressFileData || {},
-        pointLevelCoordinates: {
-          longLatLatitude: String(validatedAddress.latitude),  // ✅ FIXED: Correct field name + string type
-          longLatLongitude: String(validatedAddress.longitude)  // ✅ FIXED: Correct field name + string type
-        },
+        pointLevelCoordinates: validatedAddress.latitude && validatedAddress.longitude ? {
+          longLatLatitude: String(validatedAddress.latitude),
+          longLatLongitude: String(validatedAddress.longitude)
+        } : undefined,
         spatialReferenceId: 4283,
         matchStatus: 'HAPPY',
         structuredStreetAddress: {

@@ -206,18 +206,46 @@ export const AddressAutosuggest = ({
 
       if (data?.success && data.data) {
         const validatedData = data.data;
+        
+        // Extract coordinates from multiple possible sources
+        const extractedLatitude = validatedData.pointLevelCoordinates?.latitude ||
+                                  validatedData.latitude ||
+                                  validatedData.geocodedNationalAddressFileData?.latitude ||
+                                  null;
+        const extractedLongitude = validatedData.pointLevelCoordinates?.longitude ||
+                                   validatedData.longitude ||
+                                   validatedData.geocodedNationalAddressFileData?.longitude ||
+                                   null;
+
+        console.log('[AddressAutosuggest] Validation response structure:', {
+          hasPointLevelCoordinates: !!validatedData.pointLevelCoordinates,
+          hasLatitude: !!validatedData.latitude,
+          hasGnafData: !!validatedData.geocodedNationalAddressFileData,
+          extractedLatitude,
+          extractedLongitude
+        });
+
         const completeAddress = {
           ...suggestion,
           lurn: validatedData.lurn,
-          latitude: validatedData.pointLevelCoordinates?.latitude,
-          longitude: validatedData.pointLevelCoordinates?.longitude,
+          latitude: extractedLatitude,
+          longitude: extractedLongitude,
           geocodedNationalAddressFileData: validatedData.geocodedNationalAddressFileData,
         };
         
         console.log('[AddressAutosuggest] Address validated with GNAF data:', completeAddress);
         setValidatedAddress(completeAddress);
         onAddressSelect(completeAddress);
-        toast({ title: 'Address validated' });
+        
+        if (!extractedLatitude || !extractedLongitude) {
+          toast({ 
+            title: 'Address validated', 
+            description: 'Warning: Coordinates not available',
+            variant: 'default'
+          });
+        } else {
+          toast({ title: 'Address validated' });
+        }
       }
     } catch (error) {
       console.error('[AddressAutosuggest] Validation error:', error);
