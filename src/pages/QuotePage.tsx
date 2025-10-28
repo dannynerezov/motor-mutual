@@ -282,10 +282,11 @@ const QuotePage = () => {
     if (!driver.address_state) missingFields.push('state');
     if (!driver.address_postcode) missingFields.push('postcode');
     if (!driver.address_line1) missingFields.push('address_line1');
+    if (!driver.address_lurn) missingFields.push('LURN (address validation)');
     
     if (missingFields.length > 0) {
       console.error('[QuotePage] Missing address fields:', missingFields);
-      toast.error('Address is incomplete. Please select an address from suggestions.');
+      toast.error('Address is incomplete. Please select and validate an address from suggestions.');
       return;
     }
 
@@ -316,6 +317,9 @@ const QuotePage = () => {
         address_suburb: driver.address_suburb || "",
         address_state: driver.address_state || "",
         address_postcode: driver.address_postcode || "",
+        address_lurn: driver.address_lurn || "",
+        address_latitude: driver.address_latitude,
+        address_longitude: driver.address_longitude,
       },
       policyStartDate
     );
