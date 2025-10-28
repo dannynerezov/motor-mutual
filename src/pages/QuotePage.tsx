@@ -636,107 +636,6 @@ const QuotePage = () => {
                   </>
                 )}
 
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    Membership covers all drivers holding a valid licence, but
-                    penalty excess applies for unnamed drivers.
-                  </AlertDescription>
-                </Alert>
-
-                {/* API Payload Review Section */}
-                {namedDrivers.length > 0 && (
-                  <Card className="border-blue-200 bg-blue-50/50 mt-6">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <FileCode className="w-5 h-5" />
-                        API Request Preview
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Readiness Checklist */}
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Payload Readiness</h4>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            {vehicles[0] ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Vehicle Data</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.address_lurn ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Address LURN</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.first_name && namedDrivers[0]?.last_name ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Driver Name</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.date_of_birth ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Date of Birth</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {namedDrivers[0]?.gender ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
-                            <span>Gender</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                            <span>Policy Start Date</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Separator />
-
-              {/* Payload Preview (Collapsible) */}
-              <Collapsible>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline">
-                  <ChevronDown className="w-4 h-4" />
-                  View JSON Payload
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <pre className="mt-2 p-3 bg-gray-900 text-green-400 rounded text-xs overflow-x-auto max-h-64">
-                    {JSON.stringify(buildPayloadPreview(), null, 2)}
-                  </pre>
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* Raw Driver Data for Debugging */}
-              <Collapsible>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline text-muted-foreground">
-                  <ChevronDown className="w-4 h-4" />
-                  Show Raw Driver Data
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <pre className="mt-2 p-3 bg-gray-900 text-amber-400 rounded text-xs overflow-x-auto max-h-64">
-                    {JSON.stringify(namedDrivers[0] || {}, null, 2)}
-                  </pre>
-                </CollapsibleContent>
-              </Collapsible>
-
-                      {/* Status Message */}
-                      {isPayloadReady() ? (
-                        <Alert className="bg-green-100 border-green-600">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <AlertDescription>
-                            Payload is ready. You can click "Recalculate Quote" to send the API request.
-                          </AlertDescription>
-                        </Alert>
-                      ) : (
-                        <Alert className="bg-amber-100 border-amber-600">
-                          <AlertCircle className="h-4 w-4 text-amber-600" />
-                          <AlertDescription>
-                            Please complete all required fields above before generating a quote.
-                            {getMissingFields().length > 0 && (
-                              <span className="block mt-1 font-medium">
-                                Missing: {getMissingFields().join(', ')}
-                              </span>
-                            )}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -852,7 +751,7 @@ const QuotePage = () => {
                 <Separator />
 
                 {/* Recalculate Quote Button - Show if form complete but not yet quoted */}
-                {isDriverComplete && !quoteGenerated && (
+                {isPayloadReady() && !quoteGenerated && (
                   <Button 
                     size="lg" 
                     className="w-full"
@@ -905,7 +804,101 @@ const QuotePage = () => {
                   </Collapsible>
                 )}
 
-                <p className="text-xs text-muted-foreground text-center">
+                {/* API Payload Review Section */}
+                {namedDrivers.length > 0 && (
+                  <Card className="border-blue-200 bg-blue-50/50 mt-4">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileCode className="w-5 h-5" />
+                        API Request Preview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Readiness Checklist */}
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Payload Readiness</h4>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            {vehicles[0] ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Vehicle Data</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.address_lurn ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Address LURN</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.first_name && namedDrivers[0]?.last_name ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Driver Name</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.date_of_birth ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Date of Birth</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.gender ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Gender</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Policy Start Date</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+              {/* Payload Preview (Collapsible) */}
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline">
+                  <ChevronDown className="w-4 h-4" />
+                  View JSON Payload
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <pre className="mt-2 p-3 bg-gray-900 text-green-400 rounded text-xs overflow-x-auto max-h-64">
+                    {JSON.stringify(buildPayloadPreview(), null, 2)}
+                  </pre>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Raw Driver Data for Debugging */}
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline text-muted-foreground">
+                  <ChevronDown className="w-4 h-4" />
+                  Show Raw Driver Data
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <pre className="mt-2 p-3 bg-gray-900 text-amber-400 rounded text-xs overflow-x-auto max-h-64">
+                    {JSON.stringify(namedDrivers[0] || {}, null, 2)}
+                  </pre>
+                </CollapsibleContent>
+              </Collapsible>
+
+                      {/* Status Message */}
+                      {isPayloadReady() ? (
+                        <Alert className="bg-green-100 border-green-600">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <AlertDescription>
+                            Payload is ready. You can click "Recalculate Quote" to send the API request.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        <Alert className="bg-amber-100 border-amber-600">
+                          <AlertCircle className="h-4 w-4 text-amber-600" />
+                          <AlertDescription>
+                            Please complete all required fields above before generating a quote.
+                            {getMissingFields().length > 0 && (
+                              <span className="block mt-1 font-medium">
+                                Missing: {getMissingFields().join(', ')}
+                              </span>
+                            )}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                <p className="text-xs text-muted-foreground text-center mt-4">
                   This is an indicative price. Final price confirmed after
                   acceptance.
                 </p>

@@ -345,7 +345,7 @@ export const DriverCard = ({
 
   return (
     <>
-      <Card className="border-muted">
+      <Card className="border-muted min-h-[600px]">
         <CardHeader className="bg-muted/30 pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Primary Driver Details</CardTitle>
@@ -377,7 +377,7 @@ export const DriverCard = ({
 
             <CollapsibleContent className="px-6 pb-4">
               {!addressLocked ? (
-                <div className="space-y-4 pt-2">
+                <div className="space-y-6 pt-2">
                   <Alert className="bg-blue-50 border-blue-200">
                     <AlertCircle className="h-4 w-4 text-blue-600" />
                     <AlertDescription className="text-sm">
