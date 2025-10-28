@@ -16,6 +16,7 @@ import { Footer } from "@/components/Footer";
 import { ContactBrokerDialog } from "@/components/ContactBrokerDialog";
 import { QuoteGenerationOverlay } from "@/components/QuoteGenerationOverlay";
 import { QuoteErrorDialog } from "@/components/QuoteErrorDialog";
+import { PayloadInspector } from "@/components/PayloadInspector";
 import { useSuncorpQuote } from "@/hooks/useSuncorpQuote";
 import { getDefaultPolicyStartDate } from "@/lib/thirdPartyBulkLogic";
 import { toast } from "sonner";
@@ -933,108 +934,41 @@ const QuotePage = () => {
 
       {/* Pre-Flight Payload Validation Dialog */}
       <Dialog open={showPayloadDialog} onOpenChange={setShowPayloadDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Pre-Flight Payload Check</DialogTitle>
+            <DialogTitle>Complete Payload Inspector</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <h3 className="font-semibold">Required Fields Status</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.first_name ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>First Name: {namedDrivers[0]?.first_name || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.last_name ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>Last Name: {namedDrivers[0]?.last_name || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.gender ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>Gender: {namedDrivers[0]?.gender || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.date_of_birth ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>Date of Birth: {namedDrivers[0]?.date_of_birth || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.address_line1 ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>Address Line 1: {namedDrivers[0]?.address_line1 || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.address_suburb ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>Suburb: {namedDrivers[0]?.address_suburb || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.address_state ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>State: {namedDrivers[0]?.address_state || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.address_postcode ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>Postcode: {namedDrivers[0]?.address_postcode || "Missing"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {namedDrivers[0]?.address_lurn ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
-                  )}
-                  <span>
-                    LURN (Address ID): {namedDrivers[0]?.address_lurn ? `****...${namedDrivers[0].address_lurn.slice(-8)}` : "Missing - Address not validated"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {!namedDrivers[0]?.address_lurn && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  LURN is missing! Please select an address from the autocomplete suggestions to validate it.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div>
-              <h3 className="font-semibold mb-2">Full Payload Preview</h3>
-              <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto max-h-96">
-                {JSON.stringify(buildPayloadPreview(), null, 2)}
-              </pre>
-            </div>
-          </div>
+          {vehicles[0] && namedDrivers[0] && (
+            <PayloadInspector
+              vehicle={{
+                registration_number: vehicles[0].registration_number,
+                vehicle_make: vehicles[0].vehicle_make,
+                vehicle_model: vehicles[0].vehicle_model,
+                vehicle_year: vehicles[0].vehicle_year,
+                vehicle_nvic: vehicles[0].vehicle_nvic,
+              }}
+              driver={{
+                first_name: namedDrivers[0].first_name,
+                last_name: namedDrivers[0].last_name,
+                gender: namedDrivers[0].gender,
+                date_of_birth: namedDrivers[0].date_of_birth,
+                address_line1: namedDrivers[0].address_line1,
+                address_unit_type: namedDrivers[0].address_unit_type,
+                address_unit_number: namedDrivers[0].address_unit_number,
+                address_street_number: namedDrivers[0].address_street_number,
+                address_street_name: namedDrivers[0].address_street_name,
+                address_street_type: namedDrivers[0].address_street_type,
+                address_suburb: namedDrivers[0].address_suburb,
+                address_state: namedDrivers[0].address_state,
+                address_postcode: namedDrivers[0].address_postcode,
+                address_lurn: namedDrivers[0].address_lurn,
+                address_latitude: namedDrivers[0].address_latitude,
+                address_longitude: namedDrivers[0].address_longitude,
+              }}
+              policyStartDate={getDefaultPolicyStartDate()}
+            />
+          )}
         </DialogContent>
       </Dialog>
       

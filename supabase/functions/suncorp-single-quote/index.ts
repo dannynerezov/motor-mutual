@@ -27,6 +27,33 @@ serve(async (req) => {
       state: driver.address_state,
     });
 
+    // 📥 LOG INCOMING PAYLOAD
+    console.log('[SingleQuote] 📥 INCOMING PAYLOAD:', JSON.stringify({
+      vehicle: {
+        registration: vehicle.registration_number,
+        make: vehicle.vehicle_make,
+        model: vehicle.vehicle_model,
+        year: vehicle.vehicle_year,
+        nvic_present: !!vehicle.vehicle_nvic,
+        nvic_value: vehicle.vehicle_nvic || 'MISSING'
+      },
+      driver: {
+        first_name: driver.first_name,
+        last_name: driver.last_name,
+        dob: driver.date_of_birth,
+        gender: driver.gender,
+        address_line1: driver.address_line1 || '❌ MISSING',
+        address_suburb: driver.address_suburb || '❌ MISSING',
+        address_state: driver.address_state || '❌ MISSING',
+        address_postcode: driver.address_postcode || '❌ MISSING',
+        address_lurn: driver.address_lurn ? driver.address_lurn.substring(0, 20) + '...' : '❌ MISSING',
+        address_lurn_length: driver.address_lurn?.length || 0,
+        address_latitude: driver.address_latitude || '❌ MISSING',
+        address_longitude: driver.address_longitude || '❌ MISSING',
+      },
+      policyStartDate
+    }, null, 2));
+
     // Step 1: Vehicle lookup if NVIC missing
     let nvic = vehicle.vehicle_nvic;
     let vehicleYear = vehicle.vehicle_year.toString();
@@ -334,6 +361,45 @@ serve(async (req) => {
 
     console.log('[SingleQuote] Payload built, size:', JSON.stringify(quotePayload).length);
 
+    // 📤 LOG COMPLETE SUNCORP PAYLOAD
+    console.log('[SingleQuote] 📤 SUNCORP API PAYLOAD:', JSON.stringify({
+      quoteDetails: {
+        policyStartDate: quotePayload.quoteDetails.policyStartDate,
+        currentInsurer: quotePayload.quoteDetails.currentInsurer,
+        sumInsuredType: quotePayload.quoteDetails.sumInsured.sumInsuredType,
+        hasFamilyPolicy: quotePayload.quoteDetails.hasFamilyPolicy,
+        hasMultiplePolicies: quotePayload.quoteDetails.hasMultiplePolicies
+      },
+      vehicleDetails: {
+        nvic: quotePayload.vehicleDetails.nvic,
+        primaryUsage: quotePayload.vehicleDetails.usage.primaryUsage,
+        kmPerYear: quotePayload.vehicleDetails.kmPerYear,
+        year: quotePayload.vehicleDetails.vehicleInfo.year,
+        make: quotePayload.vehicleDetails.vehicleInfo.make,
+        family: quotePayload.vehicleDetails.vehicleInfo.family
+      },
+      coverDetails: {
+        coverType: quotePayload.coverDetails.coverType
+      },
+      riskAddress: {
+        lurn: quotePayload.riskAddress.lurn.substring(0, 30) + '...',
+        lurn_length: quotePayload.riskAddress.lurn.length,
+        suburb: quotePayload.riskAddress.suburb,
+        postcode: quotePayload.riskAddress.postcode,
+        state: quotePayload.riskAddress.state,
+        streetName: quotePayload.riskAddress.structuredStreetAddress.streetName,
+        streetNumber: quotePayload.riskAddress.structuredStreetAddress.streetNumber1,
+        streetType: quotePayload.riskAddress.structuredStreetAddress.streetTypeCode
+      },
+      driverDetails: {
+        mainDriver: {
+          dateOfBirth: quotePayload.driverDetails.mainDriver.dateOfBirth,
+          gender: quotePayload.driverDetails.mainDriver.gender
+        }
+      },
+      payloadSize: (JSON.stringify(quotePayload).length / 1024).toFixed(2) + ' KB'
+    }, null, 2));
+
     // Step 4: Create quote with smart retry
     const createQuote = async (payload: any): Promise<Response> => {
       return await fetch(
@@ -348,6 +414,16 @@ serve(async (req) => {
         }
       );
     };
+
+    // 🚀 LOG API CALL
+    console.log('[SingleQuote] 🚀 CALLING SUNCORP API:', {
+      endpoint: '/pi-motor-quote-api/api/v1/insurance/motor/brands/sun/quotes',
+      method: 'POST',
+      baseUrl: SUNCORP_BASE_URL,
+      nvic: quotePayload.vehicleDetails.nvic,
+      lurn: quotePayload.riskAddress.lurn.substring(0, 30) + '...',
+      policyStartDate: quotePayload.quoteDetails.policyStartDate
+    });
 
     console.log('[SingleQuote] Attempt 1: Sending quote request...');
     let quoteResponse = await createQuote(quotePayload);
