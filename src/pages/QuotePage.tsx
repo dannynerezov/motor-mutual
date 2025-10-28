@@ -16,7 +16,6 @@ import { Footer } from "@/components/Footer";
 import { ContactBrokerDialog } from "@/components/ContactBrokerDialog";
 import { QuoteGenerationOverlay } from "@/components/QuoteGenerationOverlay";
 import { QuoteErrorDialog } from "@/components/QuoteErrorDialog";
-import { PayloadInspector } from "@/components/PayloadInspector";
 import { useSuncorpQuote } from "@/hooks/useSuncorpQuote";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
 import { getDefaultPolicyStartDate } from "@/lib/thirdPartyBulkLogic";
@@ -135,8 +134,6 @@ const QuotePage = () => {
   // Quote generation states
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
-  const [showPayloadDialog, setShowPayloadDialog] = useState(false);
-  const [actualSentPayload, setActualSentPayload] = useState<any>(null);
   const [errorDetails, setErrorDetails] = useState({
     error: "",
     requestPayload: null,
@@ -396,8 +393,6 @@ const QuotePage = () => {
     );
 
     if (result.success) {
-      setActualSentPayload(result.sentPayload);
-      
       try {
         const { error } = await supabase
           .from("quotes")
@@ -611,10 +606,8 @@ const QuotePage = () => {
                 <CardContent className="space-y-4">
                   <DriverCard
                     driver={driver}
-                    index={0}
                     onUpdate={handleDriverUpdate}
                     onUpdateMany={handleDriverUpdateMany}
-                    showOnlyAddress
                   />
 
                   <div className="flex gap-3">
@@ -645,18 +638,14 @@ const QuotePage = () => {
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Step 3: Personal Details</CardTitle>
+                    <CardTitle>Step 3: Driver Personal & Claims Info</CardTitle>
                     {isStep3Complete && <Badge variant="default">Complete</Badge>}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <DriverCard
-                    driver={driver}
-                    index={0}
-                    onUpdate={handleDriverUpdate}
-                    onUpdateMany={handleDriverUpdateMany}
-                    showOnlyPersonal
-                  />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Complete your personal details below. Address was already captured in the previous step.
+                  </p>
 
                   <div className="flex gap-3">
                     {currentStep === 3 && (
@@ -905,16 +894,11 @@ const QuotePage = () => {
       <QuoteGenerationOverlay isVisible={isGenerating} />
       <ContactBrokerDialog open={showContactDialog} onOpenChange={setShowContactDialog} />
       <QuoteErrorDialog
-        open={showErrorDialog}
-        onOpenChange={setShowErrorDialog}
+        isOpen={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
         error={errorDetails.error}
         requestPayload={errorDetails.requestPayload}
         responseData={errorDetails.responseData}
-      />
-      <PayloadInspector
-        open={showPayloadDialog}
-        onOpenChange={setShowPayloadDialog}
-        payload={actualSentPayload}
       />
     </div>
   );
