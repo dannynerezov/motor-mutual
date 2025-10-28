@@ -292,29 +292,31 @@ serve(async (req) => {
     console.log('[SingleQuote] GNAF data keys from validation:', Object.keys(gnafData).length);
     console.log('[SingleQuote] GNAF has absStatisticalAreas:', !!gnafData.absStatisticalAreas);
 
-    // Extract coordinates from multiple possible sources with robust fallback
+    // Extract coordinates with priority: UI point-level > validation > street locality > suburb
     const extractedLatitude =
+      driver?.address_latitude ??
       matched?.pointLevelCoordinates?.latitude ??
       matched?.latitude ??
       gnafData?.gnafStreetLocalityLatitude ??
       gnafData?.gnafSuburbLatitude ??
-      driver?.address_latitude ??
       null;
 
     const extractedLongitude =
+      driver?.address_longitude ??
       matched?.pointLevelCoordinates?.longitude ??
       matched?.longitude ??
       gnafData?.gnafStreetLocalityLongitude ??
       gnafData?.gnafSuburbLongitude ??
-      driver?.address_longitude ??
       null;
 
     console.log('[SingleQuote] Extracted coordinates from validation:', {
       latitude: extractedLatitude,
       longitude: extractedLongitude,
-      source: matched.latitude ? 'matched.latitude' : 
-              matched.pointLevelCoordinates?.latitude ? 'pointLevelCoordinates' : 
-              gnafData.latitude ? 'gnafData' : 'none'
+      source: driver?.address_latitude ? 'driver.address (UI point-level)' :
+              matched?.pointLevelCoordinates?.latitude ? 'matched.pointLevelCoordinates' : 
+              matched?.latitude ? 'matched.latitude' :
+              gnafData?.gnafStreetLocalityLatitude ? 'gnafData.streetLocality' :
+              gnafData?.gnafSuburbLatitude ? 'gnafData.suburb' : 'none'
     });
 
     validatedAddress = {
@@ -347,17 +349,17 @@ serve(async (req) => {
     state: validatedAddress.state
   });
 
-  // Compute final effective coordinates with robust fallback order
+  // Compute final effective coordinates with priority: UI point-level > validation > street locality > suburb
   const effectiveLat =
-    validatedAddress?.latitude ??
     driver?.address_latitude ??
+    validatedAddress?.latitude ??
     validatedAddress?.geocodedNationalAddressFileData?.gnafStreetLocalityLatitude ??
     validatedAddress?.geocodedNationalAddressFileData?.gnafSuburbLatitude ??
     null;
 
   const effectiveLng =
-    validatedAddress?.longitude ??
     driver?.address_longitude ??
+    validatedAddress?.longitude ??
     validatedAddress?.geocodedNationalAddressFileData?.gnafStreetLocalityLongitude ??
     validatedAddress?.geocodedNationalAddressFileData?.gnafSuburbLongitude ??
     null;
