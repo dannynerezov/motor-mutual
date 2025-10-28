@@ -553,8 +553,14 @@ serve(async (req) => {
         {
           method: 'POST',
           headers: {
-            'x-api-key': API_TOKEN || '',
-            'Content-Type': 'application/json',
+            'accept': 'application/vnd.api+json',
+            'content-type': 'application/json',
+            'x-client-id': 'sun-motor-ui',
+            'x-client-version': '1.0',
+            'x-correlation-id': crypto.randomUUID(),
+            'x-request-id': crypto.randomUUID(),
+            'origin': 'https://motor.suncorp.com.au',
+            'referer': 'https://motor.suncorp.com.au/',
           },
           body: JSON.stringify(payload),
         }
