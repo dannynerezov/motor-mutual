@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertCircle, Info, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DriverCard } from "@/components/DriverCard";
@@ -92,6 +93,7 @@ const QuotePage = () => {
   // Quote generation states
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [showPayloadDialog, setShowPayloadDialog] = useState(false);
   const [errorDetails, setErrorDetails] = useState({
     error: "",
     requestPayload: null,
@@ -754,23 +756,35 @@ const QuotePage = () => {
 
                 <Separator />
 
-                {/* Recalculate Quote Button - Show if form complete but not yet quoted */}
+                {/* Action Buttons */}
                 {isPayloadReady() && !quoteGenerated && (
-                  <Button 
-                    size="lg" 
-                    className="w-full"
-                    onClick={handleRecalculateQuote}
-                    disabled={isGenerating || showClaimsError}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Calculating...
-                      </>
-                    ) : (
-                      'Recalculate Quote'
-                    )}
-                  </Button>
+                  <div className="space-y-2">
+                    <Button 
+                      size="lg" 
+                      className="w-full"
+                      onClick={handleRecalculateQuote}
+                      disabled={isGenerating || showClaimsError}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Calculating...
+                        </>
+                      ) : (
+                        'Recalculate Quote'
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setShowPayloadDialog(true)}
+                    >
+                      <FileCode className="w-4 h-4 mr-2" />
+                      Check Payload
+                    </Button>
+                  </div>
                 )}
 
                 {/* Contact Broker Button - Only show after quote generated */}
@@ -916,6 +930,113 @@ const QuotePage = () => {
         open={showContactDialog} 
         onOpenChange={setShowContactDialog} 
       />
+
+      {/* Pre-Flight Payload Validation Dialog */}
+      <Dialog open={showPayloadDialog} onOpenChange={setShowPayloadDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Pre-Flight Payload Check</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <h3 className="font-semibold">Required Fields Status</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.first_name ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>First Name: {namedDrivers[0]?.first_name || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.last_name ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>Last Name: {namedDrivers[0]?.last_name || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.gender ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>Gender: {namedDrivers[0]?.gender || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.date_of_birth ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>Date of Birth: {namedDrivers[0]?.date_of_birth || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.address_line1 ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>Address Line 1: {namedDrivers[0]?.address_line1 || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.address_suburb ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>Suburb: {namedDrivers[0]?.address_suburb || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.address_state ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>State: {namedDrivers[0]?.address_state || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.address_postcode ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>Postcode: {namedDrivers[0]?.address_postcode || "Missing"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {namedDrivers[0]?.address_lurn ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span>
+                    LURN (Address ID): {namedDrivers[0]?.address_lurn ? `****...${namedDrivers[0].address_lurn.slice(-8)}` : "Missing - Address not validated"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {!namedDrivers[0]?.address_lurn && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  LURN is missing! Please select an address from the autocomplete suggestions to validate it.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div>
+              <h3 className="font-semibold mb-2">Full Payload Preview</h3>
+              <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto max-h-96">
+                {JSON.stringify(buildPayloadPreview(), null, 2)}
+              </pre>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>

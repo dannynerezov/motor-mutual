@@ -58,6 +58,7 @@ export const useSuncorpQuote = () => {
       console.log('[Quote Generation] Vehicle:', `${vehicle.vehicle_year} ${vehicle.vehicle_make} ${vehicle.vehicle_model}`);
       console.log('[Quote Generation] Driver:', `${driver.first_name} ${driver.last_name}`);
       console.log('[Quote Generation] Address:', `${driver.address_suburb}, ${driver.address_state} ${driver.address_postcode}`);
+      console.log('[Quote Generation] LURN present:', !!driver.address_lurn);
 
       const { data, error } = await supabase.functions.invoke('suncorp-single-quote', {
         body: {
@@ -82,6 +83,9 @@ export const useSuncorpQuote = () => {
             address_suburb: driver.address_suburb,
             address_state: driver.address_state,
             address_postcode: driver.address_postcode,
+            address_lurn: driver.address_lurn,
+            address_latitude: driver.address_latitude,
+            address_longitude: driver.address_longitude,
           },
           policyStartDate,
         },
