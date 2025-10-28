@@ -20,35 +20,35 @@ export const TransparencySection = () => {
       </div>
 
       {/* Background Synonyms - Stylized & barely visible */}
-      <div className="absolute top-20 left-10 text-xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈklærəti/
+      <div className="absolute top-20 left-10 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        clarity
       </div>
-      <div className="absolute bottom-28 right-20 text-3xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈəʊpənnəs/
+      <div className="absolute bottom-28 right-20 text-4xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        openness
       </div>
-      <div className="absolute top-44 right-24 text-xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈɒnɪsti/
+      <div className="absolute top-44 right-24 text-2xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        honesty
       </div>
-      <div className="absolute top-1/3 left-1/4 text-3xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /luːˈsɪdɪti/
+      <div className="absolute top-1/3 left-1/4 text-4xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        lucidity
       </div>
-      <div className="absolute bottom-1/3 left-16 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈkændɪdnəs/
+      <div className="absolute bottom-1/3 left-16 text-3xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        candidness
       </div>
-      <div className="absolute top-2/3 right-1/3 text-2xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈfræŋknəs/
+      <div className="absolute top-2/3 right-1/3 text-3xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        frankness
       </div>
-      <div className="absolute bottom-44 right-16 text-xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ɪkˈsplɪsɪtnəs/
+      <div className="absolute bottom-44 right-16 text-2xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        explicitness
       </div>
-      <div className="absolute top-52 left-1/3 text-3xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˌvɪzəˈbɪləti/
+      <div className="absolute top-52 left-1/3 text-4xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        visibility
       </div>
-      <div className="absolute bottom-52 left-1/4 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /dɪˈrɛktnəs/
+      <div className="absolute bottom-52 left-1/4 text-3xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        directness
       </div>
-      <div className="absolute top-1/4 right-20 text-xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈfɔːθraɪtnəs/
+      <div className="absolute top-1/4 right-20 text-2xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        forthrightness
       </div>
 
       {/* Main Content */}

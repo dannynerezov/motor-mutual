@@ -17,35 +17,35 @@ export const ReliabilitySection = () => {
       </div>
 
       {/* Background Synonyms - Stylized & barely visible */}
-      <div className="absolute top-24 left-12 text-2xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /dɪˌpɛndəˈbɪləti/
+      <div className="absolute top-24 left-12 text-3xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        dependability
       </div>
-      <div className="absolute bottom-32 right-20 text-3xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈtrʌstwɜːðinəs/
+      <div className="absolute bottom-32 right-20 text-4xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        trustworthiness
       </div>
-      <div className="absolute top-40 right-16 text-xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /kənˈsɪstənsi/
+      <div className="absolute top-40 right-16 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        consistency
       </div>
-      <div className="absolute top-1/4 left-1/3 text-3xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈstɛdfɑːstnəs/
+      <div className="absolute top-1/4 left-1/3 text-4xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        steadfastness
       </div>
-      <div className="absolute bottom-1/3 left-20 text-2xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈfeɪθfʊlnəs/
+      <div className="absolute bottom-1/3 left-20 text-3xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        faithfulness
       </div>
-      <div className="absolute top-2/3 right-1/4 text-2xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /əˌkaʊntəˈbɪləti/
+      <div className="absolute top-2/3 right-1/4 text-3xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        accountability
       </div>
-      <div className="absolute bottom-40 right-1/3 text-xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /prɪˌdɪktəˈbɪləti/
+      <div className="absolute bottom-40 right-1/3 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        predictability
       </div>
-      <div className="absolute top-48 left-1/4 text-3xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /stəˈbɪləti/
+      <div className="absolute top-48 left-1/4 text-4xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        stability
       </div>
-      <div className="absolute bottom-48 left-1/3 text-2xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /səˈlɪdɪti/
+      <div className="absolute bottom-48 left-1/3 text-3xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        solidity
       </div>
-      <div className="absolute top-1/3 right-20 text-xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈʃʊənəs/
+      <div className="absolute top-1/3 right-20 text-2xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        sureness
       </div>
 
       {/* Main Content */}

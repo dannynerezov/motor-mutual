@@ -18,35 +18,35 @@ export const FairnessSection = () => {
       </div>
 
       {/* Background Synonyms - Stylized & barely visible */}
-      <div className="absolute top-16 left-8 text-xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈɛkwɪti/
+      <div className="absolute top-16 left-8 text-2xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        equity
       </div>
-      <div className="absolute top-32 right-12 text-2xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈdʒʌstɪs/
+      <div className="absolute top-32 right-12 text-3xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        justice
       </div>
-      <div className="absolute top-1/4 left-1/4 text-3xl font-semibold italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ɪmˌpɑːrʃiˈæləti/
+      <div className="absolute top-1/4 left-1/4 text-4xl font-semibold italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        impartiality
       </div>
-      <div className="absolute bottom-40 left-16 text-2xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˌiːvənˈhændɪdnəs/
+      <div className="absolute bottom-40 left-16 text-3xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        evenhandedness
       </div>
-      <div className="absolute top-2/3 right-1/4 text-xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ɪˌɡælɪˈtɛəriənɪzəm/
+      <div className="absolute top-2/3 right-1/4 text-2xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        egalitarianism
       </div>
-      <div className="absolute bottom-24 right-20 text-2xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˌɒbdʒɛkˈtɪvɪti/
+      <div className="absolute bottom-24 right-20 text-3xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        objectivity
       </div>
-      <div className="absolute top-48 left-1/3 text-3xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /njuːˈtræləti/
+      <div className="absolute top-48 left-1/3 text-4xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        neutrality
       </div>
-      <div className="absolute bottom-1/3 right-1/3 text-3xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ɪˈkwɒləti/
+      <div className="absolute bottom-1/3 right-1/3 text-4xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        equality
       </div>
-      <div className="absolute top-1/3 right-16 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˈbæləns/
+      <div className="absolute top-1/3 right-16 text-3xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        balance
       </div>
-      <div className="absolute bottom-48 left-1/4 text-2xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
-        /ˌɛkwɪtəˈbɪləti/
+      <div className="absolute bottom-48 left-1/4 text-3xl font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.15, userSelect: 'none' }} aria-hidden="true">
+        equitability
       </div>
 
       {/* Main Content */}
