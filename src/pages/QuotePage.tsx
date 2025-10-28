@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, Info, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, Info, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DriverCard } from "@/components/DriverCard";
 import { Header } from "@/components/Header";
@@ -365,7 +365,68 @@ const QuotePage = () => {
     namedDrivers[0].gender && 
     namedDrivers[0].address_suburb && 
     namedDrivers[0].address_state && 
-    namedDrivers[0].address_postcode;
+    namedDrivers[0].address_postcode &&
+    namedDrivers[0].address_lurn; // Require LURN now
+
+  // Payload readiness checks
+  const buildPayloadPreview = () => {
+    if (!namedDrivers[0] || !vehicles[0]) return null;
+    return {
+      vehicle: {
+        registration_number: vehicles[0].registration_number,
+        vehicle_make: vehicles[0].vehicle_make,
+        vehicle_model: vehicles[0].vehicle_model,
+        vehicle_year: vehicles[0].vehicle_year,
+        vehicle_nvic: vehicles[0].vehicle_nvic || null,
+      },
+      driver: {
+        first_name: namedDrivers[0].first_name || null,
+        last_name: namedDrivers[0].last_name || null,
+        gender: namedDrivers[0].gender || null,
+        date_of_birth: namedDrivers[0].date_of_birth || null,
+        address_line1: namedDrivers[0].address_line1 || null,
+        address_unit_type: namedDrivers[0].address_unit_type,
+        address_unit_number: namedDrivers[0].address_unit_number,
+        address_street_number: namedDrivers[0].address_street_number || null,
+        address_street_name: namedDrivers[0].address_street_name || null,
+        address_street_type: namedDrivers[0].address_street_type || null,
+        address_suburb: namedDrivers[0].address_suburb || null,
+        address_state: namedDrivers[0].address_state || null,
+        address_postcode: namedDrivers[0].address_postcode || null,
+      },
+      policyStartDate: policyStartDate,
+    };
+  };
+
+  const getMissingFields = (): string[] => {
+    const missing: string[] = [];
+    if (!vehicles[0]) {
+      missing.push('Vehicle');
+      return missing;
+    }
+    if (!namedDrivers[0]) {
+      missing.push('Driver');
+      return missing;
+    }
+    const driver = namedDrivers[0];
+    if (!driver.first_name) missing.push('First Name');
+    if (!driver.last_name) missing.push('Last Name');
+    if (!driver.date_of_birth) missing.push('Date of Birth');
+    if (!driver.gender) missing.push('Gender');
+    if (!driver.address_lurn) missing.push('Validated Address');
+    if (!policyStartDate) missing.push('Policy Start Date');
+    return missing;
+  };
+
+  const isPayloadReady = () => {
+    return vehicles[0] && namedDrivers[0] && 
+      namedDrivers[0].first_name && 
+      namedDrivers[0].last_name && 
+      namedDrivers[0].date_of_birth && 
+      namedDrivers[0].gender && 
+      namedDrivers[0].address_lurn && 
+      policyStartDate;
+  };
 
   // Debug completion status (temporary)
   if (namedDrivers[0] && !isDriverComplete) {
@@ -377,6 +438,7 @@ const QuotePage = () => {
     if (!namedDrivers[0].address_suburb) missing.push('address_suburb');
     if (!namedDrivers[0].address_state) missing.push('address_state');
     if (!namedDrivers[0].address_postcode) missing.push('address_postcode');
+    if (!namedDrivers[0].address_lurn) missing.push('address_lurn');
     if (missing.length > 0) {
       console.debug('Driver incomplete, missing:', missing.join(', '));
     }
@@ -581,6 +643,87 @@ const QuotePage = () => {
                     penalty excess applies for unnamed drivers.
                   </AlertDescription>
                 </Alert>
+
+                {/* API Payload Review Section */}
+                {namedDrivers.length > 0 && (
+                  <Card className="border-blue-200 bg-blue-50/50 mt-6">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileCode className="w-5 h-5" />
+                        API Request Preview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Readiness Checklist */}
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Payload Readiness</h4>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            {vehicles[0] ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Vehicle Data</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.address_lurn ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Address LURN</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.first_name && namedDrivers[0]?.last_name ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Driver Name</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.date_of_birth ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Date of Birth</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {namedDrivers[0]?.gender ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Gender</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {policyStartDate ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <span>Policy Start Date</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Payload Preview (Collapsible) */}
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline">
+                          <ChevronDown className="w-4 h-4" />
+                          View JSON Payload
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <pre className="mt-2 p-3 bg-gray-900 text-green-400 rounded text-xs overflow-x-auto max-h-64">
+                            {JSON.stringify(buildPayloadPreview(), null, 2)}
+                          </pre>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      {/* Status Message */}
+                      {isPayloadReady() ? (
+                        <Alert className="bg-green-100 border-green-600">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <AlertDescription>
+                            Payload is ready. You can click "Recalculate Quote" to send the API request.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        <Alert className="bg-amber-100 border-amber-600">
+                          <AlertCircle className="h-4 w-4 text-amber-600" />
+                          <AlertDescription>
+                            Please complete all required fields above before generating a quote.
+                            {getMissingFields().length > 0 && (
+                              <span className="block mt-1 font-medium">
+                                Missing: {getMissingFields().join(', ')}
+                              </span>
+                            )}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </CardContent>
             </Card>
           </div>

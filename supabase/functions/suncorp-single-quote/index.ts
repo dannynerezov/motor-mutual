@@ -67,6 +67,13 @@ serve(async (req) => {
 
     // Step 2: Address search + validate
     console.log('[SingleQuote] Searching address...');
+    console.log('[SingleQuote] Address input:', {
+      line1: driver.address_line1,
+      suburb: driver.address_suburb,
+      state: driver.address_state,
+      postcode: driver.address_postcode,
+    });
+    
     const addressSearchResponse = await fetch(
       `${SUNCORP_BASE_URL}/address-search-service/address/suggestions/v1?isRiskAddress=true&q=${encodeURIComponent(driver.address_line1)}`,
       {
@@ -99,29 +106,50 @@ serve(async (req) => {
     }
 
     console.log('[SingleQuote] Validating address:', addressLine1);
-    const addressValidateResponse = await fetch(
-      `${SUNCORP_BASE_URL}/address-search-service/address/find/v3`,
-      {
-        method: 'POST',
-        headers: {
-          'x-api-key': API_TOKEN || '',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          country: 'AUS',
-          suburb: suggestion.suburb,
-          postcode: suggestion.postcode,
-          state: suggestion.state,
-          addressInFreeForm: { addressLine1 },
-        }),
-      }
-    );
+    
+    let validateData;
+    try {
+      const addressValidateResponse = await fetch(
+        `${SUNCORP_BASE_URL}/address-search-service/address/find/v3`,
+        {
+          method: 'POST',
+          headers: {
+            'x-api-key': API_TOKEN || '',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            country: 'AUS',
+            suburb: suggestion.suburb,
+            postcode: suggestion.postcode,
+            state: suggestion.state,
+            addressInFreeForm: { addressLine1 },
+          }),
+        }
+      );
 
-    if (!addressValidateResponse.ok) {
-      throw new Error(`Address validation failed: ${addressValidateResponse.status}`);
+      if (!addressValidateResponse.ok) {
+        const errorBody = await addressValidateResponse.text();
+        console.error('[SingleQuote] Address validation failed:', {
+          status: addressValidateResponse.status,
+          statusText: addressValidateResponse.statusText,
+          body: errorBody,
+          requestBody: {
+            country: 'AUS',
+            suburb: suggestion.suburb,
+            postcode: suggestion.postcode,
+            state: suggestion.state,
+            addressInFreeForm: { addressLine1 },
+          },
+        });
+        throw new Error(`Address validation failed: ${addressValidateResponse.status}`);
+      }
+
+      validateData = await addressValidateResponse.json();
+    } catch (error) {
+      console.error('[SingleQuote] Address validation exception:', error);
+      throw new Error(`Address validation failed: ${error.message}`);
     }
 
-    const validateData = await addressValidateResponse.json();
     const matched = validateData?.matchedAddress;
     if (!matched) {
       throw new Error('No matched address in validation response');
