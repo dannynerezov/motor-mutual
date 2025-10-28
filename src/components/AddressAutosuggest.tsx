@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, MapPin, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 interface AddressSuggestion {
   addressLine1: string;
@@ -68,8 +68,8 @@ export const AddressAutosuggest = ({
     if (showSuggestions && inputRef.current) {
       const rect = inputRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 4,
+        left: rect.left,
         width: rect.width
       });
     }
@@ -150,14 +150,14 @@ export const AddressAutosuggest = ({
       } else {
         console.warn('[AddressAutosuggest] No valid data in response:', data);
         if (!data?.success) {
-          toast.error(data?.error || 'Address search failed');
+          toast({ title: 'Address search failed', description: data?.error || 'Please try again.', variant: 'destructive' });
         }
         setSuggestions([]);
         setShowSuggestions(false);
       }
     } catch (error: any) {
       console.error('[AddressAutosuggest] Error:', error);
-      toast.error('Failed to search addresses');
+      toast({ title: 'Address search error', description: (error?.message as string) || 'Please try again.', variant: 'destructive' });
     } finally {
       setIsSearching(false);
     }
@@ -183,7 +183,7 @@ export const AddressAutosuggest = ({
     setSearchTerm(suggestion.addressLine1);
     setShowSuggestions(false);
     onAddressSelect(suggestion);
-    toast.success('Address selected');
+    toast({ title: 'Address selected' });
   };
 
   return (
