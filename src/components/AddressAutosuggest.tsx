@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,8 @@ export const AddressAutosuggest = ({
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [validatedAddress, setValidatedAddress] = useState<AddressSuggestion | null>(selectedAddress || null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
   useEffect(() => {
     if (selectedAddress) {
@@ -57,6 +60,32 @@ export const AddressAutosuggest = ({
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
+
+  // Calculate dropdown position when suggestions appear
+  useEffect(() => {
+    if (showSuggestions && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, [showSuggestions]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    if (showSuggestions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSuggestions]);
 
   const handleAddressSearch = async () => {
     if (searchTerm.length < 3) return;
@@ -135,6 +164,7 @@ export const AddressAutosuggest = ({
       
       <div className="relative">
         <Input
+          ref={inputRef}
           id="address-search"
           type="text"
           placeholder="Start typing your address..."
@@ -156,17 +186,24 @@ export const AddressAutosuggest = ({
         )}
       </div>
 
-      {showSuggestions && suggestions.length > 0 && (
-        <Card className="absolute z-50 w-full mt-1 max-h-64 overflow-y-auto bg-background border shadow-lg">
+      {showSuggestions && suggestions.length > 0 && createPortal(
+        <Card 
+          className="fixed z-[9999] max-h-64 overflow-y-auto bg-white dark:bg-gray-900 border shadow-xl"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`
+          }}
+        >
           <div className="p-2 space-y-1">
             {suggestions.map((suggestion, index) => (
               <Button
                 key={index}
                 variant="ghost"
-                className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-accent/50"
+                className="w-full justify-start text-left h-auto py-3 px-3 hover:bg-accent transition-colors"
                 onClick={() => handleSuggestionClick(suggestion)}
               >
-                <div className="flex flex-col items-start">
+                <div className="flex flex-col items-start w-full">
                   <span className="font-medium text-sm">{suggestion.addressLine1}</span>
                   <span className="text-xs text-muted-foreground">
                     {suggestion.suburb}, {suggestion.state} {suggestion.postcode}
@@ -175,7 +212,8 @@ export const AddressAutosuggest = ({
               </Button>
             ))}
           </div>
-        </Card>
+        </Card>,
+        document.body
       )}
 
       {validatedAddress && (

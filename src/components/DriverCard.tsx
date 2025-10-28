@@ -345,7 +345,7 @@ export const DriverCard = ({
 
   return (
     <>
-      <Card className="border-muted overflow-hidden">
+      <Card className="border-muted">
         <CardHeader className="bg-muted/30 pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Primary Driver Details</CardTitle>
