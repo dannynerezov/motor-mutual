@@ -16,6 +16,7 @@ interface QuoteErrorDialogProps {
   error: string;
   requestPayload?: any;
   responseData?: any;
+  sentPayload?: any;
 }
 
 export const QuoteErrorDialog = ({
@@ -24,6 +25,7 @@ export const QuoteErrorDialog = ({
   error,
   requestPayload,
   responseData,
+  sentPayload,
 }: QuoteErrorDialogProps) => {
   // Extract key info from payloads
   const extractKeyInfo = (payload: any) => {
@@ -90,9 +92,10 @@ export const QuoteErrorDialog = ({
 
           {/* Detailed Tabs */}
           <Tabs defaultValue="request" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="request">Frontend Request</TabsTrigger>
               <TabsTrigger value="response">API Response</TabsTrigger>
+              <TabsTrigger value="payload">Payload Used</TabsTrigger>
               <TabsTrigger value="trace">Endpoint Trace</TabsTrigger>
             </TabsList>
 
@@ -112,6 +115,39 @@ export const QuoteErrorDialog = ({
               <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto max-h-96 border">
                 {JSON.stringify(responseData, null, 2)}
               </pre>
+            </TabsContent>
+
+            <TabsContent value="payload" className="space-y-2">
+              <div className="text-sm text-muted-foreground mb-2">
+                Exact JSON payload sent to Suncorp's quote API:
+                <br />
+                <code className="text-xs bg-muted px-1 py-0.5 rounded mt-1 inline-block">
+                  POST /pi-motor-quote-api/api/v1/insurance/motor/brands/sun/quotes
+                </code>
+              </div>
+              {sentPayload ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mb-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText(JSON.stringify(sentPayload, null, 2));
+                    }}
+                  >
+                    📋 Copy Payload to Clipboard
+                  </Button>
+                  <pre className="text-xs bg-gray-900 text-blue-400 p-4 rounded-lg overflow-auto max-h-96 border font-mono">
+                    {JSON.stringify(sentPayload, null, 2)}
+                  </pre>
+                </>
+              ) : (
+                <Alert>
+                  <AlertDescription>
+                    Payload not available. This may occur if the error happened before the payload was constructed.
+                  </AlertDescription>
+                </Alert>
+              )}
             </TabsContent>
 
             <TabsContent value="trace" className="space-y-3">

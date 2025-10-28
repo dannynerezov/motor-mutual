@@ -507,13 +507,14 @@ const QuotePage = () => {
       <QuoteGenerationOverlay isVisible={isGenerating} />
 
       {/* Error Dialog */}
-      <QuoteErrorDialog
-        isOpen={showErrorDialog}
-        onClose={() => setShowErrorDialog(false)}
-        error={errorDetails.error}
-        requestPayload={errorDetails.requestPayload}
-        responseData={errorDetails.responseData}
-      />
+        <QuoteErrorDialog
+          isOpen={showErrorDialog}
+          onClose={() => setShowErrorDialog(false)}
+          error={errorDetails.error}
+          requestPayload={errorDetails.requestPayload}
+          responseData={errorDetails.responseData}
+          sentPayload={actualSentPayload}
+        />
       
       {/* Header Bar - Above Grid */}
       <div className="bg-muted/30 border-b">
