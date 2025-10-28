@@ -39,7 +39,9 @@ export const AddressAutosuggest = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [validatedAddress, setValidatedAddress] = useState<AddressSuggestion | null>(selectedAddress || null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [hasPinged, setHasPinged] = useState(false);
 
   useEffect(() => {
     if (selectedAddress) {
@@ -56,7 +58,7 @@ export const AddressAutosuggest = ({
         setSuggestions([]);
         setShowSuggestions(false);
       }
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
@@ -76,7 +78,13 @@ export const AddressAutosuggest = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        inputRef.current && 
+        !inputRef.current.contains(target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target)
+      ) {
         setShowSuggestions(false);
       }
     };
@@ -90,16 +98,22 @@ export const AddressAutosuggest = ({
   const handleAddressSearch = async () => {
     if (searchTerm.length < 3) return;
 
+    console.log('[AddressAutosuggest] Searching for:', searchTerm);
     setIsSearching(true);
     try {
+      const requestBody = {
+        action: 'addressSearch',
+        searchText: searchTerm,
+      };
+      console.log('[AddressAutosuggest] Request body:', requestBody);
+
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
-        body: {
-          action: 'addressSearch',
-          searchText: searchTerm,
-        }
+        body: requestBody
       });
 
       if (error) throw error;
+
+      console.log('[AddressAutosuggest] Response:', data);
 
       if (data?.success && data.data?.data && Array.isArray(data.data.data)) {
         const formattedSuggestions: AddressSuggestion[] = data.data.data.map((addr: any) => {
@@ -130,21 +144,41 @@ export const AddressAutosuggest = ({
           };
         });
 
+        console.log('[AddressAutosuggest] Suggestions count:', formattedSuggestions.length);
         setSuggestions(formattedSuggestions);
         setShowSuggestions(formattedSuggestions.length > 0);
       } else {
+        console.warn('[AddressAutosuggest] No valid data in response:', data);
+        if (!data?.success) {
+          toast.error(data?.error || 'Address search failed');
+        }
         setSuggestions([]);
         setShowSuggestions(false);
       }
     } catch (error: any) {
-      console.error('Address search error:', error);
+      console.error('[AddressAutosuggest] Error:', error);
       toast.error('Failed to search addresses');
     } finally {
       setIsSearching(false);
     }
   };
 
+  const handlePing = async () => {
+    if (hasPinged) return;
+    console.log('[AddressAutosuggest] Pinging suncorp-proxy...');
+    try {
+      const { data } = await supabase.functions.invoke('suncorp-proxy', {
+        body: { action: 'ping' }
+      });
+      console.log('[AddressAutosuggest] Ping response:', data);
+      setHasPinged(true);
+    } catch (error) {
+      console.warn('[AddressAutosuggest] Ping failed:', error);
+    }
+  };
+
   const handleSuggestionClick = (suggestion: AddressSuggestion) => {
+    console.log('[AddressAutosuggest] Suggestion clicked:', suggestion);
     setValidatedAddress(suggestion);
     setSearchTerm(suggestion.addressLine1);
     setShowSuggestions(false);
@@ -175,6 +209,12 @@ export const AddressAutosuggest = ({
               setValidatedAddress(null);
             }
           }}
+          onFocus={() => {
+            handlePing();
+            if (searchTerm.length >= 3 && suggestions.length > 0) {
+              setShowSuggestions(true);
+            }
+          }}
           disabled={disabled}
           className={validatedAddress ? "border-green-500" : ""}
         />
@@ -186,8 +226,15 @@ export const AddressAutosuggest = ({
         )}
       </div>
 
+      {suggestions.length > 0 && (
+        <div className="text-xs text-muted-foreground">
+          {suggestions.length} result{suggestions.length !== 1 ? 's' : ''} found
+        </div>
+      )}
+
       {showSuggestions && suggestions.length > 0 && createPortal(
         <Card 
+          ref={dropdownRef}
           className="fixed z-[9999] max-h-64 overflow-y-auto bg-white dark:bg-gray-900 border shadow-xl"
           style={{
             top: `${dropdownPosition.top}px`,
@@ -201,7 +248,10 @@ export const AddressAutosuggest = ({
                 key={index}
                 variant="ghost"
                 className="w-full justify-start text-left h-auto py-3 px-3 hover:bg-accent transition-colors"
-                onClick={() => handleSuggestionClick(suggestion)}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  handleSuggestionClick(suggestion);
+                }}
               >
                 <div className="flex flex-col items-start w-full">
                   <span className="font-medium text-sm">{suggestion.addressLine1}</span>
