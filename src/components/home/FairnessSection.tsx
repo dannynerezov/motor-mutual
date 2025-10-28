@@ -18,35 +18,35 @@ export const FairnessSection = () => {
       </div>
 
       {/* Background Synonyms - Stylized & barely visible */}
-      <div className="absolute top-16 left-8 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase tracking-wider rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        EK-wi-tee
+      <div className="absolute top-16 left-8 text-xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ˈɛkwɪti/
       </div>
-      <div className="absolute top-32 right-12 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        JUS-tis
+      <div className="absolute top-32 right-12 text-2xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ˈdʒʌstɪs/
       </div>
-      <div className="absolute top-1/4 left-1/4 text-5xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        im-pahr-shee-AL-i-tee
+      <div className="absolute top-1/4 left-1/4 text-3xl text-gray-300/12 dark:text-gray-700/15 font-semibold italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ɪmˌpɑːrʃiˈæləti/
       </div>
-      <div className="absolute bottom-40 left-16 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        EE-vun-HAN-did-ness
+      <div className="absolute bottom-40 left-16 text-2xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ˌiːvənˈhændɪdnəs/
       </div>
-      <div className="absolute top-2/3 right-1/4 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        ih-gal-i-TAIR-ee-uh-niz-um
+      <div className="absolute top-2/3 right-1/4 text-xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ɪˌɡælɪˈtɛəriənɪzəm/
       </div>
-      <div className="absolute bottom-24 right-20 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        ob-jek-TIV-i-tee
+      <div className="absolute bottom-24 right-20 text-2xl text-gray-300/12 dark:text-gray-700/15 font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ˌɒbdʒɛkˈtɪvɪti/
       </div>
-      <div className="absolute top-48 left-1/3 text-5xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        noo-TRAL-i-tee
+      <div className="absolute top-48 left-1/3 text-3xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /njuːˈtræləti/
       </div>
-      <div className="absolute bottom-1/3 right-1/3 text-6xl text-gray-300/20 dark:text-gray-700/25 font-black italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        ih-KWOL-i-tee
+      <div className="absolute bottom-1/3 right-1/3 text-3xl text-gray-300/12 dark:text-gray-700/15 font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ɪˈkwɒləti/
       </div>
-      <div className="absolute top-1/3 right-16 text-3xl text-gray-300/20 dark:text-gray-700/25 font-black uppercase italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        BAL-uns
+      <div className="absolute top-1/3 right-16 text-2xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ˈbæləns/
       </div>
-      <div className="absolute bottom-48 left-1/4 text-4xl text-gray-300/20 dark:text-gray-700/25 font-black rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
-        ek-wi-tuh-BIL-i-tee
+      <div className="absolute bottom-48 left-1/4 text-2xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+        /ˌɛkwɪtəˈbɪləti/
       </div>
 
       {/* Main Content */}
