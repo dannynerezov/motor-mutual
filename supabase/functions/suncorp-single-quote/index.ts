@@ -292,15 +292,22 @@ serve(async (req) => {
     console.log('[SingleQuote] GNAF data keys from validation:', Object.keys(gnafData).length);
     console.log('[SingleQuote] GNAF has absStatisticalAreas:', !!gnafData.absStatisticalAreas);
 
-    // Extract coordinates from multiple possible sources
-    const extractedLatitude = matched.latitude || 
-                              matched.pointLevelCoordinates?.latitude ||
-                              gnafData.latitude ||
-                              null;
-    const extractedLongitude = matched.longitude || 
-                               matched.pointLevelCoordinates?.longitude ||
-                               gnafData.longitude ||
-                               null;
+    // Extract coordinates from multiple possible sources with robust fallback
+    const extractedLatitude =
+      matched?.pointLevelCoordinates?.latitude ??
+      matched?.latitude ??
+      gnafData?.gnafStreetLocalityLatitude ??
+      gnafData?.gnafSuburbLatitude ??
+      driver?.address_latitude ??
+      null;
+
+    const extractedLongitude =
+      matched?.pointLevelCoordinates?.longitude ??
+      matched?.longitude ??
+      gnafData?.gnafStreetLocalityLongitude ??
+      gnafData?.gnafSuburbLongitude ??
+      driver?.address_longitude ??
+      null;
 
     console.log('[SingleQuote] Extracted coordinates from validation:', {
       latitude: extractedLatitude,
@@ -338,6 +345,27 @@ serve(async (req) => {
     suburb: validatedAddress.suburb,
     postcode: validatedAddress.postcode,
     state: validatedAddress.state
+  });
+
+  // Compute final effective coordinates with robust fallback order
+  const effectiveLat =
+    validatedAddress?.latitude ??
+    driver?.address_latitude ??
+    validatedAddress?.geocodedNationalAddressFileData?.gnafStreetLocalityLatitude ??
+    validatedAddress?.geocodedNationalAddressFileData?.gnafSuburbLatitude ??
+    null;
+
+  const effectiveLng =
+    validatedAddress?.longitude ??
+    driver?.address_longitude ??
+    validatedAddress?.geocodedNationalAddressFileData?.gnafStreetLocalityLongitude ??
+    validatedAddress?.geocodedNationalAddressFileData?.gnafSuburbLongitude ??
+    null;
+
+  console.log('[SingleQuote] Using pointLevelCoordinates:', {
+    longLatLatitude: effectiveLat,
+    longLatLongitude: effectiveLng,
+    included: !!(effectiveLat && effectiveLng),
   });
 
     // Step 3: Build quote payload
@@ -437,10 +465,11 @@ serve(async (req) => {
         lurn: validatedAddress.lurn,
         lurnScale: '1',  // ✅ FIXED: Always use '1' as per working payload
         geocodedNationalAddressFileData: validatedAddress.geocodedNationalAddressFileData || {},
-        pointLevelCoordinates: validatedAddress.latitude && validatedAddress.longitude ? {
-          longLatLatitude: String(validatedAddress.latitude),
-          longLatLongitude: String(validatedAddress.longitude)
-        } : undefined,
+        pointLevelCoordinates: (() => {
+          const latStr = (effectiveLat !== undefined && effectiveLat !== null && effectiveLat !== '') ? String(effectiveLat) : undefined;
+          const lngStr = (effectiveLng !== undefined && effectiveLng !== null && effectiveLng !== '') ? String(effectiveLng) : undefined;
+          return (latStr && lngStr) ? { longLatLatitude: latStr, longLatLongitude: lngStr } : undefined;
+        })(),
         spatialReferenceId: 4283,
         matchStatus: 'HAPPY',
         structuredStreetAddress: {
