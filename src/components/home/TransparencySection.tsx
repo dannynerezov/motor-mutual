@@ -20,34 +20,34 @@ export const TransparencySection = () => {
       </div>
 
       {/* Background Synonyms - Stylized & barely visible */}
-      <div className="absolute top-20 left-10 text-xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute top-20 left-10 text-xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ˈklærəti/
       </div>
-      <div className="absolute bottom-28 right-20 text-3xl text-gray-300/12 dark:text-gray-700/15 font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute bottom-28 right-20 text-3xl font-semibold italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ˈəʊpənnəs/
       </div>
-      <div className="absolute top-44 right-24 text-xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute top-44 right-24 text-xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ˈɒnɪsti/
       </div>
-      <div className="absolute top-1/3 left-1/4 text-3xl text-gray-300/12 dark:text-gray-700/15 font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute top-1/3 left-1/4 text-3xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /luːˈsɪdɪti/
       </div>
-      <div className="absolute bottom-1/3 left-16 text-2xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute bottom-1/3 left-16 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ˈkændɪdnəs/
       </div>
-      <div className="absolute top-2/3 right-1/3 text-2xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute top-2/3 right-1/3 text-2xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ˈfræŋknəs/
       </div>
-      <div className="absolute bottom-44 right-16 text-xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute bottom-44 right-16 text-xl font-medium italic rotate-[-2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ɪkˈsplɪsɪtnəs/
       </div>
-      <div className="absolute top-52 left-1/3 text-3xl text-gray-300/12 dark:text-gray-700/15 font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute top-52 left-1/3 text-3xl font-semibold italic rotate-[1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ˌvɪzəˈbɪləti/
       </div>
-      <div className="absolute bottom-52 left-1/4 text-2xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute bottom-52 left-1/4 text-2xl font-medium italic rotate-[-1deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /dɪˈrɛktnəs/
       </div>
-      <div className="absolute top-1/4 right-20 text-xl text-gray-300/12 dark:text-gray-700/15 font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ userSelect: 'none' }} aria-hidden="true">
+      <div className="absolute top-1/4 right-20 text-xl font-medium italic rotate-[2deg] pointer-events-none select-none" style={{ color: '#cccccc', opacity: 0.25, userSelect: 'none' }} aria-hidden="true">
         /ˈfɔːθraɪtnəs/
       </div>
 
