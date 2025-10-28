@@ -641,6 +641,104 @@ export type Database = {
           },
         ]
       }
+      suncorp_quote_details: {
+        Row: {
+          annual_base_premium: number | null
+          annual_fsl: number | null
+          annual_gst: number | null
+          annual_premium: number | null
+          annual_stamp_duty: number | null
+          cover_type: string | null
+          created_at: string
+          has_criminal_history: boolean | null
+          has_fire_and_theft: boolean | null
+          has_rejected_insurance_or_claims: boolean | null
+          id: string
+          km_per_year: string | null
+          market_value: number | null
+          policy_expiry_date: string | null
+          policy_start_date: string | null
+          postcode: string | null
+          primary_usage: string | null
+          quote_create_date: string | null
+          quote_id: string
+          standard_excess: number | null
+          state: string | null
+          street_name: string | null
+          street_number: string | null
+          suburb: string | null
+          sum_insured_type: string | null
+          suncorp_quote_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          annual_base_premium?: number | null
+          annual_fsl?: number | null
+          annual_gst?: number | null
+          annual_premium?: number | null
+          annual_stamp_duty?: number | null
+          cover_type?: string | null
+          created_at?: string
+          has_criminal_history?: boolean | null
+          has_fire_and_theft?: boolean | null
+          has_rejected_insurance_or_claims?: boolean | null
+          id?: string
+          km_per_year?: string | null
+          market_value?: number | null
+          policy_expiry_date?: string | null
+          policy_start_date?: string | null
+          postcode?: string | null
+          primary_usage?: string | null
+          quote_create_date?: string | null
+          quote_id: string
+          standard_excess?: number | null
+          state?: string | null
+          street_name?: string | null
+          street_number?: string | null
+          suburb?: string | null
+          sum_insured_type?: string | null
+          suncorp_quote_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          annual_base_premium?: number | null
+          annual_fsl?: number | null
+          annual_gst?: number | null
+          annual_premium?: number | null
+          annual_stamp_duty?: number | null
+          cover_type?: string | null
+          created_at?: string
+          has_criminal_history?: boolean | null
+          has_fire_and_theft?: boolean | null
+          has_rejected_insurance_or_claims?: boolean | null
+          id?: string
+          km_per_year?: string | null
+          market_value?: number | null
+          policy_expiry_date?: string | null
+          policy_start_date?: string | null
+          postcode?: string | null
+          primary_usage?: string | null
+          quote_create_date?: string | null
+          quote_id?: string
+          standard_excess?: number | null
+          state?: string | null
+          street_name?: string | null
+          street_number?: string | null
+          suburb?: string | null
+          sum_insured_type?: string | null
+          suncorp_quote_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suncorp_quote_details_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: true
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       third_party_quotes: {
         Row: {
           agreed_value: number | null

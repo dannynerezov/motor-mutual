@@ -79,6 +79,34 @@ interface NamedDriver {
   address_longitude?: string;
 }
 
+interface SuncorpQuoteDetails {
+  id: string;
+  quote_id: string;
+  suncorp_quote_number: string;
+  policy_start_date: string;
+  policy_expiry_date: string;
+  market_value: number;
+  sum_insured_type: string;
+  annual_premium: number;
+  annual_base_premium: number;
+  annual_stamp_duty: number;
+  annual_fsl: number;
+  annual_gst: number;
+  street_name: string;
+  street_number: string;
+  suburb: string;
+  state: string;
+  postcode: string;
+  primary_usage: string;
+  km_per_year: string;
+  cover_type: string;
+  standard_excess: number;
+  has_fire_and_theft: boolean;
+  has_rejected_insurance_or_claims: boolean;
+  has_criminal_history: boolean;
+  created_at: string;
+}
+
 const QuotePage = () => {
   const { quoteId } = useParams();
   const navigate = useNavigate();
@@ -93,6 +121,7 @@ const QuotePage = () => {
   const [showClaimsError, setShowClaimsError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [initialDriverEnsured, setInitialDriverEnsured] = useState(false);
+  const [suncorpDetails, setSuncorpDetails] = useState<SuncorpQuoteDetails | null>(null);
 
   // Quote generation states
   const [quoteGenerated, setQuoteGenerated] = useState(false);
@@ -165,6 +194,19 @@ const QuotePage = () => {
 
       if (driversError) throw driversError;
       setNamedDrivers(driversData || []);
+
+      // Load Suncorp quote details
+      const { data: suncorpData, error: suncorpError } = await supabase
+        .from("suncorp_quote_details")
+        .select("*")
+        .eq("quote_id", quoteId)
+        .maybeSingle();
+
+      if (suncorpError && suncorpError.code !== 'PGRST116') {
+        console.error("Error loading Suncorp details:", suncorpError);
+      } else if (suncorpData) {
+        setSuncorpDetails(suncorpData);
+      }
     } catch (error) {
       console.error("Error loading quote:", error);
       toast.error("Failed to load quote data");
@@ -331,7 +373,8 @@ const QuotePage = () => {
         address_longitude: driver.address_longitude,
         address_gnaf_data: (quote as any)?.address_gnaf_data || null,
       },
-      policyStartDate
+      policyStartDate,
+      quoteId!
     );
 
     if (result.success) {
@@ -716,52 +759,132 @@ const QuotePage = () => {
                   </div>
                 </div>
 
-                {/* Third Party Section - Only show if quote generated */}
-                {quote.third_party_quote_number && (
-                  <div className="pb-4 border-b">
-                    <div className="flex items-center justify-between mb-3">
+                {/* Enhanced Suncorp Quote Details */}
+                {suncorpDetails && (
+                  <div className="pb-4 border-b space-y-4">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Third Party Property Damage</h3>
                       <Badge variant="outline" className="text-xs">
-                        {quote.third_party_quote_number}
+                        {suncorpDetails.suncorp_quote_number}
                       </Badge>
                     </div>
+
+                    {/* Financial Breakdown */}
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <p className="text-muted-foreground">Base Premium</p>
-                        <p>${quote.third_party_base_premium?.toFixed(2) || "0.00"}</p>
+                        <p>${suncorpDetails.annual_base_premium?.toFixed(2)}</p>
                       </div>
                       <div className="flex justify-between text-sm">
                         <p className="text-muted-foreground">Stamp Duty</p>
-                        <p>${quote.third_party_stamp_duty?.toFixed(2) || "0.00"}</p>
+                        <p>${suncorpDetails.annual_stamp_duty?.toFixed(2)}</p>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <p className="text-muted-foreground">FSL</p>
+                        <p>${suncorpDetails.annual_fsl?.toFixed(2)}</p>
                       </div>
                       <div className="flex justify-between text-sm">
                         <p className="text-muted-foreground">GST</p>
-                        <p>${quote.third_party_gst?.toFixed(2) || "0.00"}</p>
+                        <p>${suncorpDetails.annual_gst?.toFixed(2)}</p>
                       </div>
-
                       <Separator />
-
                       <div className="flex justify-between pt-2">
                         <p className="font-bold">Total Third Party</p>
                         <p className="text-xl font-bold text-accent">
-                          ${quote.third_party_total_premium?.toFixed(2) || "0.00"}
+                          ${suncorpDetails.annual_premium?.toFixed(2)}
                         </p>
                       </div>
                     </div>
+
+                    {/* Policy Details - Collapsible */}
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline w-full">
+                        <ChevronDown className="w-4 h-4" />
+                        View Policy Details
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3 space-y-3">
+                        {/* Cover Information */}
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                          <h4 className="font-semibold text-xs text-muted-foreground">COVER INFORMATION</h4>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <p className="text-muted-foreground">Cover Type</p>
+                              <p className="font-medium">{suncorpDetails.cover_type}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Sum Insured</p>
+                              <p className="font-medium">{suncorpDetails.sum_insured_type}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Market Value</p>
+                              <p className="font-medium">${suncorpDetails.market_value?.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Excess</p>
+                              <p className="font-medium">${suncorpDetails.standard_excess}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Policy Dates */}
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                          <h4 className="font-semibold text-xs text-muted-foreground">POLICY PERIOD</h4>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <p className="text-muted-foreground">Start Date</p>
+                              <p className="font-medium">
+                                {new Date(suncorpDetails.policy_start_date).toLocaleDateString('en-AU')}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Expiry Date</p>
+                              <p className="font-medium">
+                                {new Date(suncorpDetails.policy_expiry_date).toLocaleDateString('en-AU')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Vehicle Usage */}
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                          <h4 className="font-semibold text-xs text-muted-foreground">VEHICLE USAGE</h4>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <p className="text-muted-foreground">Primary Use</p>
+                              <p className="font-medium">{suncorpDetails.primary_usage}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">KM per Year</p>
+                              <p className="font-medium">{suncorpDetails.km_per_year}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Risk Address */}
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                          <h4 className="font-semibold text-xs text-muted-foreground">RISK ADDRESS</h4>
+                          <p className="text-xs">
+                            {suncorpDetails.street_number} {suncorpDetails.street_name}<br />
+                            {suncorpDetails.suburb} {suncorpDetails.state} {suncorpDetails.postcode}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                 )}
 
                 {/* Combined Total */}
-                {quote.third_party_quote_number && (
+                {suncorpDetails && (
                   <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold">Combined Annual Premium</span>
                       <span className="text-3xl font-bold text-primary">
-                        ${(finalPrice + (quote.third_party_total_premium || 0)).toFixed(2)}
+                        ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      MCM ${finalPrice.toFixed(2)} + Third Party ${quote.third_party_total_premium?.toFixed(2) || "0.00"}
+                      MCM ${finalPrice.toFixed(2)} + Third Party ${suncorpDetails.annual_premium?.toFixed(2)}
                     </p>
                   </div>
                 )}

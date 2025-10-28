@@ -53,7 +53,8 @@ export const useSuncorpQuote = () => {
   const generateQuote = async (
     vehicle: VehicleData,
     driver: DriverData,
-    policyStartDate: string
+    policyStartDate: string,
+    quoteId: string
   ): Promise<SuncorpQuoteResult> => {
     setIsGenerating(true);
 
@@ -95,6 +96,7 @@ export const useSuncorpQuote = () => {
             address_gnaf_data: driver.address_gnaf_data,
           },
           policyStartDate,
+          quoteId,
         },
       });
 

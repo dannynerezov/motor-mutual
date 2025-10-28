@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,7 +18,12 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { vehicle, driver, policyStartDate } = body;
+    const { vehicle, driver, policyStartDate, quoteId } = body;
+    
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('[SingleQuote] Received vehicle data:', {
       nvic: vehicle.vehicle_nvic,
@@ -666,19 +672,66 @@ serve(async (req) => {
       );
     }
 
-    console.log('[SingleQuote] Success! Quote:', quoteData.quoteNumber);
+    console.log('[SingleQuote] Success! Quote:', quoteData.quoteDetails?.quoteNumber);
+
+    // Save Suncorp details to database if quoteId provided
+    let detailsSaved = false;
+    if (quoteId && quoteData.quoteDetails) {
+      try {
+        const suncorpDetails = {
+          quote_id: quoteId,
+          suncorp_quote_number: quoteData.quoteDetails?.quoteNumber || null,
+          policy_start_date: quoteData.quoteDetails?.policyStartDate || null,
+          policy_expiry_date: quoteData.quoteDetails?.policyExpiryDate || null,
+          quote_create_date: quoteData.quoteDetails?.quoteCreateDate || null,
+          market_value: quoteData.quoteDetails?.sumInsured?.marketValue || null,
+          sum_insured_type: quoteData.quoteDetails?.sumInsured?.sumInsuredType || null,
+          annual_premium: quoteData.quoteDetails?.premium?.annualPremium || null,
+          annual_base_premium: quoteData.quoteDetails?.premium?.annualBasePremium || null,
+          annual_stamp_duty: quoteData.quoteDetails?.premium?.annualStampDuty || null,
+          annual_fsl: quoteData.quoteDetails?.premium?.annualFSL || null,
+          annual_gst: quoteData.quoteDetails?.premium?.annualGST || null,
+          street_name: quoteData.riskAddress?.structuredStreetAddress?.streetName || null,
+          street_number: quoteData.riskAddress?.structuredStreetAddress?.streetNumber1 || null,
+          suburb: quoteData.riskAddress?.suburb || null,
+          state: quoteData.riskAddress?.state || null,
+          postcode: quoteData.riskAddress?.postcode || null,
+          primary_usage: quoteData.vehicleDetails?.usage?.primaryUsage || null,
+          km_per_year: quoteData.vehicleDetails?.kmPerYear || null,
+          cover_type: quoteData.coverDetails?.coverType || null,
+          standard_excess: quoteData.coverDetails?.standardExcess || null,
+          has_fire_and_theft: quoteData.coverDetails?.hasFireAndTheft || false,
+          has_rejected_insurance_or_claims: quoteData.policyHolderDetails?.hasRejectedInsuranceOrClaims || false,
+          has_criminal_history: quoteData.policyHolderDetails?.hasCriminalHistory || false,
+        };
+
+        const { error: saveError } = await supabase
+          .from('suncorp_quote_details')
+          .upsert(suncorpDetails, { onConflict: 'quote_id' });
+
+        if (saveError) {
+          console.error('[SingleQuote] Failed to save Suncorp details:', saveError);
+        } else {
+          detailsSaved = true;
+          console.log('[SingleQuote] ✅ Suncorp details saved to database');
+        }
+      } catch (dbError) {
+        console.error('[SingleQuote] Database save error:', dbError);
+      }
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
-        quoteNumber: quoteData.quoteNumber,
-        basePremium: quoteData.basePremium,
-        stampDuty: quoteData.stampDuty,
-        gst: quoteData.gst,
-        totalPremium: quoteData.totalPremium,
+        quoteNumber: quoteData.quoteDetails?.quoteNumber,
+        basePremium: quoteData.quoteDetails?.premium?.annualBasePremium,
+        stampDuty: quoteData.quoteDetails?.premium?.annualStampDuty,
+        gst: quoteData.quoteDetails?.premium?.annualGST,
+        totalPremium: quoteData.quoteDetails?.premium?.annualPremium,
         requestPayload: quotePayload,
         responseData: quoteData,
-        sentPayload: quotePayload, // Include complete sent payload
+        sentPayload: quotePayload,
+        detailsSaved,
       }),
       {
         status: 200,
