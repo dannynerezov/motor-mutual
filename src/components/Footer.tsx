@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
-import iconLogo from "@/assets/mcm-logo-greyscale.webp";
+import iconLogo from "@/assets/mcm-logo-new-small.png";
 
 export const Footer = () => {
   return (

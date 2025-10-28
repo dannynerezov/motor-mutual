@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import fullLogo from "@/assets/mcm-logo-full.webp";
-import iconLogo from "@/assets/mcm-logo-icon.webp";
+import fullLogo from "@/assets/mcm-logo-new-large.webp";
+import iconLogo from "@/assets/mcm-logo-new-small.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
