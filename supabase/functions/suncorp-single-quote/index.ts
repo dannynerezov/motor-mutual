@@ -65,6 +65,43 @@ serve(async (req) => {
       console.log('[SingleQuote] Vehicle lookup success:', { nvic, vehicleYear, vehicleMake, vehicleFamily });
     }
 
+    // Validate required address fields before continuing
+    const requiredAddressFields = {
+      address_line1: driver.address_line1,
+      address_suburb: driver.address_suburb,
+      address_state: driver.address_state,
+      address_postcode: driver.address_postcode,
+      address_lurn: driver.address_lurn
+    };
+
+    const missingFields = Object.entries(requiredAddressFields)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      console.error('[SingleQuote] Missing required address fields:', {
+        missing: missingFields,
+        received: requiredAddressFields
+      });
+      
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Missing required address fields: ${missingFields.join(', ')}`,
+          details: {
+            missingFields,
+            receivedAddressData: requiredAddressFields
+          }
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    console.log('[SingleQuote] Address validation passed - all fields present');
+
     // Step 2: Address search + validate
     console.log('[SingleQuote] Searching address...');
     console.log('[SingleQuote] Address input:', {
@@ -147,7 +184,8 @@ serve(async (req) => {
       validateData = await addressValidateResponse.json();
     } catch (error) {
       console.error('[SingleQuote] Address validation exception:', error);
-      throw new Error(`Address validation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Address validation failed: ${errorMessage}`);
     }
 
     const matched = validateData?.matchedAddress;

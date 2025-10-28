@@ -371,6 +371,7 @@ const QuotePage = () => {
   // Payload readiness checks
   const buildPayloadPreview = () => {
     if (!namedDrivers[0] || !vehicles[0]) return null;
+    const defaultPolicyDate = getDefaultPolicyStartDate();
     return {
       vehicle: {
         registration_number: vehicles[0].registration_number,
@@ -393,8 +394,9 @@ const QuotePage = () => {
         address_suburb: namedDrivers[0].address_suburb || null,
         address_state: namedDrivers[0].address_state || null,
         address_postcode: namedDrivers[0].address_postcode || null,
+        address_lurn: namedDrivers[0].address_lurn || null,
       },
-      policyStartDate: policyStartDate,
+      policyStartDate: defaultPolicyDate,
     };
   };
 
@@ -414,7 +416,6 @@ const QuotePage = () => {
     if (!driver.date_of_birth) missing.push('Date of Birth');
     if (!driver.gender) missing.push('Gender');
     if (!driver.address_lurn) missing.push('Validated Address');
-    if (!policyStartDate) missing.push('Policy Start Date');
     return missing;
   };
 
@@ -424,8 +425,7 @@ const QuotePage = () => {
       namedDrivers[0].last_name && 
       namedDrivers[0].date_of_birth && 
       namedDrivers[0].gender && 
-      namedDrivers[0].address_lurn && 
-      policyStartDate;
+      namedDrivers[0].address_lurn;
   };
 
   // Debug completion status (temporary)
@@ -679,7 +679,7 @@ const QuotePage = () => {
                             <span>Gender</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {policyStartDate ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+                            <CheckCircle className="w-4 h-4 text-green-600" />
                             <span>Policy Start Date</span>
                           </div>
                         </div>
@@ -687,18 +687,31 @@ const QuotePage = () => {
 
                       <Separator />
 
-                      {/* Payload Preview (Collapsible) */}
-                      <Collapsible>
-                        <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline">
-                          <ChevronDown className="w-4 h-4" />
-                          View JSON Payload
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <pre className="mt-2 p-3 bg-gray-900 text-green-400 rounded text-xs overflow-x-auto max-h-64">
-                            {JSON.stringify(buildPayloadPreview(), null, 2)}
-                          </pre>
-                        </CollapsibleContent>
-                      </Collapsible>
+              {/* Payload Preview (Collapsible) */}
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline">
+                  <ChevronDown className="w-4 h-4" />
+                  View JSON Payload
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <pre className="mt-2 p-3 bg-gray-900 text-green-400 rounded text-xs overflow-x-auto max-h-64">
+                    {JSON.stringify(buildPayloadPreview(), null, 2)}
+                  </pre>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Raw Driver Data for Debugging */}
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:underline text-muted-foreground">
+                  <ChevronDown className="w-4 h-4" />
+                  Show Raw Driver Data
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <pre className="mt-2 p-3 bg-gray-900 text-amber-400 rounded text-xs overflow-x-auto max-h-64">
+                    {JSON.stringify(namedDrivers[0] || {}, null, 2)}
+                  </pre>
+                </CollapsibleContent>
+              </Collapsible>
 
                       {/* Status Message */}
                       {isPayloadReady() ? (
