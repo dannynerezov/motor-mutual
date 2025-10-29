@@ -740,6 +740,110 @@ export type Database = {
           },
         ]
       }
+      sample_vehicle_quotes: {
+        Row: {
+          api_response_data: Json | null
+          calculated_membership_price: number | null
+          created_at: string
+          error_message: string | null
+          id: string
+          image_exists: boolean | null
+          market_value: number | null
+          pricing_scheme_id: string | null
+          pricing_scheme_number: number | null
+          processed_at: string | null
+          processing_status: string | null
+          registration_number: string
+          retail_price: number | null
+          state: string
+          trade_low_price: number | null
+          trade_price: number | null
+          updated_at: string
+          vehicle_body_style: string | null
+          vehicle_desc1: string | null
+          vehicle_desc2: string | null
+          vehicle_fuel_type: string | null
+          vehicle_image_url: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_nvic: string | null
+          vehicle_series: string | null
+          vehicle_transmission: string | null
+          vehicle_variant: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          api_response_data?: Json | null
+          calculated_membership_price?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          image_exists?: boolean | null
+          market_value?: number | null
+          pricing_scheme_id?: string | null
+          pricing_scheme_number?: number | null
+          processed_at?: string | null
+          processing_status?: string | null
+          registration_number: string
+          retail_price?: number | null
+          state: string
+          trade_low_price?: number | null
+          trade_price?: number | null
+          updated_at?: string
+          vehicle_body_style?: string | null
+          vehicle_desc1?: string | null
+          vehicle_desc2?: string | null
+          vehicle_fuel_type?: string | null
+          vehicle_image_url?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_nvic?: string | null
+          vehicle_series?: string | null
+          vehicle_transmission?: string | null
+          vehicle_variant?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          api_response_data?: Json | null
+          calculated_membership_price?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          image_exists?: boolean | null
+          market_value?: number | null
+          pricing_scheme_id?: string | null
+          pricing_scheme_number?: number | null
+          processed_at?: string | null
+          processing_status?: string | null
+          registration_number?: string
+          retail_price?: number | null
+          state?: string
+          trade_low_price?: number | null
+          trade_price?: number | null
+          updated_at?: string
+          vehicle_body_style?: string | null
+          vehicle_desc1?: string | null
+          vehicle_desc2?: string | null
+          vehicle_fuel_type?: string | null
+          vehicle_image_url?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_nvic?: string | null
+          vehicle_series?: string | null
+          vehicle_transmission?: string | null
+          vehicle_variant?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_vehicle_quotes_pricing_scheme_id_fkey"
+            columns: ["pricing_scheme_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_schemes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suncorp_quote_details: {
         Row: {
           annual_base_premium: number | null
