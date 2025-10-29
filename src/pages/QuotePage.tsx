@@ -8,8 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Car, Shield, Droplets, Cloud, Flame, Zap, AlertTriangle, CloudHail, CloudRain, ShieldCheck } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Car, Shield, Droplets, Cloud, Flame, Zap, AlertTriangle, CloudHail, CloudRain, ShieldCheck, ArrowRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -145,6 +151,7 @@ const QuotePage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedValue, setSelectedValue] = useState(0);
   const [policyStartDate, setPolicyStartDate] = useState<Date>();
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 
   // Quote generation states
   const [quoteGenerated, setQuoteGenerated] = useState(false);
@@ -160,6 +167,22 @@ const QuotePage = () => {
       loadQuoteData();
     }
   }, [quoteId]);
+
+  // Sync carousel with currentStep
+  useEffect(() => {
+    if (!carouselApi) return;
+    
+    carouselApi.on("select", () => {
+      const index = carouselApi.selectedScrollSnap();
+      setCurrentStep(index + 1);
+    });
+  }, [carouselApi]);
+
+  // When currentStep changes programmatically, update carousel
+  useEffect(() => {
+    if (!carouselApi) return;
+    carouselApi.scrollTo(currentStep - 1);
+  }, [currentStep, carouselApi]);
 
   useEffect(() => {
     if (quote && vehicles[0]) {
@@ -580,254 +603,293 @@ const QuotePage = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* Step 1: Select Your Coverage Value */}
-            {currentStep === 1 && vehicle && (
-              <Card className="shadow-2xl bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/30 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-transparent rounded-bl-full" />
-                
-                <CardHeader className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-primary font-bold">1</span>
-                    </div>
-                    <Badge variant="outline" className="text-xs">Step 1 of 3</Badge>
-                  </div>
-                  <CardTitle className="text-2xl">Select Your Coverage Value</CardTitle>
-                  <CardDescription>
-                    Adjust coverage for your {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-                    <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    <AlertTitle className="text-blue-900 dark:text-blue-100">About Coverage Value</AlertTitle>
-                    <AlertDescription className="text-blue-700 dark:text-blue-300">
-                      Your coverage value determines the maximum MCM will pay for total loss. 
-                      Choose between {formatCurrency(tradeLow)} (Trade Low) and {formatCurrency(retail)} (Retail).
-                    </AlertDescription>
-                  </Alert>
+            {/* Carousel Container */}
+            <Carousel
+              setApi={setCarouselApi}
+              opts={{
+                align: "start",
+                watchDrag: false,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {/* Step 1: Select Your Coverage Value */}
+                <CarouselItem>
+                  {vehicle && (
+                    <Card className="shadow-2xl bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/30 relative overflow-hidden min-h-[600px]">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-transparent rounded-bl-full" />
+                      
+                      <CardHeader className="relative">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                              <span className="text-primary font-bold">1</span>
+                            </div>
+                            <Badge variant="outline" className="text-xs">Step 1 of 3</Badge>
+                          </div>
+                          {isStep1Complete && <Badge variant="default">Complete</Badge>}
+                        </div>
+                        <CardTitle className="text-2xl">Select Your Coverage Value</CardTitle>
+                        <CardDescription>
+                          Adjust coverage for your {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <AlertTitle className="text-blue-900 dark:text-blue-100">About Coverage Value</AlertTitle>
+                          <AlertDescription className="text-blue-700 dark:text-blue-300">
+                            Your coverage value determines the maximum MCM will pay for total loss. 
+                            Choose between {formatCurrency(tradeLow)} (Trade Low) and {formatCurrency(retail)} (Retail).
+                          </AlertDescription>
+                        </Alert>
 
-                  {/* Vehicle Display */}
-                  <div className={cn(
-                    "p-6 bg-muted/30 rounded-xl border border-primary/20",
-                    vehicle.vehicle_image_url ? "grid md:grid-cols-2 gap-6" : "flex flex-col items-center"
-                  )}>
-                    {vehicle.vehicle_image_url ? (
-                      <div className="flex items-center justify-center">
-                        <div className="w-full p-4 bg-background/50 rounded-lg border border-primary/20 shadow-lg">
-                          <img
-                            src={vehicle.vehicle_image_url}
-                            alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
-                            className="w-full h-auto object-contain rounded-lg"
+                        {/* Vehicle Display */}
+                        <div className={cn(
+                          "p-6 bg-muted/30 rounded-xl border border-primary/20",
+                          vehicle.vehicle_image_url ? "grid md:grid-cols-2 gap-6" : "flex flex-col items-center"
+                        )}>
+                          {vehicle.vehicle_image_url ? (
+                            <div className="flex items-center justify-center">
+                              <div className="w-full p-4 bg-background/50 rounded-lg border border-primary/20 shadow-lg">
+                                <img
+                                  src={vehicle.vehicle_image_url}
+                                  alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
+                                  className="w-full h-auto object-contain rounded-lg"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-full flex items-center justify-center p-8 bg-background/50 rounded-lg border border-primary/20 mb-4">
+                              <Car className="w-24 h-24 text-muted-foreground/30" />
+                            </div>
+                          )}
+                          
+                          <div className={cn("space-y-4", !vehicle.vehicle_image_url && "max-w-2xl w-full")}>
+                            <div>
+                              <h3 className="text-2xl font-bold">
+                                {vehicle.vehicle_year} {vehicle.vehicle_make}
+                              </h3>
+                              <p className="text-xl text-muted-foreground">{vehicle.vehicle_model}</p>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div className="p-3 bg-background/50 rounded-lg">
+                                <p className="text-muted-foreground text-xs mb-1">Registration</p>
+                                <p className="font-semibold">{vehicle.registration_number}</p>
+                              </div>
+                              {vehicle.state_of_registration && (
+                                <div className="p-3 bg-background/50 rounded-lg">
+                                  <p className="text-muted-foreground text-xs mb-1">State</p>
+                                  <p className="font-semibold">{vehicle.state_of_registration}</p>
+                                </div>
+                              )}
+                              {vehicle.vehicle_nvic && (
+                                <div className="p-3 bg-background/50 rounded-lg">
+                                  <p className="text-muted-foreground text-xs mb-1">NVIC</p>
+                                  <Badge variant="secondary" className="font-mono text-xs">{vehicle.vehicle_nvic}</Badge>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {(vehicle.vehicle_desc1 || vehicle.vehicle_desc2) && (
+                              <div className="space-y-1 pt-2 border-t border-border/50">
+                                {vehicle.vehicle_desc1 && <p className="text-sm text-muted-foreground">{vehicle.vehicle_desc1}</p>}
+                                {vehicle.vehicle_desc2 && <p className="text-sm text-muted-foreground">{vehicle.vehicle_desc2}</p>}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Label>Selected Coverage Value</Label>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger><Info className="h-4 w-4 text-muted-foreground" /></TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p>Range: {formatCurrency(tradeLow)} to {formatCurrency(retail)}<br/>
+                                    Maximum payout for total loss. Higher coverage = higher premium.</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <span className="text-2xl font-bold text-primary">{formatCurrency(selectedValue)}</span>
+                          </div>
+                          
+                          <Slider
+                            min={Math.round(tradeLow)}
+                            max={Math.round(retail)}
+                            step={100}
+                            value={[selectedValue]}
+                            onValueChange={handleValueChange}
                           />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full flex items-center justify-center p-8 bg-background/50 rounded-lg border border-primary/20 mb-4">
-                        <Car className="w-24 h-24 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    
-                    <div className={cn("space-y-4", !vehicle.vehicle_image_url && "max-w-2xl w-full")}>
-                      <div>
-                        <h3 className="text-2xl font-bold">
-                          {vehicle.vehicle_year} {vehicle.vehicle_make}
-                        </h3>
-                        <p className="text-xl text-muted-foreground">{vehicle.vehicle_model}</p>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="p-3 bg-background/50 rounded-lg">
-                          <p className="text-muted-foreground text-xs mb-1">Registration</p>
-                          <p className="font-semibold">{vehicle.registration_number}</p>
-                        </div>
-                        {vehicle.state_of_registration && (
-                          <div className="p-3 bg-background/50 rounded-lg">
-                            <p className="text-muted-foreground text-xs mb-1">State</p>
-                            <p className="font-semibold">{vehicle.state_of_registration}</p>
+                          
+                          <div className="text-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+                            <p className="text-sm text-muted-foreground mb-1">Estimated Premium</p>
+                            <p className="text-3xl font-bold text-primary">{formatCurrency(membershipPrice)}</p>
+                            <p className="text-xs text-muted-foreground mt-1">per year</p>
                           </div>
-                        )}
-                        {vehicle.vehicle_nvic && (
-                          <div className="p-3 bg-background/50 rounded-lg">
-                            <p className="text-muted-foreground text-xs mb-1">NVIC</p>
-                            <Badge variant="secondary" className="font-mono text-xs">{vehicle.vehicle_nvic}</Badge>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {(vehicle.vehicle_desc1 || vehicle.vehicle_desc2) && (
-                        <div className="space-y-1 pt-2 border-t border-border/50">
-                          {vehicle.vehicle_desc1 && <p className="text-sm text-muted-foreground">{vehicle.vehicle_desc1}</p>}
-                          {vehicle.vehicle_desc2 && <p className="text-sm text-muted-foreground">{vehicle.vehicle_desc2}</p>}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Label>Selected Coverage Value</Label>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger><Info className="h-4 w-4 text-muted-foreground" /></TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              <p>Range: {formatCurrency(tradeLow)} to {formatCurrency(retail)}<br/>
-                              Maximum payout for total loss. Higher coverage = higher premium.</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        
+                        <div className="flex justify-end mt-8">
+                          <Button 
+                            size="lg" 
+                            onClick={() => {
+                              if (carouselApi) carouselApi.scrollNext();
+                            }} 
+                            disabled={!isStep1Complete} 
+                            className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent"
+                          >
+                            Next: Your Details
+                            <ChevronRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </CarouselItem>
+
+                {/* Step 2: Enter Your Details */}
+                <CarouselItem>
+                  {driver && (
+                    <Card className="min-h-[600px]">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                              <span className="text-primary font-bold">2</span>
+                            </div>
+                            <CardTitle>Enter Your Details</CardTitle>
+                          </div>
+                          {isStep2Complete && <Badge variant="default">Complete</Badge>}
+                        </div>
+                        <CardDescription>Step 2 of 3</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Please provide your personal information and overnight parking address.
+                        </p>
+
+                        <DriverCard
+                          driver={driver}
+                          onUpdate={handleDriverUpdate}
+                          onUpdateMany={handleDriverUpdateMany}
+                        />
+
+                        <div className="flex gap-3 mt-8">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              if (carouselApi) carouselApi.scrollPrev();
+                            }}
+                            className="flex-1"
+                          >
+                            <ChevronLeft className="w-4 h-4 mr-2" />
+                            Back
+                          </Button>
+                          {canProceedToStep3 && (
+                            <Button
+                              onClick={() => {
+                                if (carouselApi) carouselApi.scrollNext();
+                              }}
+                              className="flex-1"
+                            >
+                              Next: Start Date
+                              <ChevronRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </CarouselItem>
+
+                {/* Step 3: Membership Start Date */}
+                <CarouselItem>
+                  <Card className="min-h-[600px]">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                            <span className="text-primary font-bold">3</span>
+                          </div>
+                          <CardTitle>Membership Start Date</CardTitle>
+                        </div>
+                        {isStep3Complete && <Badge variant="default">Complete</Badge>}
                       </div>
-                      <span className="text-2xl font-bold text-primary">{formatCurrency(selectedValue)}</span>
-                    </div>
-                    
-                    <Slider
-                      min={Math.round(tradeLow)}
-                      max={Math.round(retail)}
-                      step={100}
-                      value={[selectedValue]}
-                      onValueChange={handleValueChange}
-                    />
-                    
-                    <div className="text-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Estimated Premium</p>
-                      <p className="text-3xl font-bold text-primary">{formatCurrency(membershipPrice)}</p>
-                      <p className="text-xs text-muted-foreground mt-1">per year</p>
-                    </div>
-                  </div>
-                  
-                  <div className="sticky bottom-0 bg-background/95 backdrop-blur-md border-t border-border p-4 -mx-6 -mb-6 mt-6">
-                    <div className="flex gap-4">
-                      <Button variant="outline" size="lg" disabled className="flex-1">
-                        <ChevronLeft className="w-4 h-4 mr-2" />Back
-                      </Button>
-                      <Button size="lg" onClick={() => setCurrentStep(2)} disabled={!isStep1Complete} className="flex-1 bg-gradient-to-r from-primary to-accent">
-                        Next<ChevronRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                      <CardDescription>Step 3 of 3</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Select when your membership should begin (up to 28 days from today).
+                      </p>
 
-            {/* Step 2: Enter Your Details */}
-            {currentStep >= 2 && driver && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Step 2: Enter Your Details</CardTitle>
-                    {isStep2Complete && <Badge variant="default">Complete</Badge>}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Please provide your personal information and overnight parking address for insurance risk assessment.
-                  </p>
+                      <div className="space-y-2">
+                        <Label>Policy Start Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`w-full justify-start text-left font-normal ${!policyStartDate && "text-muted-foreground"}`}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {policyStartDate ? format(policyStartDate, "PPP") : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={policyStartDate}
+                              onSelect={setPolicyStartDate}
+                              disabled={(date) => 
+                                date < new Date() || date > addDays(new Date(), 28)
+                              }
+                              initialFocus
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <p className="text-xs text-muted-foreground">
+                          You can select any date from today up to 28 days in the future.
+                        </p>
+                      </div>
 
-                  <DriverCard
-                    driver={driver}
-                    onUpdate={handleDriverUpdate}
-                    onUpdateMany={handleDriverUpdateMany}
-                  />
-
-                  <div className="flex gap-3">
-                    {currentStep === 2 && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentStep(1)}
-                        className="flex-1"
-                      >
-                        Back
-                      </Button>
-                    )}
-                    {canProceedToStep3 && currentStep === 2 && (
-                      <Button
-                        onClick={() => setCurrentStep(3)}
-                        className="flex-1"
-                      >
-                        Continue to Membership Start Date
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 3: Membership Start Date */}
-            {currentStep >= 3 && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Step 3: Membership Start Date</CardTitle>
-                    {isStep3Complete && <Badge variant="default">Complete</Badge>}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Select when your membership should begin (up to 28 days from today).
-                  </p>
-
-                  <div className="space-y-2">
-                    <Label>Policy Start Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
+                      <div className="flex gap-3 mt-8">
                         <Button
                           variant="outline"
-                          className={`w-full justify-start text-left font-normal ${!policyStartDate && "text-muted-foreground"}`}
+                          onClick={() => {
+                            if (carouselApi) carouselApi.scrollPrev();
+                          }}
+                          className="flex-1"
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {policyStartDate ? format(policyStartDate, "PPP") : <span>Pick a date</span>}
+                          <ChevronLeft className="w-4 h-4 mr-2" />
+                          Back
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={policyStartDate}
-                          onSelect={setPolicyStartDate}
-                          disabled={(date) => 
-                            date < new Date() || date > addDays(new Date(), 28)
-                          }
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <p className="text-xs text-muted-foreground">
-                      You can select any date from today up to 28 days in the future.
-                    </p>
-                  </div>
-
-                  <div className="flex gap-3">
-                    {currentStep === 3 && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentStep(2)}
-                        className="flex-1"
-                      >
-                        Back
-                      </Button>
-                    )}
-                    {currentStep === 3 && isStep3Complete && !quoteGenerated && (
-                      <Button
-                        onClick={handleRecalculateQuote}
-                        disabled={!canGenerateQuote || isGenerating}
-                        className="flex-1"
-                        size="lg"
-                      >
-                        {isGenerating ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          "Generate My Final Quote"
+                        {isStep3Complete && !quoteGenerated && (
+                          <Button
+                            onClick={handleRecalculateQuote}
+                            disabled={!canGenerateQuote || isGenerating}
+                            className="flex-1"
+                            size="lg"
+                          >
+                            {isGenerating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              "Generate My Final Quote"
+                            )}
+                          </Button>
                         )}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
 
             {/* Final CTA after Quote Generated */}
             {quoteGenerated && currentStep === 3 && (
@@ -963,218 +1025,173 @@ const QuotePage = () => {
                     </div>
                   </>
                 ) : (
-                  <>
-                    {/* MCM Membership Price */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">MCM Membership Price</p>
-                          <div className="text-3xl font-bold text-primary mt-1">
-                            ${finalPrice.toFixed(2)}
+                  <div className="space-y-4">
+                    {/* Header: Suncorp Quote Reference (Prominent) */}
+                    {suncorpDetails?.suncorp_quote_number && (
+                      <div className="p-3 bg-muted/30 rounded-md border">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Underwriter Quote Reference</p>
+                            <p className="font-mono text-sm font-bold mt-0.5">
+                              {suncorpDetails.suncorp_quote_number}
+                            </p>
                           </div>
-                          <p className="text-xs text-muted-foreground">per year</p>
+                          <Badge variant="outline" className="text-xs">Suncorp</Badge>
                         </div>
-                        <ShieldCheck className="w-10 h-10 text-primary/30" />
-                      </div>
-                      
-                      <Alert className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800">
-                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        <AlertTitle className="text-blue-900 dark:text-blue-100 text-sm font-semibold">
-                          Accidental Loss and Damage Cover
-                        </AlertTitle>
-                        <AlertDescription className="text-blue-700 dark:text-blue-300 text-xs mt-2 space-y-2">
-                          <p>
-                            This coverage protects your vehicle <span className="font-semibold">{vehicle?.registration_number}</span> while on rideshare duty against:
-                          </p>
-                          <ul className="list-disc list-inside space-y-1 ml-2">
-                            <li>Collision damage</li>
-                            <li>Theft and attempted theft</li>
-                            <li>Fire and explosion</li>
-                            <li>Storm, hail, and flood damage</li>
-                            <li>Vandalism and malicious damage</li>
-                          </ul>
-                          <p className="pt-2 border-t border-blue-200 dark:border-blue-800">
-                            <span className="font-semibold">Maximum payout:</span> ${formatCurrency(selectedValue)}
-                          </p>
-                        </AlertDescription>
-                      </Alert>
-                    </div>
-
-                    {totalClaimsCount > 0 && (
-                      <div className="p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
-                        <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
-                          Claims Loading Applied
-                        </p>
-                        <p className="text-xs text-amber-700 dark:text-amber-300">
-                          {Math.min(totalClaimsCount, 3)} claim(s) × 30% = +{Math.min(totalClaimsCount * 30, 90)}%
-                        </p>
                       </div>
                     )}
 
                     <Separator />
 
-                    {/* Third Party Section */}
-                    {suncorpDetails && (
-                      <>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-semibold text-foreground">Third Party Reinsurance</p>
-                            <Badge variant="outline" className="text-xs">
-                              Underwritten by Suncorp
-                            </Badge>
-                          </div>
-                          
-                          {/* Suncorp Quote Reference - Prominent */}
-                          {suncorpDetails.suncorp_quote_number && (
-                            <div className="p-3 bg-muted/50 rounded-lg border border-border">
-                              <p className="text-xs text-muted-foreground mb-1">Underwriter Quote Reference</p>
-                              <p className="font-mono text-sm font-bold">{suncorpDetails.suncorp_quote_number}</p>
-                            </div>
-                          )}
-                          
-                          {/* Price Breakdown - Collapsible */}
-                          <Collapsible>
-                            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors">
-                              <div className="text-left">
-                                <p className="text-sm font-semibold">Third Party Total</p>
-                                <p className="text-2xl font-bold text-primary mt-1">
-                                  ${suncorpDetails.annual_premium?.toFixed(2) || '0.00'}
+                    {/* INVOICE SECTION */}
+                    <div className="space-y-3 text-sm">
+                      {/* Line Item 1: MCM Membership */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className="text-foreground font-medium">MCM Membership</span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs" side="left">
+                                <p className="text-xs font-semibold mb-1">Accidental Loss & Damage Cover</p>
+                                <p className="text-xs mb-2">
+                                  Protects {vehicle?.registration_number} while on rideshare duty against:
                                 </p>
-                              </div>
-                              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                <ul className="text-xs space-y-0.5 list-disc list-inside">
+                                  <li>Collision damage</li>
+                                  <li>Theft and attempted theft</li>
+                                  <li>Fire and explosion</li>
+                                  <li>Storm, hail, flood damage</li>
+                                  <li>Vandalism</li>
+                                </ul>
+                                <p className="text-xs mt-2 pt-2 border-t">
+                                  <strong>Max payout:</strong> ${formatCurrency(selectedValue)}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <span className="font-semibold tabular-nums">
+                          ${finalPrice.toFixed(2)}
+                        </span>
+                      </div>
+
+                      {/* Claims Loading (if applicable) */}
+                      {totalClaimsCount > 0 && (
+                        <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 pl-6">
+                          <span>Claims loading ({totalClaimsCount} × 30%)</span>
+                          <span>+{Math.min(totalClaimsCount * 30, 90)}%</span>
+                        </div>
+                      )}
+
+                      <Separator className="my-2" />
+
+                      {/* Line Item 2: Third Party Reinsurance */}
+                      {suncorpDetails && (
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-2 flex-1">
+                              <span className="text-foreground font-medium">Third Party Reinsurance</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs" side="left">
+                                    <p className="text-xs font-semibold mb-1">What This Covers</p>
+                                    <p className="text-xs mb-2">
+                                      Covers damage you cause to other vehicles, property (traffic lights, fences, buildings), and legal liability.
+                                    </p>
+                                    <p className="text-xs pt-2 border-t">
+                                      <strong>Important:</strong> The Mutual does not set this price. Premium calculated by underwriter based on risk factors including overnight parking address, driving history, vehicle details, and claims experience.
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <span className="font-semibold tabular-nums">
+                              ${suncorpDetails.annual_premium?.toFixed(2) || '0.00'}
+                            </span>
+                          </div>
+
+                          {/* Collapsible Breakdown */}
+                          <Collapsible>
+                            <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-6">
+                              <ChevronDown className="w-3 h-3" />
+                              <span>View breakdown</span>
                             </CollapsibleTrigger>
-                            
-                            <CollapsibleContent className="mt-2 space-y-2 text-sm p-3 bg-muted/30 rounded-lg">
-                              <div className="flex justify-between">
+                            <CollapsibleContent className="pl-6 pt-2 space-y-1.5 text-xs">
+                              <div className="flex justify-between text-muted-foreground">
                                 <span>Base Premium</span>
-                                <span className="font-semibold">${suncorpDetails.annual_base_premium?.toFixed(2) || '0.00'}</span>
+                                <span className="tabular-nums">${suncorpDetails.annual_base_premium?.toFixed(2)}</span>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between text-muted-foreground">
                                 <span>Stamp Duty</span>
-                                <span className="font-semibold">${suncorpDetails.annual_stamp_duty?.toFixed(2) || '0.00'}</span>
+                                <span className="tabular-nums">${suncorpDetails.annual_stamp_duty?.toFixed(2)}</span>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between text-muted-foreground">
                                 <span>Fire Services Levy</span>
-                                <span className="font-semibold">${suncorpDetails.annual_fsl?.toFixed(2) || '0.00'}</span>
+                                <span className="tabular-nums">${suncorpDetails.annual_fsl?.toFixed(2)}</span>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between text-muted-foreground">
                                 <span>GST</span>
-                                <span className="font-semibold">${suncorpDetails.annual_gst?.toFixed(2) || '0.00'}</span>
+                                <span className="tabular-nums">${suncorpDetails.annual_gst?.toFixed(2)}</span>
                               </div>
                             </CollapsibleContent>
                           </Collapsible>
-                          
-                          {/* Explanation */}
-                          <Alert className="bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800">
-                            <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                            <AlertDescription className="text-amber-700 dark:text-amber-300 text-xs">
-                              <p className="font-semibold mb-1">What This Covers:</p>
-                              <p>
-                                Third party reinsurance covers damage you cause to other vehicles, property (such as traffic lights, fences, buildings), and legal liability.
-                              </p>
-                            </AlertDescription>
-                          </Alert>
-                          
-                          {/* Disclaimer */}
-                          <Alert className="bg-gray-50 dark:bg-gray-950/50 border-gray-200 dark:border-gray-800">
-                            <AlertTriangle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                            <AlertDescription className="text-gray-700 dark:text-gray-300 text-xs space-y-1">
-                              <p className="font-semibold">Important Notice:</p>
-                              <p>
-                                The Mutual does not set this price. The premium is calculated by the underwriter based on multiple risk factors including overnight parking address, driving history, vehicle details, and claims experience.
-                              </p>
-                            </AlertDescription>
-                          </Alert>
                         </div>
+                      )}
 
-                        <Separator />
+                      <Separator className="my-3" />
 
-                        {/* Combined Total */}
-                        <div className="space-y-3">
-                          <div className="p-4 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border-2 border-primary/30">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-semibold text-foreground">Combined Annual Membership</p>
-                              <ShieldCheck className="w-5 h-5 text-primary" />
-                            </div>
-                            <div className="text-3xl font-bold text-primary">
-                              ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">per year</p>
+                      {/* TOTAL - Large and Prominent */}
+                      <div className="pt-2 pb-3 px-4 -mx-4 bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border border-primary/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground uppercase tracking-wide">
+                              Total Annual Membership
+                            </span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs" side="left">
+                                  <p className="text-xs font-semibold mb-2">Complete Coverage Package</p>
+                                  <div className="text-xs space-y-1 mb-2">
+                                    <p><CheckCircle2 className="w-3 h-3 inline mr-1" />Damage to your vehicle</p>
+                                    <p><CheckCircle2 className="w-3 h-3 inline mr-1" />Damage to other vehicles & property</p>
+                                    <p><CheckCircle2 className="w-3 h-3 inline mr-1" />Legal liability coverage</p>
+                                  </div>
+                                  <p className="text-xs pt-2 border-t text-red-600 dark:text-red-400">
+                                    <strong>Exclusions:</strong> CTP insurance and bodily injury to other drivers/pedestrians NOT covered. CTP must be obtained separately.
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
-                          
-                          {/* Coverage Explanation */}
-                          <Alert className="bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800">
-                            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            <AlertTitle className="text-green-900 dark:text-green-100 text-sm font-semibold">
-                              Complete Coverage Package
-                            </AlertTitle>
-                            <AlertDescription className="text-green-700 dark:text-green-300 text-xs mt-2 space-y-2">
-                              <p>Your total membership provides comprehensive protection:</p>
-                              <div className="space-y-1 ml-2">
-                                <p><span className="font-semibold">✓</span> Damage to your vehicle (collision, theft, fire, storm)</p>
-                                <p><span className="font-semibold">✓</span> Damage to other vehicles and property</p>
-                                <p><span className="font-semibold">✓</span> Legal liability coverage</p>
-                              </div>
-                            </AlertDescription>
-                          </Alert>
-                          
-                          {/* Exclusions Notice */}
-                          <Alert className="bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800">
-                            <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            <AlertTitle className="text-red-900 dark:text-red-100 text-sm font-semibold">
-                              Coverage Exclusions
-                            </AlertTitle>
-                            <AlertDescription className="text-red-700 dark:text-red-300 text-xs mt-2 space-y-2">
-                              <p>This insurance does NOT cover:</p>
-                              <div className="space-y-1 ml-2">
-                                <p><span className="font-semibold">✗</span> Compulsory Third Party (CTP) insurance</p>
-                                <p><span className="font-semibold">✗</span> Bodily injury caused to other drivers or pedestrians</p>
-                              </div>
-                              <p className="pt-2 mt-2 border-t border-red-200 dark:border-red-800 text-xs">
-                                CTP must be obtained separately through your state's CTP scheme.
-                              </p>
-                            </AlertDescription>
-                          </Alert>
                         </div>
+                        <div className="text-4xl font-bold text-primary tabular-nums">
+                          ${(finalPrice + (suncorpDetails?.annual_premium || 0)).toFixed(2)}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">per year</p>
+                      </div>
+                    </div>
 
-                        {/* Policy Details Collapsible */}
-                        <Collapsible>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-semibold">
-                            <span>Policy Details</span>
-                            <ChevronDown className="w-4 h-4" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="mt-3 space-y-3 text-sm">
-                            <div>
-                              <p className="text-xs text-muted-foreground">Quote Number</p>
-                              <p className="font-mono text-xs">{suncorpDetails.suncorp_quote_number}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Cover Type</p>
-                              <p>{suncorpDetails.cover_type}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Policy Period</p>
-                              <p>{new Date(suncorpDetails.policy_start_date).toLocaleDateString()} - {new Date(suncorpDetails.policy_expiry_date).toLocaleDateString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Risk Address</p>
-                              <p>{suncorpDetails.street_number} {suncorpDetails.street_name}, {suncorpDetails.suburb} {suncorpDetails.state} {suncorpDetails.postcode}</p>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      </>
-                    )}
+                    <Separator />
 
-                    {quoteGenerated && (
-                      <Button
-                        onClick={() => setShowContactDialog(true)}
-                        size="lg"
-                        className="w-full"
-                      >
-                        Contact Broker
-                      </Button>
-                    )}
-                  </>
+                    {/* CTA Button */}
+                    <Button
+                      onClick={() => setShowContactDialog(true)}
+                      size="lg"
+                      className="w-full"
+                    >
+                      Contact Broker to Continue
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>

@@ -473,16 +473,16 @@ export const DriverCard = ({
 
               <Separator />
 
-              {/* Step 3: Date of Birth */}
+              {/* Step 3: Date of Birth & Gender (2-column) */}
               <Collapsible open={dobSection} onOpenChange={setDobSection}>
                 <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                       3
                     </div>
-                    <span className="font-medium">Date of Birth</span>
+                    <span className="font-medium">Date of Birth & Gender</span>
                   </div>
-                  {dobComplete ? (
+                  {dobComplete && genderComplete ? (
                     <CheckCircle className="w-5 h-5 text-primary" />
                   ) : (
                     <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform", dobSection && "rotate-180")} />
@@ -490,67 +490,57 @@ export const DriverCard = ({
                 </CollapsibleTrigger>
 
                 <CollapsibleContent className="px-6 pb-4">
-                  <div className="pt-2">
-                    <Label className="text-xs text-muted-foreground mb-2 block">Select your date of birth</Label>
-                    <EnhancedDatePicker
-                      value={driver.date_of_birth ? new Date(driver.date_of_birth) : undefined}
-                      onChange={(date) => {
-                        if (!date) return;
-                        onUpdate(driver.id, "date_of_birth", date.toISOString().split("T")[0]);
-                      }}
-                      placeholder="DD/MM/YYYY"
-                      minAge={18}
-                      maxAge={99}
-                    />
-                    {dobError && (
-                      <p className="text-xs text-destructive mt-2 animate-fade-up">{dobError}</p>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Separator />
-
-              {/* Step 4: Gender */}
-              <Collapsible open={genderSection} onOpenChange={setGenderSection}>
-                <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-                      4
+                  {/* 2-column grid for DOB and Gender */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    {/* Date of Birth */}
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Date of Birth</Label>
+                      <EnhancedDatePicker
+                        value={driver.date_of_birth ? new Date(driver.date_of_birth) : undefined}
+                        onChange={(date) => {
+                          if (!date) return;
+                          onUpdate(driver.id, "date_of_birth", date.toISOString().split("T")[0]);
+                        }}
+                        placeholder="DD/MM/YYYY"
+                        minAge={18}
+                        maxAge={99}
+                      />
+                      {dobError && (
+                        <p className="text-xs text-destructive animate-fade-up">{dobError}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Must be 18-99 years old
+                      </p>
                     </div>
-                    <span className="font-medium">Gender</span>
-                  </div>
-                  {genderComplete ? (
-                    <CheckCircle className="w-5 h-5 text-primary" />
-                  ) : (
-                    <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform", genderSection && "rotate-180")} />
-                  )}
-                </CollapsibleTrigger>
 
-                <CollapsibleContent className="px-6 pb-4">
-                  <div className="pt-2">
-                    <Label className="text-xs text-muted-foreground mb-2 block">Select your gender</Label>
-                    <Select value={driver.gender || ""} onValueChange={(value) => onUpdate(driver.id, "gender", value)}>
-                      <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background z-50">
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {/* Gender */}
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Gender</Label>
+                      <Select value={driver.gender || ""} onValueChange={(value) => onUpdate(driver.id, "gender", value)}>
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Used for insurance risk assessment
+                      </p>
+                    </div>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
 
               <Separator />
 
-              {/* Step 5: Claims History */}
+              {/* Step 4: Claims History */}
               <Collapsible open={claimsSection} onOpenChange={setClaimsSection}>
                 <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-                      5
+                      4
                     </div>
                     <span className="font-medium">Claims History</span>
                   </div>
