@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Car, Shield, Droplets, Cloud, Flame, Zap, AlertTriangle, CloudHail, CloudRain, ShieldCheck, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Car, Shield, Droplets, Cloud, Flame, Zap, AlertTriangle, CloudHail, CloudRain, ShieldCheck, ArrowRight, Users, HandCoins, Wrench, Timer, TrendingDown, Plus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Carousel,
@@ -455,6 +455,11 @@ const QuotePage = () => {
         await loadQuoteData();
         setQuoteGenerated(true);
         toast.success(`Third party quote generated: ${result.quoteNumber}`);
+        
+        // Advance to Step 4 after successful quote generation
+        setTimeout(() => {
+          if (carouselApi) carouselApi.scrollNext();
+        }, 500);
       } catch (error) {
         console.error("Error saving quote:", error);
         toast.error("Failed to save third party quote");
@@ -625,7 +630,7 @@ const QuotePage = () => {
                             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                               <span className="text-primary font-bold">1</span>
                             </div>
-                            <Badge variant="outline" className="text-xs">Step 1 of 3</Badge>
+                            <Badge variant="outline" className="text-xs">Step 1 of 4</Badge>
                           </div>
                           {isStep1Complete && <Badge variant="default">Complete</Badge>}
                         </div>
@@ -765,7 +770,7 @@ const QuotePage = () => {
                           </div>
                           {isStep2Complete && <Badge variant="default">Complete</Badge>}
                         </div>
-                        <CardDescription>Step 2 of 3</CardDescription>
+                        <CardDescription>Step 2 of 4</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground mb-4">
@@ -819,7 +824,7 @@ const QuotePage = () => {
                         </div>
                         {isStep3Complete && <Badge variant="default">Complete</Badge>}
                       </div>
-                      <CardDescription>Step 3 of 3</CardDescription>
+                      <CardDescription>Step 3 of 4</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-sm text-muted-foreground mb-4">
@@ -888,32 +893,388 @@ const QuotePage = () => {
                     </CardContent>
                   </Card>
                 </CarouselItem>
+
+                {/* Step 4: Congratulations & Quote Summary */}
+                <CarouselItem>
+                  {quoteGenerated && (
+                    <Card className="min-h-[600px]">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                              <span className="text-primary font-bold">4</span>
+                            </div>
+                            <CardTitle>Your Quote Summary</CardTitle>
+                          </div>
+                          <Badge variant="default" className="bg-green-600">Complete ✓</Badge>
+                        </div>
+                        <CardDescription>Step 4 of 4</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-8">
+                        
+                        {/* SECTION 1: Hero Celebration */}
+                        <div className="text-center py-6 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 rounded-xl border-2 border-green-300 dark:border-green-700">
+                          <div className="flex justify-center mb-4">
+                            <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center">
+                              <CheckCircle className="w-12 h-12 text-white" />
+                            </div>
+                          </div>
+                          <h2 className="text-3xl font-bold mb-2">
+                            Congratulations! 🎉
+                          </h2>
+                          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                            Your comprehensive rideshare insurance quote is ready. Review the details below and contact our broker to get started.
+                          </p>
+                        </div>
+
+                        {/* SECTION 2: Vehicle Information Summary */}
+                        {vehicle && (
+                          <div className="bg-muted/30 rounded-lg p-6 border">
+                            <div className="flex items-center gap-3 mb-4">
+                              <Car className="w-6 h-6 text-primary" />
+                              <h3 className="text-xl font-bold">Your Vehicle</h3>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Registration</p>
+                                <p className="font-semibold">{vehicle.registration_number}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Vehicle</p>
+                                <p className="font-semibold">
+                                  {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Coverage Value</p>
+                                <p className="font-semibold">{formatCurrency(selectedValue)}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                                <p className="font-semibold">
+                                  {policyStartDate ? format(policyStartDate, "PPP") : "Not set"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* SECTION 3: Two-Column Coverage Explanation */}
+                        <div>
+                          <h3 className="text-xl font-bold mb-4 text-center">
+                            Your Complete Coverage Package
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            {/* LEFT COLUMN: Accidental Loss & Damage */}
+                            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                              <CardHeader>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <Shield className="w-6 h-6 text-primary" />
+                                  </div>
+                                  <CardTitle className="text-lg">
+                                    Accidental Loss & Damage
+                                  </CardTitle>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                  Protects your vehicle while on rideshare duty:
+                                </p>
+                                <ul className="space-y-2 text-sm">
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <span>Collision damage from accidents</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <span>Theft and attempted theft</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <span>Fire, explosion, and lightning</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <span>Storm, hail, and flood damage</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <span>Vandalism and malicious damage</span>
+                                  </li>
+                                </ul>
+                                <div className="pt-3 border-t">
+                                  <p className="text-xs text-muted-foreground">
+                                    <strong>Maximum Payout:</strong> {formatCurrency(selectedValue)}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+
+                            {/* RIGHT COLUMN: Third Party Coverage */}
+                            <Card className="border-2 border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
+                              <CardHeader>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                                    <Users className="w-6 h-6 text-accent" />
+                                  </div>
+                                  <CardTitle className="text-lg">
+                                    Third Party Coverage
+                                  </CardTitle>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                  Covers damage you cause to others:
+                                </p>
+                                <ul className="space-y-2 text-sm">
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <span>Other vehicles and motorcycles</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <span>Property damage (fences, buildings)</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <span>Traffic infrastructure (lights, signs)</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <span>Legal liability protection</span>
+                                  </li>
+                                </ul>
+                                <div className="pt-3 border-t">
+                                  <Alert className="py-2 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
+                                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                    <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+                                      <strong>Important:</strong> Does NOT cover CTP insurance or bodily injury to other drivers. CTP must be obtained separately.
+                                    </AlertDescription>
+                                  </Alert>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+
+                        {/* SECTION 4: Claim with Confidence */}
+                        <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 rounded-xl p-6 border-2 border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
+                              <ShieldCheck className="w-7 h-7 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold">Claim with Confidence</h3>
+                          </div>
+                          
+                          <p className="text-muted-foreground mb-6">
+                            Unlike traditional insurers, MCM Rideshare Mutual offers unique claims settlement features designed to get you back on the road faster.
+                          </p>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border">
+                              <div className="flex items-center gap-3 mb-2">
+                                <HandCoins className="w-5 h-5 text-accent" />
+                                <h4 className="font-semibold">Cash Settlement Choice</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                For at-fault claims, receive cash settlement and decide whether to repair your vehicle or keep the money. Your choice, your control.
+                              </p>
+                            </div>
+
+                            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Wrench className="w-5 h-5 text-accent" />
+                                <h4 className="font-semibold">Choose Your Repairer</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                No repair shop steering - use any repairer you trust, or even do the work yourself.
+                              </p>
+                            </div>
+
+                            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Car className="w-5 h-5 text-accent" />
+                                <h4 className="font-semibold">Not at Fault Benefits</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Free replacement vehicle, no excess payment, and your claims history stays protected through our Accident Management partners.
+                              </p>
+                            </div>
+
+                            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Timer className="w-5 h-5 text-accent" />
+                                <h4 className="font-semibold">Fast Settlement</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                No repair management delays. Settlement amount agreed upfront with no back-and-forth.
+                              </p>
+                            </div>
+                          </div>
+
+                          <Alert className="bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700">
+                            <Info className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+                            <AlertDescription className="text-sm text-blue-900 dark:text-blue-100">
+                              <strong>Learn More:</strong> Visit our{" "}
+                              <a href="/claims" className="underline font-semibold hover:text-blue-700">
+                                Claims Page
+                              </a>{" "}
+                              to see detailed examples of how our unique settlement process works.
+                            </AlertDescription>
+                          </Alert>
+                        </div>
+
+                        {/* SECTION 5: Ways to Reduce Your Price */}
+                        <div className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950 rounded-xl p-6 border-2 border-green-200 dark:border-green-800">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center">
+                              <TrendingDown className="w-7 h-7 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold">Ways to Reduce Your Price</h3>
+                          </div>
+
+                          <p className="text-muted-foreground mb-6">
+                            Want to explore more affordable options? Here are proven ways to lower your membership cost:
+                          </p>
+
+                          <div className="space-y-4">
+                            {/* Tip 1: Adjust Coverage Value */}
+                            <Card className="border-2 border-green-300 dark:border-green-700 bg-white/80 dark:bg-black/20">
+                              <CardHeader className="pb-3">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-green-500 text-white flex items-center justify-center font-bold text-sm">
+                                      1
+                                    </div>
+                                    <CardTitle className="text-lg">Adjust Your Coverage Value</CardTitle>
+                                  </div>
+                                  <Badge variant="outline" className="text-xs bg-green-100 dark:bg-green-900">
+                                    Most Effective
+                                  </Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                  Your current coverage value is <strong>{formatCurrency(selectedValue)}</strong>. 
+                                  Lowering this amount will directly reduce your MCM membership price while still providing valuable protection.
+                                </p>
+                                <div className="bg-green-50 dark:bg-green-950/50 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                                  <p className="text-sm mb-3">
+                                    <strong>Quick Example:</strong> Reducing coverage by $5,000 could save you approximately {formatCurrency(finalPrice * 0.05)}-{formatCurrency(finalPrice * 0.10)} per year.
+                                  </p>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      if (carouselApi) carouselApi.scrollTo(0);
+                                    }}
+                                    className="w-full sm:w-auto"
+                                  >
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    Go Back to Adjust Coverage
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+
+                            {/* Tip 2: Start Alternative Quote */}
+                            <Card className="border-2 border-blue-300 dark:border-blue-700 bg-white/80 dark:bg-black/20">
+                              <CardHeader className="pb-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center font-bold text-sm">
+                                    2
+                                  </div>
+                                  <CardTitle className="text-lg">Compare with Different Vehicle</CardTitle>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                  If you have access to another vehicle for rideshare work, consider getting a quote for it. 
+                                  Vehicles with different risk profiles may have lower third-party reinsurance costs.
+                                </p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    window.location.href = "/";
+                                  }}
+                                  className="w-full sm:w-auto"
+                                >
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Start New Quote
+                                </Button>
+                              </CardContent>
+                            </Card>
+
+                            {/* Tip 3: Consider Parking Location */}
+                            <Card className="border-2 border-purple-300 dark:border-purple-700 bg-white/80 dark:bg-black/20">
+                              <CardHeader className="pb-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-purple-500 text-white flex items-center justify-center font-bold text-sm">
+                                    3
+                                  </div>
+                                  <CardTitle className="text-lg">Review Parking Address</CardTitle>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                  Your overnight parking address significantly impacts third-party reinsurance pricing. 
+                                  If you have flexibility in where you park (e.g., secure garage vs. street), this could affect your rate.
+                                </p>
+                                <Alert className="py-2 bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800">
+                                  <Info className="h-4 w-4 text-purple-600" />
+                                  <AlertDescription className="text-xs text-purple-700 dark:text-purple-300">
+                                    The Mutual does not control third-party pricing - it's calculated by the underwriter based on risk factors including location.
+                                  </AlertDescription>
+                                </Alert>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+
+                        {/* Primary CTA */}
+                        <div className="pt-6 border-t">
+                          <div className="bg-gradient-to-r from-primary to-accent rounded-xl p-8 text-center">
+                            <h3 className="text-2xl font-bold text-primary-foreground mb-3">
+                              Ready to Get Protected?
+                            </h3>
+                            <p className="text-primary-foreground/90 mb-6 max-w-xl mx-auto">
+                              Your quote is valid for 28 days. Contact our broker to finalize your membership and get on the road with confidence.
+                            </p>
+                            <Button
+                              onClick={() => setShowContactDialog(true)}
+                              size="lg"
+                              variant="secondary"
+                              className="text-lg px-8"
+                            >
+                              Contact Broker to Continue
+                              <ArrowRight className="w-5 h-5 ml-2" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Navigation */}
+                        <div className="flex gap-3">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              if (carouselApi) carouselApi.scrollPrev();
+                            }}
+                            className="flex-1"
+                          >
+                            <ChevronLeft className="w-4 h-4 mr-2" />
+                            Back to Start Date
+                          </Button>
+                        </div>
+
+                      </CardContent>
+                    </Card>
+                  )}
+                </CarouselItem>
               </CarouselContent>
             </Carousel>
-
-            {/* Final CTA after Quote Generated */}
-            {quoteGenerated && currentStep === 3 && (
-              <Card className="border-green-600 bg-green-50 dark:bg-green-950">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
-                    <CheckCircle className="w-6 h-6" />
-                    Quote Generated Successfully!
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-green-900 dark:text-green-100">
-                    Your comprehensive quote is ready. Review the pricing breakdown in the sidebar and contact our broker to proceed.
-                  </p>
-                  <Button
-                    onClick={() => setShowContactDialog(true)}
-                    size="lg"
-                    className="w-full"
-                  >
-                    Contact Broker to Continue
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
           {/* Sidebar */}
