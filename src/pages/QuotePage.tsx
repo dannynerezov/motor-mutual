@@ -162,6 +162,15 @@ const QuotePage = () => {
     responseData: null,
   });
 
+  // Auto-scroll to top when quote generation completes
+  useEffect(() => {
+    if (quoteGenerated && !isGenerating) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 300); // Delay to let overlay fade out
+    }
+  }, [quoteGenerated, isGenerating]);
+
   useEffect(() => {
     if (quoteId) {
       loadQuoteData();
@@ -552,56 +561,59 @@ const QuotePage = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Button>
+        {/* Sticky header with Back button and Progress Bar */}
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50 pb-4 mb-8 -mx-4 px-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="mb-6"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
 
-        {/* Progress Bar */}
-        <div className="w-full mb-8">
-          <div className="relative max-w-3xl mx-auto">
-            {/* Progress bar background */}
-            <div className="absolute top-5 left-0 right-0 h-1 bg-muted rounded-full">
-              {/* Active progress bar */}
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
-                style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
-              />
-            </div>
-            
-            {/* Step indicators */}
-            <div className="relative flex justify-between">
-              {steps.map((step, index) => (
-                <div key={index} className="flex flex-col items-center">
-                  {/* Circle indicator */}
-                  <div className={cn(
-                    "w-10 h-10 rounded-full border-4 flex items-center justify-center",
-                    "transition-all duration-300 bg-background z-10 font-semibold",
-                    index + 1 < currentStep && "border-accent bg-accent text-white",
-                    index + 1 === currentStep && "border-primary bg-primary text-white scale-110",
-                    index + 1 > currentStep && "border-muted-foreground/30 text-muted-foreground"
-                  )}>
-                    {index + 1 < currentStep ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
-                  </div>
-                  
-                  {/* Step label */}
-                  <div className="mt-2 text-center max-w-[150px]">
-                    <p className={cn(
-                      "text-sm font-semibold",
-                      index + 1 === currentStep ? "text-primary" : "text-muted-foreground"
+          {/* Progress Bar */}
+          <div className="w-full">
+            <div className="relative max-w-3xl mx-auto">
+              {/* Progress bar background */}
+              <div className="absolute top-5 left-0 right-0 h-1 bg-muted rounded-full">
+                {/* Active progress bar */}
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
+                  style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+                />
+              </div>
+              
+              {/* Step indicators */}
+              <div className="relative flex justify-between">
+                {steps.map((step, index) => (
+                  <div key={index} className="flex flex-col items-center">
+                    {/* Circle indicator */}
+                    <div className={cn(
+                      "w-10 h-10 rounded-full border-4 flex items-center justify-center",
+                      "transition-all duration-300 bg-background z-10 font-semibold",
+                      index + 1 < currentStep && "border-accent bg-accent text-white",
+                      index + 1 === currentStep && "border-primary bg-primary text-white scale-110",
+                      index + 1 > currentStep && "border-muted-foreground/30 text-muted-foreground"
                     )}>
-                      {step.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1 hidden md:block">
-                      {step.description}
-                    </p>
+                      {index + 1 < currentStep ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
+                    </div>
+                    
+                    {/* Step label */}
+                    <div className="mt-2 text-center max-w-[150px]">
+                      <p className={cn(
+                        "text-sm font-semibold",
+                        index + 1 === currentStep ? "text-primary" : "text-muted-foreground"
+                      )}>
+                        {step.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 hidden md:block">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -672,23 +684,31 @@ const QuotePage = () => {
                               <p className="text-sm md:text-xl text-muted-foreground">{vehicle.vehicle_model}</p>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
-                              <div className="p-2 md:p-3 bg-background/80 backdrop-blur-sm rounded-lg border border-border/50">
-                                <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5 md:mb-1">Registration</p>
-                                <p className="font-semibold text-xs md:text-sm">{vehicle.registration_number}</p>
+                            {/* Single consolidated info box with low opacity */}
+                            <div className="p-3 md:p-4 bg-background/40 backdrop-blur-sm rounded-lg border border-border/50">
+                              <div className="flex items-center justify-between divide-x divide-border/50">
+                                {/* Registration */}
+                                <div className="flex-1 pr-3">
+                                  <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5">Registration</p>
+                                  <p className="font-semibold text-xs md:text-sm">{vehicle.registration_number}</p>
+                                </div>
+                                
+                                {/* State (if available) */}
+                                {vehicle.state_of_registration && (
+                                  <div className="flex-1 px-3">
+                                    <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5">State</p>
+                                    <p className="font-semibold text-xs md:text-sm">{vehicle.state_of_registration}</p>
+                                  </div>
+                                )}
+                                
+                                {/* NVIC (if available) */}
+                                {vehicle.vehicle_nvic && (
+                                  <div className="flex-1 pl-3">
+                                    <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5">NVIC</p>
+                                    <Badge variant="secondary" className="font-mono text-[10px] md:text-xs">{vehicle.vehicle_nvic}</Badge>
+                                  </div>
+                                )}
                               </div>
-                              {vehicle.state_of_registration && (
-                                <div className="p-2 md:p-3 bg-background/80 backdrop-blur-sm rounded-lg border border-border/50">
-                                  <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5 md:mb-1">State</p>
-                                  <p className="font-semibold text-xs md:text-sm">{vehicle.state_of_registration}</p>
-                                </div>
-                              )}
-                              {vehicle.vehicle_nvic && (
-                                <div className="p-2 md:p-3 bg-background/80 backdrop-blur-sm rounded-lg border border-border/50">
-                                  <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5 md:mb-1">NVIC</p>
-                                  <Badge variant="secondary" className="font-mono text-[10px] md:text-xs">{vehicle.vehicle_nvic}</Badge>
-                                </div>
-                              )}
                             </div>
                             
                             {(vehicle.vehicle_desc1 || vehicle.vehicle_desc2) && (
@@ -745,8 +765,14 @@ const QuotePage = () => {
                           <Button 
                             size="lg" 
                             onClick={() => {
-                              if (carouselApi) carouselApi.scrollNext();
-                            }} 
+                              if (carouselApi) {
+                                carouselApi.scrollNext();
+                                // Scroll to top on mobile to see Step 2 header
+                                setTimeout(() => {
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }, 100);
+                              }
+                            }}
                             disabled={!isStep1Complete} 
                             className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent"
                           >
@@ -800,7 +826,13 @@ const QuotePage = () => {
                           {canProceedToStep3 && (
                             <Button
                               onClick={() => {
-                                if (carouselApi) carouselApi.scrollNext();
+                                if (carouselApi) {
+                                  carouselApi.scrollNext();
+                                  // Scroll to top on mobile to see Step 3 header
+                                  setTimeout(() => {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }, 100);
+                                }
                               }}
                               className="flex-1"
                             >
