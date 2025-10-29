@@ -551,7 +551,7 @@ const QuotePage = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
