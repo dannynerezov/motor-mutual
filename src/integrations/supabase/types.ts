@@ -260,7 +260,7 @@ export type Database = {
           address_unit_type: string | null
           claims_count: number
           created_at: string
-          date_of_birth: string
+          date_of_birth: string | null
           driver_name: string | null
           first_name: string | null
           gender: string | null
@@ -283,7 +283,7 @@ export type Database = {
           address_unit_type?: string | null
           claims_count?: number
           created_at?: string
-          date_of_birth: string
+          date_of_birth?: string | null
           driver_name?: string | null
           first_name?: string | null
           gender?: string | null
@@ -306,7 +306,7 @@ export type Database = {
           address_unit_type?: string | null
           claims_count?: number
           created_at?: string
-          date_of_birth?: string
+          date_of_birth?: string | null
           driver_name?: string | null
           first_name?: string | null
           gender?: string | null

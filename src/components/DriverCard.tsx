@@ -23,10 +23,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface NamedDriver {
   id: string;
   driver_name?: string;
-  first_name: string;
-  last_name: string;
-  gender: string;
-  date_of_birth: string;
+  first_name: string | null;
+  last_name: string | null;
+  gender: string | null;
+  date_of_birth: string | null;
   claims_count: number;
   address_line1?: string;
   address_unit_type?: string;
