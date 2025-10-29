@@ -606,8 +606,8 @@ const QuotePage = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 max-w-full">
-          <div className="lg:col-span-2 space-y-8 order-2 lg:order-1">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-0 lg:gap-8 max-w-full">
+          <div className="w-full lg:col-span-2 space-y-8 order-2 lg:order-1">
             {/* Carousel Container */}
             <div className="w-full lg:max-w-none">
               <Carousel
@@ -1280,7 +1280,7 @@ const QuotePage = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 order-1 lg:order-2">
+          <div className="w-full space-y-6 order-1 lg:order-2 mb-6 lg:mb-0">
             <Card className="w-full max-w-full lg:sticky lg:top-4 relative overflow-hidden shadow-lg">
               {/* Watermark */}
               <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
@@ -1314,14 +1314,14 @@ const QuotePage = () => {
                   </div>
                 )}
               </CardHeader>
-              <CardContent className="space-y-4 pt-4 lg:pt-6 relative z-10">
+              <CardContent className="space-y-4 pt-4 lg:pt-6 relative z-10 px-3 lg:px-6">
                 {!quoteGenerated ? (
                   <>
                     {/* Mobile: Compact 2-column layout */}
-                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-6 lg:space-y-0">
+                    <div className="flex flex-col gap-3 lg:grid lg:grid-cols-1 lg:gap-6 lg:space-y-0">
                       {/* Column 1: Vehicle Info (Compact on mobile) */}
                       {vehicle && (
-                        <div className="p-3 lg:p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg border border-border/50">
+                        <div className="w-full p-3 lg:p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg border border-border/50">
                           <p className="text-[10px] lg:text-xs text-muted-foreground mb-1 font-medium">Cover for</p>
                           <p className="font-bold text-sm lg:text-lg text-foreground">{vehicle.registration_number}</p>
                           <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 line-clamp-2">
@@ -1332,7 +1332,7 @@ const QuotePage = () => {
                       
                       {/* Column 2: Estimated Price (Compact on mobile) */}
                       {selectedValue > 0 && (
-                        <div className="text-center p-3 lg:p-6 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border border-primary/30 shadow-sm">
+                        <div className="w-full text-center p-3 lg:p-6 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border border-primary/30 shadow-sm">
                           <p className="text-[10px] lg:text-sm text-muted-foreground mb-1 lg:mb-2 font-medium">Est. Price</p>
                           <div className="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             ${membershipPrice.toFixed(2)}
@@ -1345,7 +1345,7 @@ const QuotePage = () => {
                     {/* What's Covered: Full width, 3 columns on mobile, 2 on desktop */}
                     <div className="space-y-2">
                       <p className="text-xs lg:text-sm font-semibold text-foreground">What's Covered:</p>
-                      <div className="grid grid-cols-3 lg:grid-cols-2 gap-1.5 lg:gap-2">
+                      <div className="grid grid-cols-2 lg:grid-cols-2 gap-2 max-w-full">
                         {[
                           { icon: CheckCircle2, text: "Collision", color: "text-green-600 dark:text-green-400" },
                           { icon: Droplets, text: "Flood", color: "text-blue-600 dark:text-blue-400" },
@@ -1364,7 +1364,7 @@ const QuotePage = () => {
                     
                     {/* MCM Coverage Explanation - Keep as is but more compact on mobile */}
                     {vehicle && selectedValue > 0 && (
-                      <Alert className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 py-2 lg:py-4">
+                      <Alert className="w-full bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 py-2 lg:py-4">
                         <Info className="h-3 w-3 lg:h-4 lg:w-4 text-blue-600 dark:text-blue-400" />
                         <AlertTitle className="text-blue-900 dark:text-blue-100 text-xs lg:text-sm font-semibold">
                           MCM Coverage
