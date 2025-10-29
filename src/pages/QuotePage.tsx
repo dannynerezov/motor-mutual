@@ -548,7 +548,7 @@ const QuotePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Header />
       
       <div className="container mx-auto px-4 py-8">
@@ -606,7 +606,7 @@ const QuotePage = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 max-w-full">
           <div className="lg:col-span-2 space-y-8 order-2 lg:order-1">
             {/* Carousel Container */}
             <div className="w-full lg:max-w-none">
@@ -618,11 +618,11 @@ const QuotePage = () => {
               }}
               className="w-full"
             >
-              <CarouselContent>
+              <CarouselContent className="-ml-0 md:-ml-4">
                 {/* Step 1: Select Your Coverage Value */}
-                <CarouselItem>
+                <CarouselItem className="pl-0 md:pl-4">
                   {vehicle && (
-                    <Card className="shadow-2xl bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/30 relative overflow-hidden min-h-[600px]">
+                    <Card className="w-full max-w-full shadow-2xl bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/30 relative overflow-hidden min-h-[600px]">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-transparent rounded-bl-full" />
                       
                       <CardHeader className="relative">
@@ -758,7 +758,7 @@ const QuotePage = () => {
                 </CarouselItem>
 
                 {/* Step 2: Enter Your Details */}
-                <CarouselItem>
+                <CarouselItem className="pl-0 md:pl-4">
                   {driver && (
                     <Card className="min-h-[600px]">
                       <CardHeader>
@@ -813,7 +813,7 @@ const QuotePage = () => {
                 </CarouselItem>
 
                 {/* Step 3: Membership Start Date */}
-                <CarouselItem>
+                <CarouselItem className="pl-0 md:pl-4">
                   <Card className="min-h-[600px]">
                     <CardHeader>
                       <div className="flex items-center justify-between">
@@ -1281,7 +1281,7 @@ const QuotePage = () => {
 
           {/* Sidebar */}
           <div className="space-y-6 order-1 lg:order-2">
-            <Card className="lg:sticky lg:top-4 relative overflow-hidden shadow-lg">
+            <Card className="w-full max-w-full lg:sticky lg:top-4 relative overflow-hidden shadow-lg">
               {/* Watermark */}
               <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
                 <img src={watermarkLogo} alt="" className="w-24 h-24 object-contain" />
