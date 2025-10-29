@@ -17,7 +17,6 @@ import {
 import { CheckCircle, ChevronDown, Lock, Edit2, AlertCircle } from "lucide-react";
 import { AddressAutosuggest } from "@/components/AddressAutosuggest";
 import { EnhancedDatePicker } from "@/components/EnhancedDatePicker";
-import { AddressValidationDialog } from "@/components/AddressValidationDialog";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -65,11 +64,6 @@ export const DriverCard = ({
 
   // Address lock and validation state
   const [addressLocked, setAddressLocked] = useState(false);
-  const [validationDialogOpen, setValidationDialogOpen] = useState(false);
-  const [validationStatus, setValidationStatus] = useState<'idle' | 'searching' | 'found' | 'validating' | 'success' | 'error'>('idle');
-  const [validationSearchResults, setValidationSearchResults] = useState<number>();
-  const [validationError, setValidationError] = useState<string>();
-  const [validationLogs, setValidationLogs] = useState<string[]>([]);
   const [validatedAddressDisplay, setValidatedAddressDisplay] = useState<{
     line1: string;
     suburb: string;
@@ -209,19 +203,6 @@ export const DriverCard = ({
     streetName?: string;
     streetType?: string;
   }) => {
-    setValidationDialogOpen(true);
-    setValidationStatus('searching');
-    setValidationLogs([]);
-    setValidationError(undefined);
-    
-    const log = (msg: string) => setValidationLogs(prev => [...prev, `[${new Date().toISOString().split('T')[1].slice(0, 8)}] ${msg}`]);
-    
-    log('[AddressAutosuggest] Address selected from dropdown');
-    log(`Address: ${address.addressLine1}, ${address.suburb} ${address.state} ${address.postcode}`);
-    
-    setValidationStatus('found');
-    setValidationSearchResults(1);
-    
     // Batch update all address fields at once
     const addressUpdates = {
       address_line1: address.addressLine1,
@@ -239,12 +220,8 @@ export const DriverCard = ({
     };
     
     onUpdateMany(driver.id, addressUpdates);
-    log('[DriverCard] Address fields updated (pre-validation)');
 
-    // Validate immediately to get LURN
-    setValidationStatus('validating');
-    log('[DriverCard] Calling suncorp-proxy addressValidate...');
-    
+    // Validate silently to get LURN
     try {
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
@@ -262,28 +239,19 @@ export const DriverCard = ({
       });
 
       if (error || !data?.success) {
-        const msg = data?.error || error?.message || 'Address validation failed';
-        log(`[DriverCard] ❌ Validation failed: ${msg}`);
-        setValidationStatus('error');
-        setValidationError(`Address validation failed: ${msg}`);
+        console.error('Address validation failed:', data?.error || error?.message);
         return;
       }
 
       const matched = data.data?.matchedAddress;
       if (!matched) {
-        log('[DriverCard] ❌ No matched address in response');
-        setValidationStatus('error');
-        setValidationError('No matched address found in validation response');
+        console.error('No matched address in response');
         return;
       }
 
       const lurnFull = matched.addressId as string;
       const lat = matched.pointLevelCoordinates?.longLatLatitude?.toString() || null;
       const lng = matched.pointLevelCoordinates?.longLatLongitude?.toString() || null;
-      
-      log(`[DriverCard] ✓ Validated: LURN=****${lurnFull?.slice(-15)}`);
-      log(`[DriverCard] ✓ Quality: ${matched.quality}`);
-      log(`[DriverCard] ✓ Coordinates: ${lat}, ${lng}`);
 
       // Update with validation results
       onUpdateMany(driver.id, {
@@ -301,18 +269,10 @@ export const DriverCard = ({
         quality: matched.quality || '1'
       });
 
-      setValidationStatus('success');
-      log('[DriverCard] ✓ Address validation complete');
-      
       // Auto-lock after successful validation
-      setTimeout(() => {
-        setAddressLocked(true);
-        setValidationDialogOpen(false);
-      }, 1500);
+      setAddressLocked(true);
     } catch (err: any) {
-      log(`[DriverCard] ❌ Exception: ${err.message}`);
-      setValidationStatus('error');
-      setValidationError(`Address validation error: ${err.message}`);
+      console.error('Address validation error:', err.message);
     }
   };
 
@@ -626,16 +586,6 @@ export const DriverCard = ({
           )}
         </CardContent>
       </Card>
-
-      <AddressValidationDialog
-        open={validationDialogOpen}
-        onOpenChange={setValidationDialogOpen}
-        status={validationStatus}
-        searchResults={validationSearchResults}
-        validatedAddress={validatedAddressDisplay}
-        error={validationError}
-        logs={validationLogs}
-      />
     </>
   );
 };

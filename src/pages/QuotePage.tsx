@@ -8,8 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DriverCard } from "@/components/DriverCard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -21,6 +24,7 @@ import { usePricingScheme } from "@/hooks/usePricingScheme";
 import { getDefaultPolicyStartDate } from "@/lib/thirdPartyBulkLogic";
 import { toast } from "sonner";
 import watermarkLogo from "@/assets/mcm-logo-small-watermark.webp";
+import { format, addDays } from "date-fns";
 
 interface Quote {
   id: string;
@@ -130,6 +134,7 @@ const QuotePage = () => {
   // Stepped flow state
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedValue, setSelectedValue] = useState(0);
+  const [policyStartDate, setPolicyStartDate] = useState<Date>();
 
   // Quote generation states
   const [quoteGenerated, setQuoteGenerated] = useState(false);
@@ -248,7 +253,7 @@ const QuotePage = () => {
           first_name: null,
           last_name: null,
           gender: null,
-          date_of_birth: '2000-01-01',
+          date_of_birth: null,
           claims_count: 0,
         })
         .select()
@@ -357,7 +362,9 @@ const QuotePage = () => {
       return;
     }
 
-    const policyStartDate = getDefaultPolicyStartDate();
+    const finalPolicyStartDate = policyStartDate 
+      ? format(policyStartDate, 'yyyy-MM-dd')
+      : getDefaultPolicyStartDate();
 
     const result = await generateQuote(
       {
@@ -388,7 +395,7 @@ const QuotePage = () => {
         address_longitude: driver.address_longitude,
         address_gnaf_data: (quote as any)?.address_gnaf_data || null,
       },
-      policyStartDate,
+      finalPolicyStartDate,
       quoteId!
     );
 
@@ -426,15 +433,19 @@ const QuotePage = () => {
     }
   };
 
+  // New 3-step completion logic
   const isStep1Complete = selectedValue > 0;
-  const isStep2Complete = namedDrivers[0] && namedDrivers[0].address_lurn;
-  const isStep3Complete = namedDrivers[0] && namedDrivers[0].first_name && namedDrivers[0].last_name && namedDrivers[0].date_of_birth && namedDrivers[0].gender;
-  const isStep4Complete = true; // Policy date always has default
+  const isStep2Complete = namedDrivers[0] && 
+    namedDrivers[0].first_name && 
+    namedDrivers[0].last_name && 
+    namedDrivers[0].date_of_birth && 
+    namedDrivers[0].gender && 
+    namedDrivers[0].address_lurn;
+  const isStep3Complete = !!policyStartDate;
   
   const canProceedToStep2 = isStep1Complete;
   const canProceedToStep3 = isStep2Complete;
-  const canProceedToStep4 = isStep3Complete;
-  const canGenerateQuote = isStep1Complete && isStep2Complete && isStep3Complete && isStep4Complete;
+  const canGenerateQuote = isStep1Complete && isStep2Complete && isStep3Complete;
 
   if (loading) {
     return (
@@ -478,9 +489,9 @@ const QuotePage = () => {
           Back to Home
         </Button>
 
-        {/* Step Indicator */}
+        {/* Step Indicator - 3 Steps */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3, 4, 5].map((step) => (
+          {[1, 2, 3].map((step) => (
             <div
               key={step}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
@@ -530,21 +541,27 @@ const QuotePage = () => {
               </CardContent>
             </Card>
 
-            {/* Step 1: Vehicle Valuation */}
+            {/* Step 1: Select Your Coverage Value */}
             {currentStep >= 1 && (
-              <Card className="relative overflow-hidden">
-                <div className="absolute top-4 right-4 opacity-8 pointer-events-none">
-                  <img src={watermarkLogo} alt="" className="w-16 h-16 object-contain" />
-                </div>
-                
+              <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Step 1: Vehicle Valuation</CardTitle>
+                    <CardTitle>Step 1: Select Your Coverage Value</CardTitle>
                     {isStep1Complete && <Badge variant="default">Complete</Badge>}
                   </div>
                 </CardHeader>
                 
                 <CardContent className="space-y-6">
+                  {/* Informational Alert */}
+                  <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <AlertDescription className="text-sm">
+                      <strong>What is Coverage Value?</strong><br/>
+                      This is the maximum amount the mutual will pay in the event of a total loss of your vehicle. 
+                      You can adjust this between the trade-in value and retail price of your vehicle.
+                    </AlertDescription>
+                  </Alert>
+
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <p className="text-xs text-muted-foreground">Trade Low</p>
@@ -562,7 +579,22 @@ const QuotePage = () => {
                   
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <Label>Selected Coverage Value</Label>
+                      <div className="flex items-center gap-2">
+                        <Label>Selected Coverage Value</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p className="text-sm">
+                                <strong>Coverage Range:</strong> ${Math.round(tradeLow).toLocaleString()} to ${Math.round(retail).toLocaleString()}<br/><br/>
+                                This value determines the maximum payout for total loss. Higher coverage = higher premium.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                       <Badge variant="outline" className="text-lg">${selectedValue.toLocaleString()}</Badge>
                     </div>
                     
@@ -581,29 +613,41 @@ const QuotePage = () => {
                     </div>
                   </div>
 
+                  {/* Call to Action */}
+                  <div className="p-4 bg-accent/30 rounded-lg border border-accent">
+                    <p className="text-sm font-medium mb-2">💡 Pro Tip:</p>
+                    <p className="text-sm text-muted-foreground">
+                      Adjust the slider above to find the right balance between coverage and premium cost for your needs.
+                    </p>
+                  </div>
+
                   {canProceedToStep2 && currentStep === 1 && (
                     <Button
                       onClick={() => setCurrentStep(2)}
                       className="w-full"
                       size="lg"
                     >
-                      Continue to Driver Address
+                      Continue to Your Details
                     </Button>
                   )}
                 </CardContent>
               </Card>
             )}
 
-            {/* Step 2: Driver Address */}
+            {/* Step 2: Enter Your Details */}
             {currentStep >= 2 && driver && (
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Step 2: Driver Address</CardTitle>
+                    <CardTitle>Step 2: Enter Your Details</CardTitle>
                     {isStep2Complete && <Badge variant="default">Complete</Badge>}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Please provide your personal information and overnight parking address for insurance risk assessment.
+                  </p>
+
                   <DriverCard
                     driver={driver}
                     onUpdate={handleDriverUpdate}
@@ -625,7 +669,7 @@ const QuotePage = () => {
                         onClick={() => setCurrentStep(3)}
                         className="flex-1"
                       >
-                        Continue to Personal Details
+                        Continue to Membership Start Date
                       </Button>
                     )}
                   </div>
@@ -633,19 +677,49 @@ const QuotePage = () => {
               </Card>
             )}
 
-            {/* Step 3: Personal Details */}
-            {currentStep >= 3 && driver && (
+            {/* Step 3: Membership Start Date */}
+            {currentStep >= 3 && (
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Step 3: Driver Personal & Claims Info</CardTitle>
+                    <CardTitle>Step 3: Membership Start Date</CardTitle>
                     {isStep3Complete && <Badge variant="default">Complete</Badge>}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground mb-4">
-                    Complete your personal details below. Address was already captured in the previous step.
+                    Select when your membership should begin (up to 28 days from today).
                   </p>
+
+                  <div className="space-y-2">
+                    <Label>Policy Start Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={`w-full justify-start text-left font-normal ${!policyStartDate && "text-muted-foreground"}`}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {policyStartDate ? format(policyStartDate, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={policyStartDate}
+                          onSelect={setPolicyStartDate}
+                          disabled={(date) => 
+                            date < new Date() || date > addDays(new Date(), 28)
+                          }
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <p className="text-xs text-muted-foreground">
+                      You can select any date from today up to 28 days in the future.
+                    </p>
+                  </div>
 
                   <div className="flex gap-3">
                     {currentStep === 3 && (
@@ -657,112 +731,48 @@ const QuotePage = () => {
                         Back
                       </Button>
                     )}
-                    {canProceedToStep4 && currentStep === 3 && (
+                    {currentStep === 3 && isStep3Complete && !quoteGenerated && (
                       <Button
-                        onClick={() => setCurrentStep(4)}
+                        onClick={handleRecalculateQuote}
+                        disabled={!canGenerateQuote || isGenerating}
                         className="flex-1"
-                      >
-                        Continue to Policy Date
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 4: Policy Start Date */}
-            {currentStep >= 4 && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Step 4: Policy Start Date</CardTitle>
-                    {isStep4Complete && <Badge variant="default">Complete</Badge>}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">Policy will start on:</p>
-                    <p className="text-xl font-bold">{new Date(getDefaultPolicyStartDate()).toLocaleDateString('en-AU')}</p>
-                    <p className="text-xs text-muted-foreground mt-2">Default: Tomorrow at 12:01 AM</p>
-                  </div>
-
-                  <div className="flex gap-3">
-                    {currentStep === 4 && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentStep(3)}
-                        className="flex-1"
-                      >
-                        Back
-                      </Button>
-                    )}
-                    {currentStep === 4 && (
-                      <Button
-                        onClick={() => setCurrentStep(5)}
-                        className="flex-1"
-                      >
-                        Continue to Quote Generation
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 5: Generate Quote */}
-            {currentStep >= 5 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Step 5: Generate Your Quote</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {!quoteGenerated ? (
-                    <>
-                      <p className="text-muted-foreground">
-                        All information is complete. Click below to get your third-party quote and see the final pricing.
-                      </p>
-                      
-                      <div className="flex gap-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => setCurrentStep(4)}
-                          className="flex-1"
-                        >
-                          Back
-                        </Button>
-                        <Button
-                          onClick={handleRecalculateQuote}
-                          disabled={!canGenerateQuote || isGenerating}
-                          className="flex-1"
-                          size="lg"
-                        >
-                          {isGenerating ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Generating...
-                            </>
-                          ) : (
-                            "Generate Quote"
-                          )}
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="w-5 h-5" />
-                        <p className="font-semibold">Quote Generated Successfully!</p>
-                      </div>
-                      <p className="text-muted-foreground">View the complete pricing breakdown in the sidebar.</p>
-                      <Button
-                        onClick={() => setShowContactDialog(true)}
                         size="lg"
-                        className="w-full"
                       >
-                        Contact Broker to Continue
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          "Generate My Final Quote"
+                        )}
                       </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Final CTA after Quote Generated */}
+            {quoteGenerated && currentStep === 3 && (
+              <Card className="border-green-600 bg-green-50 dark:bg-green-950">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
+                    <CheckCircle className="w-6 h-6" />
+                    Quote Generated Successfully!
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-green-900 dark:text-green-100">
+                    Your comprehensive quote is ready. Review the pricing breakdown in the sidebar and contact our broker to proceed.
+                  </p>
+                  <Button
+                    onClick={() => setShowContactDialog(true)}
+                    size="lg"
+                    className="w-full"
+                  >
+                    Contact Broker to Continue
+                  </Button>
                 </CardContent>
               </Card>
             )}
