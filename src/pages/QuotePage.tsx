@@ -965,12 +965,39 @@ const QuotePage = () => {
                 ) : (
                   <>
                     {/* MCM Membership Price */}
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">MCM Membership Price</p>
-                      <div className="text-3xl font-bold text-primary">
-                        ${finalPrice.toFixed(2)}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">MCM Membership Price</p>
+                          <div className="text-3xl font-bold text-primary mt-1">
+                            ${finalPrice.toFixed(2)}
+                          </div>
+                          <p className="text-xs text-muted-foreground">per year</p>
+                        </div>
+                        <ShieldCheck className="w-10 h-10 text-primary/30" />
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">per year</p>
+                      
+                      <Alert className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800">
+                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <AlertTitle className="text-blue-900 dark:text-blue-100 text-sm font-semibold">
+                          Accidental Loss and Damage Cover
+                        </AlertTitle>
+                        <AlertDescription className="text-blue-700 dark:text-blue-300 text-xs mt-2 space-y-2">
+                          <p>
+                            This coverage protects your vehicle <span className="font-semibold">{vehicle?.registration_number}</span> while on rideshare duty against:
+                          </p>
+                          <ul className="list-disc list-inside space-y-1 ml-2">
+                            <li>Collision damage</li>
+                            <li>Theft and attempted theft</li>
+                            <li>Fire and explosion</li>
+                            <li>Storm, hail, and flood damage</li>
+                            <li>Vandalism and malicious damage</li>
+                          </ul>
+                          <p className="pt-2 border-t border-blue-200 dark:border-blue-800">
+                            <span className="font-semibold">Maximum payout:</span> ${formatCurrency(selectedValue)}
+                          </p>
+                        </AlertDescription>
+                      </Alert>
                     </div>
 
                     {totalClaimsCount > 0 && (
@@ -989,44 +1016,125 @@ const QuotePage = () => {
                     {/* Third Party Section */}
                     {suncorpDetails && (
                       <>
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-2">Third Party (Suncorp) Quote</p>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span>Base Premium</span>
-                              <span className="font-semibold">${suncorpDetails.annual_base_premium?.toFixed(2) || '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Stamp Duty</span>
-                              <span className="font-semibold">${suncorpDetails.annual_stamp_duty?.toFixed(2) || '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>FSL</span>
-                              <span className="font-semibold">${suncorpDetails.annual_fsl?.toFixed(2) || '0.00'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>GST</span>
-                              <span className="font-semibold">${suncorpDetails.annual_gst?.toFixed(2) || '0.00'}</span>
-                            </div>
-                            <Separator />
-                            <div className="flex justify-between text-base">
-                              <span className="font-semibold">Third Party Total</span>
-                              <span className="font-bold">${suncorpDetails.annual_premium?.toFixed(2) || '0.00'}</span>
-                            </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-semibold text-foreground">Third Party Reinsurance</p>
+                            <Badge variant="outline" className="text-xs">
+                              Underwritten by Suncorp
+                            </Badge>
                           </div>
+                          
+                          {/* Suncorp Quote Reference - Prominent */}
+                          {suncorpDetails.suncorp_quote_number && (
+                            <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                              <p className="text-xs text-muted-foreground mb-1">Underwriter Quote Reference</p>
+                              <p className="font-mono text-sm font-bold">{suncorpDetails.suncorp_quote_number}</p>
+                            </div>
+                          )}
+                          
+                          {/* Price Breakdown - Collapsible */}
+                          <Collapsible>
+                            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors">
+                              <div className="text-left">
+                                <p className="text-sm font-semibold">Third Party Total</p>
+                                <p className="text-2xl font-bold text-primary mt-1">
+                                  ${suncorpDetails.annual_premium?.toFixed(2) || '0.00'}
+                                </p>
+                              </div>
+                              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                            </CollapsibleTrigger>
+                            
+                            <CollapsibleContent className="mt-2 space-y-2 text-sm p-3 bg-muted/30 rounded-lg">
+                              <div className="flex justify-between">
+                                <span>Base Premium</span>
+                                <span className="font-semibold">${suncorpDetails.annual_base_premium?.toFixed(2) || '0.00'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Stamp Duty</span>
+                                <span className="font-semibold">${suncorpDetails.annual_stamp_duty?.toFixed(2) || '0.00'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Fire Services Levy</span>
+                                <span className="font-semibold">${suncorpDetails.annual_fsl?.toFixed(2) || '0.00'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>GST</span>
+                                <span className="font-semibold">${suncorpDetails.annual_gst?.toFixed(2) || '0.00'}</span>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                          
+                          {/* Explanation */}
+                          <Alert className="bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800">
+                            <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            <AlertDescription className="text-amber-700 dark:text-amber-300 text-xs">
+                              <p className="font-semibold mb-1">What This Covers:</p>
+                              <p>
+                                Third party reinsurance covers damage you cause to other vehicles, property (such as traffic lights, fences, buildings), and legal liability.
+                              </p>
+                            </AlertDescription>
+                          </Alert>
+                          
+                          {/* Disclaimer */}
+                          <Alert className="bg-gray-50 dark:bg-gray-950/50 border-gray-200 dark:border-gray-800">
+                            <AlertTriangle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            <AlertDescription className="text-gray-700 dark:text-gray-300 text-xs space-y-1">
+                              <p className="font-semibold">Important Notice:</p>
+                              <p>
+                                The Mutual does not set this price. The premium is calculated by the underwriter based on multiple risk factors including overnight parking address, driving history, vehicle details, and claims experience.
+                              </p>
+                            </AlertDescription>
+                          </Alert>
                         </div>
 
                         <Separator />
 
                         {/* Combined Total */}
-                        <div className="p-4 bg-primary/5 rounded-lg">
-                          <p className="text-sm text-muted-foreground mb-1">Combined Annual Premium</p>
-                          <div className="text-2xl font-bold">
-                            ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
+                        <div className="space-y-3">
+                          <div className="p-4 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border-2 border-primary/30">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm font-semibold text-foreground">Combined Annual Membership</p>
+                              <ShieldCheck className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="text-3xl font-bold text-primary">
+                              ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">per year</p>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            MCM + Third Party comprehensive coverage
-                          </p>
+                          
+                          {/* Coverage Explanation */}
+                          <Alert className="bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800">
+                            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <AlertTitle className="text-green-900 dark:text-green-100 text-sm font-semibold">
+                              Complete Coverage Package
+                            </AlertTitle>
+                            <AlertDescription className="text-green-700 dark:text-green-300 text-xs mt-2 space-y-2">
+                              <p>Your total membership provides comprehensive protection:</p>
+                              <div className="space-y-1 ml-2">
+                                <p><span className="font-semibold">✓</span> Damage to your vehicle (collision, theft, fire, storm)</p>
+                                <p><span className="font-semibold">✓</span> Damage to other vehicles and property</p>
+                                <p><span className="font-semibold">✓</span> Legal liability coverage</p>
+                              </div>
+                            </AlertDescription>
+                          </Alert>
+                          
+                          {/* Exclusions Notice */}
+                          <Alert className="bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800">
+                            <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            <AlertTitle className="text-red-900 dark:text-red-100 text-sm font-semibold">
+                              Coverage Exclusions
+                            </AlertTitle>
+                            <AlertDescription className="text-red-700 dark:text-red-300 text-xs mt-2 space-y-2">
+                              <p>This insurance does NOT cover:</p>
+                              <div className="space-y-1 ml-2">
+                                <p><span className="font-semibold">✗</span> Compulsory Third Party (CTP) insurance</p>
+                                <p><span className="font-semibold">✗</span> Bodily injury caused to other drivers or pedestrians</p>
+                              </div>
+                              <p className="pt-2 mt-2 border-t border-red-200 dark:border-red-800 text-xs">
+                                CTP must be obtained separately through your state's CTP scheme.
+                              </p>
+                            </AlertDescription>
+                          </Alert>
                         </div>
 
                         {/* Policy Details Collapsible */}

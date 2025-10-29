@@ -191,14 +191,16 @@ export const AddressAutosuggest = ({
       const { data, error } = await supabase.functions.invoke('suncorp-proxy', {
         body: {
           action: 'addressValidate',
-          suburb: suggestion.suburb,
-          postcode: suggestion.postcode,
-          state: suggestion.state,
-          streetNumber: suggestion.streetNumber,
-          streetName: suggestion.streetName,
-          streetType: suggestion.streetType,
-          unitType: suggestion.unitType,
-          unitNumber: suggestion.unitNumber,
+          address: {
+            suburb: suggestion.suburb,
+            postcode: suggestion.postcode,
+            state: suggestion.state,
+            streetNumber: suggestion.streetNumber,
+            streetName: suggestion.streetName,
+            streetType: suggestion.streetType,
+            unitType: suggestion.unitType,
+            unitNumber: suggestion.unitNumber,
+          }
         }
       });
 
@@ -249,9 +251,17 @@ export const AddressAutosuggest = ({
       }
     } catch (error) {
       console.error('[AddressAutosuggest] Validation error:', error);
-      toast({ title: 'Address validation failed', description: 'Using address without validation', variant: 'destructive' });
+      
+      // Still set the address even if validation fails
       setValidatedAddress(suggestion);
       onAddressSelect(suggestion);
+      
+      // Only show info toast for validation unavailability, not an error
+      toast({ 
+        title: 'Address validation unavailable', 
+        description: 'Proceeding with address search result', 
+        variant: 'default'
+      });
     }
   };
 
