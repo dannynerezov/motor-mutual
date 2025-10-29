@@ -89,6 +89,7 @@ export const useSocialProof = () => {
   const [memberName, setMemberName] = useState('');
   const [heading, setHeading] = useState('');
   const [actionPhrase, setActionPhrase] = useState('');
+  const [isFirstNotification, setIsFirstNotification] = useState(true);
 
   const fetchVehicles = useCallback(async () => {
     try {
@@ -151,13 +152,13 @@ export const useSocialProof = () => {
     // Mark as shown
     markVehicleShown(vehicle.id);
 
-    // Auto-dismiss after 5 seconds
+    // Auto-dismiss after 15 seconds
     setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => {
         setCurrentNotification(null);
       }, 400); // Wait for exit animation
-    }, 5000);
+    }, 15000);
   }, [vehicleQueue]);
 
   const scheduleNextNotification = useCallback(() => {
@@ -178,10 +179,10 @@ export const useSocialProof = () => {
 
   // Initial setup
   useEffect(() => {
-    // Wait 30 seconds before first notification
+    // Fetch vehicles immediately on page load
     const initialTimeout = setTimeout(() => {
       fetchVehicles();
-    }, 30000);
+    }, 0);
 
     return () => clearTimeout(initialTimeout);
   }, [fetchVehicles]);
@@ -191,10 +192,16 @@ export const useSocialProof = () => {
     if (vehicleQueue.length === 0) return;
     if (currentNotification !== null) return;
 
-    const timeout = scheduleNextNotification();
-
-    return () => clearTimeout(timeout);
-  }, [vehicleQueue, currentNotification, scheduleNextNotification]);
+    if (isFirstNotification) {
+      // Show first notification immediately
+      showNextNotification();
+      setIsFirstNotification(false);
+    } else {
+      // Schedule subsequent notifications with random delay
+      const timeout = scheduleNextNotification();
+      return () => clearTimeout(timeout);
+    }
+  }, [vehicleQueue, currentNotification, scheduleNextNotification, isFirstNotification, showNextNotification]);
 
   // Refetch when queue is low
   useEffect(() => {
