@@ -607,9 +607,10 @@ const QuotePage = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 order-2 lg:order-1">
             {/* Carousel Container */}
-            <Carousel
+            <div className="w-full max-w-3xl mx-auto lg:max-w-none">
+              <Carousel
               setApi={setCarouselApi}
               opts={{
                 align: "start",
@@ -634,8 +635,8 @@ const QuotePage = () => {
                           </div>
                           {isStep1Complete && <Badge variant="default">Complete</Badge>}
                         </div>
-                        <CardTitle className="text-2xl">Select Your Coverage Value</CardTitle>
-                        <CardDescription>
+                        <CardTitle className="text-xl md:text-2xl">Select Your Coverage Value</CardTitle>
+                        <CardDescription className="text-sm md:text-base">
                           Adjust coverage for your {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
                         </CardDescription>
                       </CardHeader>
@@ -1275,17 +1276,18 @@ const QuotePage = () => {
                 </CarouselItem>
               </CarouselContent>
             </Carousel>
+            </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            <Card className="sticky top-4 relative overflow-hidden shadow-lg">
+          <div className="space-y-6 order-1 lg:order-2">
+            <Card className="lg:sticky lg:top-4 relative overflow-hidden shadow-lg">
               {/* Watermark */}
               <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
                 <img src={watermarkLogo} alt="" className="w-24 h-24 object-contain" />
               </div>
 
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 relative z-10">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 relative z-10 py-4 lg:py-6">
                 {!quoteGenerated ? (
                   <div>
                     <CardTitle className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
@@ -1339,8 +1341,8 @@ const QuotePage = () => {
                     
                     {/* What's Covered */}
                     <div className="space-y-3">
-                      <p className="text-sm font-semibold text-foreground">What's Covered:</p>
-                      <div className="grid grid-cols-2 gap-2.5">
+                      <p className="text-xs md:text-sm font-semibold text-foreground">What's Covered:</p>
+                      <div className="grid grid-cols-2 gap-2">
                         {[
                           { icon: CheckCircle2, text: "Collision damage", color: "text-green-600 dark:text-green-400" },
                           { icon: Droplets, text: "Flood damage", color: "text-blue-600 dark:text-blue-400" },
@@ -1349,9 +1351,9 @@ const QuotePage = () => {
                           { icon: CloudRain, text: "Storm damage", color: "text-cyan-600 dark:text-cyan-400" },
                           { icon: AlertTriangle, text: "Theft", color: "text-orange-600 dark:text-orange-400" },
                         ].map((item, index) => (
-                          <div key={index} className="flex items-center gap-2 text-sm">
-                            <item.icon className={`w-4 h-4 flex-shrink-0 ${item.color}`} />
-                            <span className="text-foreground text-xs leading-tight">{item.text}</span>
+                          <div key={index} className="flex items-center gap-1.5 md:gap-2 text-sm">
+                            <item.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0 ${item.color}`} />
+                            <span className="text-foreground text-[10px] md:text-xs leading-tight">{item.text}</span>
                           </div>
                         ))}
                       </div>

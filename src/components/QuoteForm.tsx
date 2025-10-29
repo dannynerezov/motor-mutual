@@ -57,6 +57,7 @@ export const QuoteForm = () => {
   const [vinNumber, setVinNumber] = useState("");
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [placeholderText, setPlaceholderText] = useState("");
   const [showManualQuoteDialog, setShowManualQuoteDialog] = useState(false);
   const [lookupErrorMessage, setLookupErrorMessage] = useState("");
@@ -215,6 +216,7 @@ export const QuoteForm = () => {
       }
 
       toast.success("Quote created successfully!");
+      setIsNavigating(true);
       navigate(`/quote/${quoteId}`);
     } catch (error: any) {
       console.error('Vehicle lookup error:', error);
@@ -329,7 +331,7 @@ export const QuoteForm = () => {
           <div className="relative mt-6">
             <Button
               onClick={handleFindVehicle}
-              disabled={isLoading || !registration || !selectedState}
+              disabled={isLoading || isNavigating || !registration || !selectedState}
               className="w-full bg-gradient-to-r from-accent via-primary to-accent hover:from-accent/90 hover:via-primary/90 hover:to-accent/90 text-white font-bold py-8 text-xl transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed animate-in fade-in scale-in-95 duration-500 delay-500 relative overflow-hidden group"
             >
               {/* Shimmer effect */}
@@ -338,7 +340,12 @@ export const QuoteForm = () => {
               {isLoading ? (
                 <span className="flex items-center gap-3 relative z-10">
                   <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating your quote...
+                  Looking up vehicle...
+                </span>
+              ) : isNavigating ? (
+                <span className="flex items-center gap-3 relative z-10">
+                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                  Preparing your quote...
                 </span>
               ) : (
                 <span className="flex items-center gap-3 relative z-10">
