@@ -193,19 +193,19 @@ export const TransparencySection = () => {
         </CardContent>
       </Card>
 
-      {/* Animated Pricing Showcase */}
+      {/* Live Vehicle Examples Section */}
       <div className="space-y-8">
         <div className="text-center">
           <h3 className="text-2xl md:text-3xl font-bold mb-4">
-            See Real Examples - Your Vehicle Could Be Next
+            Real Vehicles, Real Prices - See What Drivers Actually Pay
           </h3>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Watch how our transparent formula works across different vehicle values.
-            Same formula for everyone - no hidden variables, no discrimination.
+            These are actual vehicles from our quote database, showing real pricing calculations.
+            Every vehicle uses the exact same transparent formula - watch how the premium changes with vehicle value.
           </p>
         </div>
 
-        {/* New Carousel Component */}
+        {/* Database-Driven Carousel */}
         <PricingCarousel />
 
         <p className="text-center text-sm text-muted-foreground italic max-w-2xl mx-auto">

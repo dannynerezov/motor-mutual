@@ -1,3 +1,7 @@
+// DEPRECATED: This file is no longer used for the homepage carousel.
+// The carousel now uses real vehicles from the database via useRandomVehicles hook.
+// Keeping this file for reference or potential use in other components.
+
 import suzukiAlto from "@/assets/vehicles/2013-suzuki-alto.jpg";
 import hyundaiAccent from "@/assets/vehicles/2017-hyundai-accent.jpg";
 import kiaSportage from "@/assets/vehicles/2020-kia-sportage.jpg";

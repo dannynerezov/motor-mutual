@@ -1,27 +1,25 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, TrendingUp, TrendingDown, Shuffle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VehiclePricingCard } from "./VehiclePricingCard";
-import { vehicleExamples } from "@/data/vehicleExamples";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
+import { useRandomVehicles, SortMode } from "@/hooks/useRandomVehicles";
+import { adaptDatabaseVehicle } from "@/types/databaseVehicle";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function PricingCarousel() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: true,
-    align: 'center',
-    skipSnaps: false
-  });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  
-  const { calculatePrice, activeScheme } = usePricingScheme();
+  const [sortMode, setSortMode] = useState<SortMode>('random');
+  const { activeScheme } = usePricingScheme();
+  const { vehicles: dbVehicles, totalCount, isLoading, refreshVehicles } = useRandomVehicles({ 
+    count: 3, 
+    sortBy: sortMode 
+  });
 
-  // Calculate premiums for all vehicles
-  const vehiclesWithPremiums = vehicleExamples.map(vehicle => ({
-    ...vehicle,
-    premium: calculatePrice(vehicle.value)
-  }));
+  const displayVehicles = dbVehicles.map(adaptDatabaseVehicle);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -31,12 +29,18 @@ export function PricingCarousel() {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
-  }, [emblaApi]);
+  const scrollTo = useCallback(
+    (index: number) => emblaApi && emblaApi.scrollTo(index),
+    [emblaApi]
+  );
 
   const toggleAutoplay = useCallback(() => {
-    setIsPlaying(prev => !prev);
+    setIsPlaying((prev) => !prev);
+  }, []);
+
+  const handleSortChange = useCallback((newMode: SortMode) => {
+    setSortMode(newMode);
+    setIsPlaying(false);
   }, []);
 
   const onSelect = useCallback(() => {
@@ -44,7 +48,6 @@ export function PricingCarousel() {
     setSelectedIndex(emblaApi.selectedScrollSnap());
   }, [emblaApi]);
 
-  // Setup embla events
   useEffect(() => {
     if (!emblaApi) return;
     onSelect();
@@ -54,46 +57,99 @@ export function PricingCarousel() {
     };
   }, [emblaApi, onSelect]);
 
-  // Auto-play functionality
   useEffect(() => {
-    if (!emblaApi || !isPlaying) return;
+    if (!emblaApi || !isPlaying || isLoading || displayVehicles.length === 0) return;
 
     const interval = setInterval(() => {
       emblaApi.scrollNext();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [emblaApi, isPlaying]);
+  }, [emblaApi, isPlaying, isLoading, displayVehicles.length]);
 
-  // Pause on hover
-  const handleMouseEnter = () => setIsPlaying(false);
-  const handleMouseLeave = () => setIsPlaying(true);
-
-  const currentVehicle = vehiclesWithPremiums[selectedIndex];
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-[600px] rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8" role="region" aria-label="Vehicle pricing examples carousel">
-      {/* Main Carousel */}
-      <div 
-        className="relative"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex touch-pan-y">
-            {vehiclesWithPremiums.map((vehicle, index) => (
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span>Live from Database</span>
+          </div>
+          <span className="text-xs">•</span>
+          <span>Viewing {displayVehicles.length} of {totalCount} vehicles</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 border rounded-lg p-1">
+            <Button
+              variant={sortMode === 'random' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleSortChange('random')}
+            >
+              <Shuffle className="w-4 h-4 mr-1" />
+              Random
+            </Button>
+            <Button
+              variant={sortMode === 'price-asc' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleSortChange('price-asc')}
+            >
+              <TrendingUp className="w-4 h-4 mr-1" />
+              Cheapest
+            </Button>
+            <Button
+              variant={sortMode === 'price-desc' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleSortChange('price-desc')}
+            >
+              <TrendingDown className="w-4 h-4 mr-1" />
+              Expensive
+            </Button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refreshVehicles}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Different Vehicles
+          </Button>
+        </div>
+      </div>
+
+      <div className="relative">
+        {/* Carousel Container */}
+        <div 
+          className="overflow-hidden" 
+          ref={emblaRef}
+          onMouseEnter={() => setIsPlaying(false)}
+          onMouseLeave={() => setIsPlaying(true)}
+        >
+          <div className="flex gap-4 md:gap-6">
+            {displayVehicles.map((vehicle, index) => (
               <div
                 key={vehicle.id}
-                className="flex-[0_0_100%] min-w-0 px-4 md:px-8"
+                className="flex-[0_0_100%] md:flex-[0_0_85%] lg:flex-[0_0_75%] min-w-0"
               >
-                <div className="max-w-2xl mx-auto">
-                  <VehiclePricingCard
-                    vehicle={vehicle}
-                    premium={vehicle.premium}
-                    scheme={activeScheme}
-                    isActive={index === selectedIndex}
-                  />
-                </div>
+                <VehiclePricingCard
+                  vehicle={vehicle}
+                  scheme={activeScheme}
+                  isActive={index === selectedIndex}
+                />
               </div>
             ))}
           </div>
@@ -119,22 +175,11 @@ export function PricingCarousel() {
         >
           <ChevronRight className="h-6 w-6" />
         </Button>
-
-        {/* Play/Pause Button */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute bottom-4 right-4 z-10 h-10 w-10 rounded-full bg-card/95 backdrop-blur shadow-lg"
-          onClick={toggleAutoplay}
-          aria-label={isPlaying ? "Pause autoplay" : "Resume autoplay"}
-        >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </Button>
       </div>
 
       {/* Navigation Dots */}
-      <div className="flex justify-center items-center gap-2" role="tablist">
-        {vehiclesWithPremiums.map((vehicle, index) => (
+      <div className="flex justify-center gap-2 mt-6">
+        {displayVehicles.map((vehicle, index) => (
           <button
             key={vehicle.id}
             className={`transition-all duration-300 rounded-full ${
@@ -145,11 +190,9 @@ export function PricingCarousel() {
             onClick={() => scrollTo(index)}
             aria-label={`Go to ${vehicle.year} ${vehicle.make} ${vehicle.model}`}
             aria-selected={index === selectedIndex}
-            role="tab"
           />
         ))}
       </div>
-
     </div>
   );
 }

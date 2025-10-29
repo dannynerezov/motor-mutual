@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { formatCurrency, getPremiumColor, getProgressBarColor, calculatePercentagePosition, generateCalculationExample } from "@/lib/pricingHelpers";
-import { VehicleExample } from "@/data/vehicleExamples";
+import { DisplayVehicle } from "@/types/databaseVehicle";
 
 interface VehiclePricingCardProps {
-  vehicle: VehicleExample;
-  premium: number;
+  vehicle: DisplayVehicle;
   scheme: any;
   isActive: boolean;
 }
 
-export function VehiclePricingCard({ vehicle, premium, scheme, isActive }: VehiclePricingCardProps) {
+export function VehiclePricingCard({ vehicle, scheme, isActive }: VehiclePricingCardProps) {
   const [displayedPremium, setDisplayedPremium] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
+  const [imageError, setImageError] = useState(false);
+  const premium = vehicle.premium;
   const percentage = calculatePercentagePosition(vehicle.value, scheme);
   const calculationExample = generateCalculationExample(vehicle.value, premium, scheme);
 
@@ -57,16 +59,26 @@ export function VehiclePricingCard({ vehicle, premium, scheme, isActive }: Vehic
       <CardContent className="p-0">
         {/* Vehicle Image */}
         <div className="relative aspect-video overflow-hidden bg-muted">
-          <img
-            src={vehicle.image}
-            alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-            className="w-full h-full object-cover transition-all duration-700 ease-out"
-            style={{
-              opacity: isActive ? 1 : 0,
-              transform: isActive ? 'scale(1)' : 'scale(1.05)'
-            }}
-            loading="lazy"
-          />
+          {!imageError ? (
+            <img
+              src={vehicle.image}
+              alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+              className="w-full h-full object-cover transition-all duration-700 ease-out"
+              style={{
+                opacity: isActive ? 1 : 0,
+                transform: isActive ? 'scale(1)' : 'scale(1.05)'
+              }}
+              loading="lazy"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <p className="text-sm text-muted-foreground">Image unavailable</p>
+            </div>
+          )}
+          <Badge className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-xs">
+            {vehicle.state} {vehicle.registrationNumber}
+          </Badge>
         </div>
 
         {/* Vehicle Details */}
@@ -76,8 +88,13 @@ export function VehiclePricingCard({ vehicle, premium, scheme, isActive }: Vehic
             <h3 className="text-xl md:text-2xl font-bold text-primary">
               {vehicle.year} {vehicle.make} {vehicle.model}
             </h3>
+            {vehicle.series && (
+              <p className="text-sm font-medium text-muted-foreground">
+                {vehicle.series}
+              </p>
+            )}
             <p className="text-lg text-muted-foreground">
-              Vehicle Value: {formatCurrency(vehicle.value)}
+              Market Value: {formatCurrency(vehicle.value)}
             </p>
             <p className="text-sm text-muted-foreground italic">
               {vehicle.description}
