@@ -31,6 +31,11 @@ interface ProcessingResult {
   error?: string;
 }
 
+interface BatchRequest {
+  vehicles: VehicleInput[];
+  skipDuplicates?: boolean;
+}
+
 // Calculate base premium using pricing scheme
 function calculateBasePremium(vehicleValue: number, scheme: any): number {
   const { floor_price, floor_point, ceiling_price, ceiling_point } = scheme;
@@ -49,6 +54,27 @@ function calculateBasePremium(vehicleValue: number, scheme: any): number {
   const premium = floor_price + (slope * (vehicleValue - floor_point));
   
   return Math.round(premium * 100) / 100;
+}
+
+// Check for existing vehicles in the database
+async function getExistingVehicles(vehicles: VehicleInput[]): Promise<Set<string>> {
+  const uniqueStates = [...new Set(vehicles.map(v => v.state))];
+  const uniqueRegos = [...new Set(vehicles.map(v => v.registrationNumber))];
+  
+  const { data, error } = await supabaseClient
+    .from('sample_vehicle_quotes')
+    .select('state, registration_number')
+    .in('state', uniqueStates)
+    .in('registration_number', uniqueRegos);
+  
+  if (error) {
+    console.error('Error checking existing vehicles:', error);
+    return new Set();
+  }
+  
+  return new Set(
+    (data || []).map(d => `${d.state}|${d.registration_number}`)
+  );
 }
 
 async function processVehicle(vehicle: VehicleInput): Promise<ProcessingResult> {
@@ -212,39 +238,65 @@ serve(async (req) => {
   }
   
   try {
-    const { vehicles } = await req.json();
+    const { vehicles, skipDuplicates = true }: BatchRequest = await req.json();
     
     if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
       throw new Error('No vehicles provided');
     }
     
-    console.log(`Processing batch of ${vehicles.length} vehicles`);
+    console.log(`Processing batch of ${vehicles.length} vehicles (skipDuplicates: ${skipDuplicates})`);
+    
+    // Check for existing vehicles if skipDuplicates is enabled
+    let vehiclesToProcess = vehicles;
+    const skippedDuplicates: VehicleInput[] = [];
+    
+    if (skipDuplicates) {
+      const existingKeys = await getExistingVehicles(vehicles);
+      vehiclesToProcess = vehicles.filter(v => {
+        const key = `${v.state}|${v.registrationNumber}`;
+        if (existingKeys.has(key)) {
+          skippedDuplicates.push(v);
+          console.log(`Skipping duplicate: ${v.state} ${v.registrationNumber}`);
+          return false;
+        }
+        return true;
+      });
+      console.log(`Skipped ${skippedDuplicates.length} duplicates, processing ${vehiclesToProcess.length} vehicles`);
+    }
     
     const results: ProcessingResult[] = [];
+    let totalPrice = 0;
     
     // Process vehicles sequentially with rate limiting
-    for (const vehicle of vehicles) {
+    for (const vehicle of vehiclesToProcess) {
       const result = await processVehicle(vehicle);
       results.push(result);
+      
+      if (result.status === 'success' && result.membershipPrice) {
+        totalPrice += result.membershipPrice;
+      }
       
       // Rate limiting: 500ms delay between requests
       await new Promise(resolve => setTimeout(resolve, 500));
     }
     
+    const successCount = results.filter(r => r.status === 'success').length;
+    const failCount = results.filter(r => r.status === 'failed').length;
+    const averagePrice = successCount > 0 ? totalPrice / successCount : 0;
+    
     const summary = {
-      total: results.length,
-      successful: results.filter(r => r.status === 'success').length,
-      failed: results.filter(r => r.status === 'failed').length,
-      averagePrice: results
-        .filter(r => r.status === 'success' && r.membershipPrice)
-        .reduce((sum, r) => sum + (r.membershipPrice || 0), 0) / 
-        results.filter(r => r.status === 'success' && r.membershipPrice).length || 0
+      total: vehicles.length,
+      processed: vehiclesToProcess.length,
+      successful: successCount,
+      failed: failCount,
+      skipped: skippedDuplicates.length,
+      averagePrice: Math.round(averagePrice * 100) / 100
     };
     
     console.log('Batch processing complete:', summary);
     
     return new Response(
-      JSON.stringify({ summary, results }),
+      JSON.stringify({ summary, results, skippedDuplicates }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

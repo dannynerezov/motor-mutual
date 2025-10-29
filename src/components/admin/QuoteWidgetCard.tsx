@@ -45,6 +45,9 @@ export const QuoteWidgetCard = () => {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<ProcessingResult[]>([]);
   const [summary, setSummary] = useState<any>(null);
+  const [currentBatch, setCurrentBatch] = useState(0);
+  const [totalBatches, setTotalBatches] = useState(0);
+  const [processedCount, setProcessedCount] = useState(0);
 
   const validStates = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT'];
 
@@ -129,25 +132,86 @@ export const QuoteWidgetCard = () => {
       return;
     }
 
+    const BATCH_SIZE = 10;
+    const batches: VehicleInput[][] = [];
+    
+    // Split into batches
+    for (let i = 0; i < parsedVehicles.length; i += BATCH_SIZE) {
+      batches.push(parsedVehicles.slice(i, i + BATCH_SIZE));
+    }
+    
+    setTotalBatches(batches.length);
     setProcessing(true);
     setProgress(0);
     setResults([]);
     setSummary(null);
+    setProcessedCount(0);
+    setCurrentBatch(0);
+
+    const allResults: ProcessingResult[] = [];
+    let totalSkipped = 0;
 
     try {
-      const { data, error } = await supabase.functions.invoke('process-sample-vehicles', {
-        body: { vehicles: parsedVehicles }
-      });
+      // Process each batch sequentially
+      for (let i = 0; i < batches.length; i++) {
+        setCurrentBatch(i + 1);
+        
+        console.log(`Processing batch ${i + 1} of ${batches.length}`);
+        
+        const { data, error } = await supabase.functions.invoke(
+          'process-sample-vehicles',
+          {
+            body: { 
+              vehicles: batches[i],
+              skipDuplicates: true 
+            }
+          }
+        );
 
-      if (error) throw error;
+        if (error) {
+          console.error(`Batch ${i + 1} error:`, error);
+          toast({
+            title: `Batch ${i + 1} failed`,
+            description: error.message,
+            variant: "destructive",
+          });
+          continue;
+        }
 
-      setResults(data.results);
-      setSummary(data.summary);
-      setProgress(100);
+        // Append results from this batch
+        allResults.push(...data.results);
+        totalSkipped += data.summary.skipped || 0;
+        
+        // Update UI with accumulated results
+        setResults([...allResults]);
+        setProcessedCount((i + 1) * BATCH_SIZE);
+        setProgress(((i + 1) / batches.length) * 100);
+        
+        // Update summary with current totals
+        const successCount = allResults.filter(r => r.status === 'success').length;
+        const failCount = allResults.filter(r => r.status === 'failed').length;
+        const totalPrice = allResults
+          .filter(r => r.status === 'success' && r.membershipPrice)
+          .reduce((sum, r) => sum + (r.membershipPrice || 0), 0);
+        
+        setSummary({
+          total: parsedVehicles.length,
+          processed: allResults.length,
+          successful: successCount,
+          failed: failCount,
+          skipped: totalSkipped,
+          averagePrice: successCount > 0 ? totalPrice / successCount : 0
+        });
+
+        // Small delay between batches
+        if (i < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
       toast({
         title: "Processing complete",
-        description: `Successfully processed ${data.summary.successful} of ${data.summary.total} vehicles`,
+        description: `Processed ${allResults.length} vehicles. ${allResults.filter(r => r.status === 'success').length} successful.`,
       });
     } catch (error) {
       console.error('Processing error:', error);
@@ -158,6 +222,7 @@ export const QuoteWidgetCard = () => {
       });
     } finally {
       setProcessing(false);
+      setProgress(100);
     }
   };
 
@@ -167,6 +232,9 @@ export const QuoteWidgetCard = () => {
     setResults([]);
     setSummary(null);
     setProgress(0);
+    setCurrentBatch(0);
+    setTotalBatches(0);
+    setProcessedCount(0);
   };
 
   const exportResults = () => {
@@ -277,7 +345,7 @@ export const QuoteWidgetCard = () => {
                     {processing ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
+                        Processing Batch {currentBatch} of {totalBatches}...
                       </>
                     ) : (
                       'Process Vehicles'
@@ -285,11 +353,36 @@ export const QuoteWidgetCard = () => {
                   </Button>
 
                   {processing && (
-                    <div className="space-y-2">
-                      <Progress value={progress} />
-                      <p className="text-xs text-center text-muted-foreground">
-                        Processing vehicles... This may take a few minutes
-                      </p>
+                    <div className="space-y-3 mt-4">
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Processing {Math.min(processedCount, parsedVehicles.length)} of {parsedVehicles.length} vehicles</span>
+                        <span>{Math.round(progress)}%</span>
+                      </div>
+                      <Progress value={progress} className="h-2" />
+                      <div className="grid grid-cols-5 gap-2 text-xs">
+                        <div className="text-center p-2 rounded-lg bg-muted">
+                          <div className="font-bold text-lg">{summary?.processed || 0}</div>
+                          <div className="text-muted-foreground">Processed</div>
+                        </div>
+                        <div className="text-center p-2 rounded-lg bg-green-500/10">
+                          <div className="font-bold text-lg text-green-600">{summary?.successful || 0}</div>
+                          <div className="text-muted-foreground">Success</div>
+                        </div>
+                        <div className="text-center p-2 rounded-lg bg-red-500/10">
+                          <div className="font-bold text-lg text-red-600">{summary?.failed || 0}</div>
+                          <div className="text-muted-foreground">Failed</div>
+                        </div>
+                        <div className="text-center p-2 rounded-lg bg-amber-500/10">
+                          <div className="font-bold text-lg text-amber-600">{summary?.skipped || 0}</div>
+                          <div className="text-muted-foreground">Skipped</div>
+                        </div>
+                        <div className="text-center p-2 rounded-lg bg-blue-500/10">
+                          <div className="font-bold text-lg text-blue-600">
+                            ${summary?.averagePrice ? summary.averagePrice.toFixed(0) : '0'}
+                          </div>
+                          <div className="text-muted-foreground">Avg Price</div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -299,22 +392,26 @@ export const QuoteWidgetCard = () => {
 
           <TabsContent value="results" className="space-y-4">
             {summary && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border p-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="rounded-lg border p-4 bg-muted/50">
                   <div className="text-2xl font-bold">{summary.total}</div>
                   <div className="text-xs text-muted-foreground">Total</div>
                 </div>
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border p-4 bg-blue-500/10">
+                  <div className="text-2xl font-bold text-blue-600">{summary.processed}</div>
+                  <div className="text-xs text-muted-foreground">Processed</div>
+                </div>
+                <div className="rounded-lg border p-4 bg-green-500/10">
                   <div className="text-2xl font-bold text-green-600">{summary.successful}</div>
                   <div className="text-xs text-muted-foreground">Success</div>
                 </div>
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border p-4 bg-red-500/10">
                   <div className="text-2xl font-bold text-red-600">{summary.failed}</div>
                   <div className="text-xs text-muted-foreground">Failed</div>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <div className="text-2xl font-bold">${summary.averagePrice.toFixed(2)}</div>
-                  <div className="text-xs text-muted-foreground">Avg Price</div>
+                <div className="rounded-lg border p-4 bg-amber-500/10">
+                  <div className="text-2xl font-bold text-amber-600">{summary.skipped}</div>
+                  <div className="text-xs text-muted-foreground">Skipped</div>
                 </div>
               </div>
             )}
