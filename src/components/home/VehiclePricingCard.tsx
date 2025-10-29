@@ -58,7 +58,7 @@ export function VehiclePricingCard({ vehicle, scheme, isActive }: VehiclePricing
     <Card className="overflow-hidden border-2 shadow-xl hover:shadow-2xl transition-all duration-300 bg-card">
       <CardContent className="p-0">
         {/* Vehicle Image */}
-        <div className="relative aspect-video overflow-hidden bg-muted">
+        <div className="relative aspect-video md:aspect-video overflow-hidden bg-muted" style={{ aspectRatio: '16/9' }}>
           {!imageError ? (
             <img
               src={vehicle.image}
@@ -82,77 +82,77 @@ export function VehiclePricingCard({ vehicle, scheme, isActive }: VehiclePricing
         </div>
 
         {/* Vehicle Details */}
-        <div className="p-6 md:p-8 space-y-6">
+        <div className="p-4 md:p-6 lg:p-8 space-y-3 md:space-y-6">
           {/* Vehicle Name & Value */}
-          <div className="space-y-2">
-            <h3 className="text-xl md:text-2xl font-bold text-primary">
+          <div className="space-y-1 md:space-y-2">
+            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-primary leading-tight">
               {vehicle.year} {vehicle.make} {vehicle.model}
             </h3>
             {vehicle.series && (
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">
                 {vehicle.series}
               </p>
             )}
-            <p className="text-lg text-muted-foreground">
+            <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
               Market Value: {formatCurrency(vehicle.value)}
             </p>
-            <p className="text-sm text-muted-foreground italic">
+            <p className="text-xs md:text-sm text-muted-foreground italic line-clamp-2">
               {vehicle.description}
             </p>
           </div>
 
           {/* Premium Display with Calculation */}
-          <div className="space-y-4 py-4 px-6 bg-accent/5 rounded-lg border border-border">
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="space-y-2 md:space-y-4 py-3 md:py-4 px-3 md:px-6 bg-accent/5 rounded-lg border border-border">
+            <div className="space-y-0.5 md:space-y-1">
+              <p className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Your Base Premium
               </p>
-              <div className={`text-4xl md:text-5xl font-bold transition-all duration-300 ${getPremiumColor(percentage)}`}>
+              <div className={`text-2xl md:text-4xl lg:text-5xl font-bold transition-all duration-300 ${getPremiumColor(percentage)}`}>
                 {formatCurrency(displayedPremium)}
-                <span className="text-lg text-muted-foreground ml-2">/ year</span>
+                <span className="text-sm md:text-lg text-muted-foreground ml-1 md:ml-2">/ year</span>
               </div>
             </div>
 
             {/* Calculation Explanation */}
             {calculationExample && (
               <div 
-                className="border-t border-border/50 pt-4 space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300"
+                className="border-t border-border/50 pt-2 md:pt-4 space-y-2 md:space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300"
                 role="region"
                 aria-label="Premium calculation breakdown"
               >
-                <div className="space-y-1">
+                <div className="space-y-0.5 md:space-y-1">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     How We Calculated This
                   </p>
-                  <div className="font-mono text-xs md:text-sm text-primary bg-background/50 px-3 py-2 rounded border border-border/30 overflow-x-auto">
+                  <div className="font-mono text-xs md:text-sm text-primary bg-background/50 px-2 md:px-3 py-1.5 md:py-2 rounded border border-border/30 overflow-x-auto">
                     {calculationExample.calculation}
                   </div>
-                  <p className="text-xs text-muted-foreground italic">
+                  <p className="text-xs text-muted-foreground italic hidden md:block">
                     {calculationExample.explanation}
                   </p>
                 </div>
 
                 {/* Value Change Scenarios */}
                 <div 
-                  className="grid grid-cols-2 gap-2"
+                  className="grid grid-cols-2 gap-1.5 md:gap-2"
                   role="list"
                   aria-label="Value change scenarios"
                 >
                   {/* If value goes DOWN 10% */}
                   <div 
-                    className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 rounded-lg p-3 space-y-1"
+                    className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 rounded-lg p-2 md:p-3 space-y-0.5 md:space-y-1"
                     role="listitem"
                     aria-label="10% decrease scenario"
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5 md:gap-1">
                       <span className="text-xs font-semibold text-green-700 dark:text-green-400">
-                        📉 Value -10%
+                        📉 -10%
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground hidden md:block">
                       {formatCurrency(calculationExample.valueDown10.value)}
                     </p>
-                    <p className="text-sm font-bold text-green-700 dark:text-green-400">
+                    <p className="text-xs md:text-sm font-bold text-green-700 dark:text-green-400">
                       {formatCurrency(calculationExample.valueDown10.premium)}/yr
                     </p>
                     <p className="text-xs text-green-600 dark:text-green-500">
@@ -162,19 +162,19 @@ export function VehiclePricingCard({ vehicle, scheme, isActive }: VehiclePricing
 
                   {/* If value goes UP 10% */}
                   <div 
-                    className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-lg p-3 space-y-1"
+                    className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 md:p-3 space-y-0.5 md:space-y-1"
                     role="listitem"
                     aria-label="10% increase scenario"
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5 md:gap-1">
                       <span className="text-xs font-semibold text-orange-700 dark:text-orange-400">
-                        📈 Value +10%
+                        📈 +10%
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground hidden md:block">
                       {formatCurrency(calculationExample.valueUp10.value)}
                     </p>
-                    <p className="text-sm font-bold text-orange-700 dark:text-orange-400">
+                    <p className="text-xs md:text-sm font-bold text-orange-700 dark:text-orange-400">
                       {formatCurrency(calculationExample.valueUp10.premium)}/yr
                     </p>
                     <p className="text-xs text-orange-600 dark:text-orange-500">
@@ -183,7 +183,7 @@ export function VehiclePricingCard({ vehicle, scheme, isActive }: VehiclePricing
                   </div>
                 </div>
 
-                <p className="text-xs text-center text-muted-foreground italic pt-1">
+                <p className="text-xs text-center text-muted-foreground italic pt-0.5 md:pt-1 hidden md:block">
                   See how transparent linear pricing works? Same formula for everyone.
                 </p>
               </div>
@@ -191,12 +191,12 @@ export function VehiclePricingCard({ vehicle, scheme, isActive }: VehiclePricing
           </div>
 
           {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Position on Pricing Curve</span>
+          <div className="space-y-1 md:space-y-2">
+            <div className="flex items-center justify-between text-xs md:text-sm">
+              <span className="text-muted-foreground">Pricing Curve</span>
               <span className="font-semibold text-primary">{Math.round(percentage)}%</span>
             </div>
-            <div className="h-3 bg-muted rounded-full overflow-hidden">
+            <div className="h-2 md:h-3 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full bg-gradient-to-r ${getProgressBarColor(percentage)} transition-all duration-1200 ease-out`}
                 style={{ width: `${progressWidth}%` }}

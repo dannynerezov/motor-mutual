@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Eye, X, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { PricingCarousel } from "./PricingCarousel";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const TransparencySection = () => {
   const { activeScheme, isLoading } = usePricingScheme();
+  const [mobileView, setMobileView] = useState<'mutual' | 'traditional'>('mutual');
 
   return (
     <section className="relative py-20 overflow-hidden bg-gradient-to-b from-background via-accent/[0.015] to-background">
@@ -136,8 +139,8 @@ export const TransparencySection = () => {
         </Card>
       </div>
 
-      {/* Comparison Table */}
-      <Card className="mb-12 overflow-hidden border-2">
+      {/* Comparison Table - Desktop */}
+      <Card className="mb-12 overflow-hidden border-2 hidden md:block">
         <CardHeader className="bg-muted/30">
           <CardTitle className="text-2xl text-center">Pricing Factor Comparison</CardTitle>
         </CardHeader>
@@ -193,15 +196,99 @@ export const TransparencySection = () => {
         </CardContent>
       </Card>
 
+      {/* Comparison Table - Mobile with Toggle */}
+      <Card className="mb-12 overflow-hidden border-2 md:hidden">
+        <CardHeader className="bg-muted/30 pb-3">
+          <CardTitle className="text-lg text-center mb-3">Pricing Factor Comparison</CardTitle>
+          
+          {/* Toggle Buttons */}
+          <div className="flex gap-1 p-1 bg-muted rounded-lg">
+            <Button
+              variant={mobileView === 'mutual' ? 'default' : 'ghost'}
+              size="sm"
+              className="flex-1 text-xs"
+              onClick={() => setMobileView('mutual')}
+            >
+              The Mutual
+            </Button>
+            <Button
+              variant={mobileView === 'traditional' ? 'default' : 'ghost'}
+              size="sm"
+              className="flex-1 text-xs"
+              onClick={() => setMobileView('traditional')}
+            >
+              Traditional
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="grid grid-cols-[110px_1fr]">
+            {/* Frozen Factor Column */}
+            <div className="sticky left-0 bg-muted/50 border-r-2">
+              <div className="px-3 py-3 text-xs font-semibold border-b">Factor</div>
+              <div className="px-3 py-3 text-xs font-medium border-b min-h-[52px] flex items-center">Gender</div>
+              <div className="px-3 py-3 text-xs font-medium border-b min-h-[52px] flex items-center">Age</div>
+              <div className="px-3 py-3 text-xs font-medium border-b min-h-[52px] flex items-center">Vehicle Make/Model</div>
+              <div className="px-3 py-3 text-xs font-medium border-b min-h-[52px] flex items-center">Location</div>
+              <div className="px-3 py-3 text-xs font-bold border-b min-h-[52px] flex items-center bg-primary/5">Vehicle Value</div>
+            </div>
+
+            {/* Active Content Column */}
+            <div className={`transition-colors duration-300 ${mobileView === 'mutual' ? 'bg-accent/5' : ''}`}>
+              <div className="px-3 py-3 text-xs font-semibold text-center border-b">
+                {mobileView === 'mutual' ? 'The Mutual' : 'Traditional'}
+              </div>
+              
+              {mobileView === 'mutual' ? (
+                <>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-accent font-semibold text-xs">❌ Not considered</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-accent font-semibold text-xs">❌ Not considered</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-accent font-semibold text-xs">❌ Not considered</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-accent font-semibold text-xs">❌ Not considered</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center bg-accent/10">
+                    <span className="text-accent font-bold text-sm">✅ ONLY FACTOR</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-orange-600 dark:text-orange-400 text-xs">Yes - affects price</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-muted-foreground text-xs">Yes - affects price</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-muted-foreground text-xs">Yes - affects price</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center">
+                    <span className="text-muted-foreground text-xs">Yes - huge impact</span>
+                  </div>
+                  <div className="px-3 py-3 border-b min-h-[52px] flex items-center justify-center bg-muted/30">
+                    <span className="text-muted-foreground text-xs">❓ Hidden weighting</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Live Vehicle Examples Section */}
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-8">
         <div className="text-center">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4">
-            Real Vehicles, Real Prices - See What Drivers Actually Pay
+          <h3 className="text-xl md:text-3xl font-bold mb-2 md:mb-4">
+            Real Vehicles, Real Prices
           </h3>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            These are actual vehicles from our quote database, showing real pricing calculations.
-            Every vehicle uses the exact same transparent formula - watch how the premium changes with vehicle value.
+          <p className="text-sm md:text-lg text-muted-foreground max-w-3xl mx-auto">
+            Actual vehicles from our database, showing real pricing calculations using the same transparent formula.
           </p>
         </div>
 
