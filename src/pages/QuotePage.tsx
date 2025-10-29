@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Car, Shield, Droplets, Cloud, Flame, Zap, AlertTriangle } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Car, Shield, Droplets, Cloud, Flame, Zap, AlertTriangle, CloudHail, CloudRain, ShieldCheck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar } from "@/components/ui/calendar";
@@ -849,117 +849,203 @@ const QuotePage = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <Card className="sticky top-4 relative overflow-hidden">
+            <Card className="sticky top-4 relative overflow-hidden shadow-lg">
               {/* Watermark */}
               <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
                 <img src={watermarkLogo} alt="" className="w-24 h-24 object-contain" />
               </div>
 
-              <CardHeader>
-                <CardTitle>Your Quote</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 relative z-10">
-                {/* MCM Membership Price */}
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">MCM Membership Price</p>
-                  <div className="text-3xl font-bold text-primary">
-                    ${finalPrice.toFixed(2)}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">per year</p>
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 relative z-10">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    {quoteGenerated ? "Your Quote" : "Quote Summary"}
+                  </CardTitle>
+                  {quote?.quote_number && (
+                    <Badge variant="outline" className="text-xs">
+                      #{quote.quote_number}
+                    </Badge>
+                  )}
                 </div>
-
-                {totalClaimsCount > 0 && (
-                  <div className="p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
-                      Claims Loading Applied
-                    </p>
-                    <p className="text-xs text-amber-700 dark:text-amber-300">
-                      {Math.min(totalClaimsCount, 3)} claim(s) × 30% = +{Math.min(totalClaimsCount * 30, 90)}%
-                    </p>
-                  </div>
-                )}
-
-                <Separator />
-
-                {/* Third Party Section */}
-                {suncorpDetails && (
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6 relative z-10">
+                {!quoteGenerated ? (
                   <>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Third Party (Suncorp) Quote</p>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span>Base Premium</span>
-                          <span className="font-semibold">${suncorpDetails.annual_base_premium?.toFixed(2) || '0.00'}</span>
+                    {/* Vehicle Info */}
+                    {vehicle && (
+                      <div className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg border border-border/50">
+                        <p className="text-xs text-muted-foreground mb-2 font-medium">Insuring</p>
+                        <p className="font-bold text-lg text-foreground">{vehicle.registration_number}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Estimated Price */}
+                    {selectedValue > 0 && (
+                      <div className="text-center p-6 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border border-primary/30 shadow-sm">
+                        <p className="text-sm text-muted-foreground mb-2 font-medium">Estimated Price</p>
+                        <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                          ${membershipPrice.toFixed(2)}
                         </div>
-                        <div className="flex justify-between">
-                          <span>Stamp Duty</span>
-                          <span className="font-semibold">${suncorpDetails.annual_stamp_duty?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>FSL</span>
-                          <span className="font-semibold">${suncorpDetails.annual_fsl?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>GST</span>
-                          <span className="font-semibold">${suncorpDetails.annual_gst?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between text-base">
-                          <span className="font-semibold">Third Party Total</span>
-                          <span className="font-bold">${suncorpDetails.annual_premium?.toFixed(2) || '0.00'}</span>
-                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">per year</p>
+                      </div>
+                    )}
+                    
+                    {/* What's Covered */}
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-foreground">What's Covered:</p>
+                      <div className="space-y-2.5">
+                        {[
+                          { icon: CheckCircle2, text: "Collision damage", color: "text-green-600 dark:text-green-400" },
+                          { icon: Droplets, text: "Flood damage", color: "text-blue-600 dark:text-blue-400" },
+                          { icon: CloudHail, text: "Hail damage", color: "text-purple-600 dark:text-purple-400" },
+                          { icon: Flame, text: "Fire damage", color: "text-red-600 dark:text-red-400" },
+                          { icon: CloudRain, text: "Storm damage", color: "text-cyan-600 dark:text-cyan-400" },
+                          { icon: AlertTriangle, text: "Theft", color: "text-orange-600 dark:text-orange-400" },
+                        ].map((item, index) => (
+                          <div key={index} className="flex items-center gap-3 text-sm">
+                            <item.icon className={`w-4 h-4 ${item.color}`} />
+                            <span className="text-foreground">{item.text}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                    
+                    {/* MCM Coverage Explanation */}
+                    {vehicle && selectedValue > 0 && (
+                      <Alert className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800">
+                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <AlertTitle className="text-blue-900 dark:text-blue-100 text-sm font-semibold">
+                          MCM Membership Coverage
+                        </AlertTitle>
+                        <AlertDescription className="text-blue-700 dark:text-blue-300 text-xs mt-1">
+                          Covers damage to your vehicle ({vehicle.registration_number}) while on rideshare duty. 
+                          Maximum payout: ${formatCurrency(selectedValue)}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {/* Progress Indicator */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="font-medium">Quote Progress</span>
+                        <span className="font-semibold">{currentStep}/3 steps</span>
+                      </div>
+                      <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-primary via-primary/80 to-accent transition-all duration-500 ease-out"
+                          style={{ width: `${(currentStep / 3) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* MCM Membership Price */}
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">MCM Membership Price</p>
+                      <div className="text-3xl font-bold text-primary">
+                        ${finalPrice.toFixed(2)}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">per year</p>
+                    </div>
+
+                    {totalClaimsCount > 0 && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+                        <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                          Claims Loading Applied
+                        </p>
+                        <p className="text-xs text-amber-700 dark:text-amber-300">
+                          {Math.min(totalClaimsCount, 3)} claim(s) × 30% = +{Math.min(totalClaimsCount * 30, 90)}%
+                        </p>
+                      </div>
+                    )}
 
                     <Separator />
 
-                    {/* Combined Total */}
-                    <div className="p-4 bg-primary/5 rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Combined Annual Premium</p>
-                      <div className="text-2xl font-bold">
-                        ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        MCM + Third Party comprehensive coverage
-                      </p>
-                    </div>
+                    {/* Third Party Section */}
+                    {suncorpDetails && (
+                      <>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">Third Party (Suncorp) Quote</p>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span>Base Premium</span>
+                              <span className="font-semibold">${suncorpDetails.annual_base_premium?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Stamp Duty</span>
+                              <span className="font-semibold">${suncorpDetails.annual_stamp_duty?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>FSL</span>
+                              <span className="font-semibold">${suncorpDetails.annual_fsl?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>GST</span>
+                              <span className="font-semibold">${suncorpDetails.annual_gst?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between text-base">
+                              <span className="font-semibold">Third Party Total</span>
+                              <span className="font-bold">${suncorpDetails.annual_premium?.toFixed(2) || '0.00'}</span>
+                            </div>
+                          </div>
+                        </div>
 
-                    {/* Policy Details Collapsible */}
-                    <Collapsible>
-                      <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-semibold">
-                        <span>Policy Details</span>
-                        <ChevronDown className="w-4 h-4" />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-3 space-y-3 text-sm">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Quote Number</p>
-                          <p className="font-mono text-xs">{suncorpDetails.suncorp_quote_number}</p>
+                        <Separator />
+
+                        {/* Combined Total */}
+                        <div className="p-4 bg-primary/5 rounded-lg">
+                          <p className="text-sm text-muted-foreground mb-1">Combined Annual Premium</p>
+                          <div className="text-2xl font-bold">
+                            ${(finalPrice + (suncorpDetails.annual_premium || 0)).toFixed(2)}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            MCM + Third Party comprehensive coverage
+                          </p>
                         </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Cover Type</p>
-                          <p>{suncorpDetails.cover_type}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Policy Period</p>
-                          <p>{new Date(suncorpDetails.policy_start_date).toLocaleDateString()} - {new Date(suncorpDetails.policy_expiry_date).toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Risk Address</p>
-                          <p>{suncorpDetails.street_number} {suncorpDetails.street_name}, {suncorpDetails.suburb} {suncorpDetails.state} {suncorpDetails.postcode}</p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+
+                        {/* Policy Details Collapsible */}
+                        <Collapsible>
+                          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-semibold">
+                            <span>Policy Details</span>
+                            <ChevronDown className="w-4 h-4" />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="mt-3 space-y-3 text-sm">
+                            <div>
+                              <p className="text-xs text-muted-foreground">Quote Number</p>
+                              <p className="font-mono text-xs">{suncorpDetails.suncorp_quote_number}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Cover Type</p>
+                              <p>{suncorpDetails.cover_type}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Policy Period</p>
+                              <p>{new Date(suncorpDetails.policy_start_date).toLocaleDateString()} - {new Date(suncorpDetails.policy_expiry_date).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Risk Address</p>
+                              <p>{suncorpDetails.street_number} {suncorpDetails.street_name}, {suncorpDetails.suburb} {suncorpDetails.state} {suncorpDetails.postcode}</p>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </>
+                    )}
+
+                    {quoteGenerated && (
+                      <Button
+                        onClick={() => setShowContactDialog(true)}
+                        size="lg"
+                        className="w-full"
+                      >
+                        Contact Broker
+                      </Button>
+                    )}
                   </>
-                )}
-
-                {quoteGenerated && (
-                  <Button
-                    onClick={() => setShowContactDialog(true)}
-                    size="lg"
-                    className="w-full"
-                  >
-                    Contact Broker
-                  </Button>
                 )}
               </CardContent>
             </Card>
