@@ -236,22 +236,22 @@ export const QuoteForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto p-8 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-xl border-2 border-primary/30 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700 relative overflow-hidden">
+    <Card className="w-full max-w-4xl mx-auto p-4 md:p-8 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-xl border-2 border-primary/30 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700 relative overflow-hidden">
       {/* Decorative corner accents */}
       <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4 border-accent/30 rounded-tl-2xl pointer-events-none"></div>
       <div className="absolute bottom-0 right-0 w-24 h-24 border-b-4 border-r-4 border-accent/30 rounded-br-2xl pointer-events-none"></div>
       
-      <div className="space-y-6 relative">
+      <div className="space-y-4 md:space-y-6 relative">
         <div className="text-center mb-10">
-          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-accent to-blue-600 bg-clip-text text-transparent animate-in fade-in slide-in-from-top-4 duration-700 mb-4">
+          <h2 className="text-2xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-accent to-blue-600 bg-clip-text text-transparent animate-in fade-in slide-in-from-top-4 duration-700 mb-2 md:mb-4">
             Get Your Rideshare Quote
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground mt-3 animate-in fade-in slide-in-from-top-4 duration-700 delay-150">
+          <p className="text-sm md:text-xl text-muted-foreground mt-2 md:mt-3 animate-in fade-in slide-in-from-top-4 duration-700 delay-150">
             Protect your business on wheels with coverage built for rideshare drivers
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full border border-accent/30 animate-in fade-in scale-in-95 duration-700 delay-300">
-            <Shield className="w-4 h-4 text-accent" />
-            <span className="text-sm font-semibold text-accent">
+          <div className="mt-2 md:mt-4 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-accent/10 rounded-full border border-accent/30 animate-in fade-in scale-in-95 duration-700 delay-300">
+            <Shield className="w-3.5 h-3.5 md:w-4 md:h-4 text-accent" />
+            <span className="text-xs md:text-sm font-semibold text-accent">
               Quick • Simple • Transparent
             </span>
           </div>
@@ -273,7 +273,7 @@ export const QuoteForm = () => {
                 const sanitized = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
                 setRegistration(sanitized);
               }}
-              className="border-2 border-accent/50 bg-background text-center font-mono text-xl tracking-wider h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
+              className="border-2 border-accent/50 bg-background text-center font-mono text-lg md:text-xl tracking-wider h-12 md:h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
               maxLength={8}
             />
             

@@ -129,15 +129,20 @@ export const Header = () => {
               </Button>
             </SheetTrigger>
             
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-              <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
+            <SheetContent 
+              side="right" 
+              className="w-[300px] sm:w-[400px] bg-gradient-to-br from-background/98 via-primary/5 to-accent/10 backdrop-blur-xl border-l-2 border-primary/20"
+            >
+              <SheetHeader className="border-b border-primary/10 pb-4">
+                <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                  Menu
+                </SheetTitle>
               </SheetHeader>
               
-              <nav className="flex flex-col gap-4 mt-8">
+              <nav className="flex flex-col gap-4 mt-8 min-h-[calc(100vh-8rem)] pb-4">
                 <Link 
                   to="/#how-it-works" 
-                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Lightbulb className="w-5 h-5" />
                   How It Works
@@ -145,7 +150,7 @@ export const Header = () => {
                 
                 {/* Values Submenu */}
                 <Collapsible className="space-y-2">
-                  <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1">
                     <div className="flex items-center gap-3">
                       <Heart className="w-5 h-5" />
                       Values
@@ -167,7 +172,7 @@ export const Header = () => {
                 
                 <Link 
                   to="/benefits" 
-                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Gift className="w-5 h-5" />
                   Benefits
@@ -175,17 +180,19 @@ export const Header = () => {
                 
                 <Link 
                   to="/claims" 
-                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <FileText className="w-5 h-5" />
                   Claims
                 </Link>
                 
+                <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-2"></div>
+                
                 <a 
                   href="https://www.google.com/search?q=motor+cover+mutual+reviews"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium border border-primary/20 hover:bg-accent rounded-md transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium border border-primary/20 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
                     <span className="text-primary font-bold text-sm">G</span>
@@ -194,16 +201,34 @@ export const Header = () => {
                   <ExternalLink className="w-4 h-4 ml-auto" />
                 </a>
                 
+                <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-2"></div>
+                
                 <a 
                   href="https://connectonline.asic.gov.au/RegistrySearch/faces/landing/SearchRegisters.jspx" 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium border border-border/50 hover:bg-accent rounded-md transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium border border-border/50 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Shield className="w-5 h-5" />
                   <span>Verify ASIC Licence</span>
                   <ExternalLink className="w-4 h-4 ml-auto" />
                 </a>
+                
+                <div className="mt-auto pt-6 border-t border-primary/10">
+                  <div className="flex flex-col items-center gap-3 py-4">
+                    <img 
+                      src={fullLogo} 
+                      alt="Motor Cover Mutual" 
+                      className="h-16 w-auto opacity-80"
+                    />
+                    <p className="text-xs text-center text-muted-foreground font-medium px-4">
+                      Fair • Transparent • Reliable
+                    </p>
+                    <p className="text-[10px] text-center text-muted-foreground/60 px-4">
+                      Community-Powered Rideshare Protection
+                    </p>
+                  </div>
+                </div>
               </nav>
             </SheetContent>
           </Sheet>
