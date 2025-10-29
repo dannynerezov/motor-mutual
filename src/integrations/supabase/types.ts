@@ -244,6 +244,78 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_quote_requests: {
+        Row: {
+          additional_vehicle_info: string | null
+          admin_notes: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          contacted_at: string | null
+          created_at: string | null
+          customer_email: string
+          customer_first_name: string
+          customer_last_name: string
+          customer_phone: string | null
+          error_message: string | null
+          id: string
+          registration_number: string
+          request_notes: string | null
+          state_of_registration: string
+          status: string
+          updated_at: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_year: number | null
+          vin_number: string | null
+        }
+        Insert: {
+          additional_vehicle_info?: string | null
+          admin_notes?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          contacted_at?: string | null
+          created_at?: string | null
+          customer_email: string
+          customer_first_name: string
+          customer_last_name: string
+          customer_phone?: string | null
+          error_message?: string | null
+          id?: string
+          registration_number: string
+          request_notes?: string | null
+          state_of_registration: string
+          status?: string
+          updated_at?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+          vin_number?: string | null
+        }
+        Update: {
+          additional_vehicle_info?: string | null
+          admin_notes?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          contacted_at?: string | null
+          created_at?: string | null
+          customer_email?: string
+          customer_first_name?: string
+          customer_last_name?: string
+          customer_phone?: string | null
+          error_message?: string | null
+          id?: string
+          registration_number?: string
+          request_notes?: string | null
+          state_of_registration?: string
+          status?: string
+          updated_at?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+          vin_number?: string | null
+        }
+        Relationships: []
+      }
       named_drivers: {
         Row: {
           address_latitude: string | null
