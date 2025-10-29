@@ -2,6 +2,7 @@ import { AdminUploadCard } from "@/components/admin/AdminUploadCard";
 import { AdminDataCard } from "@/components/admin/AdminDataCard";
 import { PremiumCalculator } from "@/components/admin/PremiumCalculator";
 import { PDSUploadCard } from "@/components/admin/PDSUploadCard";
+import { ManualQuoteRequestsCard } from "@/components/admin/ManualQuoteRequestsCard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -18,6 +19,7 @@ const AdminPage = () => {
           </p>
           
           <div className="grid gap-6">
+            <ManualQuoteRequestsCard />
             <AdminUploadCard />
             <PDSUploadCard />
             <AdminDataCard />

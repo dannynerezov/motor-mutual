@@ -8,6 +8,7 @@ import { Shield, Car, AlertCircle, Info } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
+import { ManualQuoteRequestDialog } from "@/components/ManualQuoteRequestDialog";
 import watermarkLogo from "@/assets/mcm-logo-small-watermark.webp";
 
 const AUSTRALIAN_STATES = [
@@ -57,6 +58,8 @@ export const QuoteForm = () => {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [placeholderText, setPlaceholderText] = useState("");
+  const [showManualQuoteDialog, setShowManualQuoteDialog] = useState(false);
+  const [lookupErrorMessage, setLookupErrorMessage] = useState("");
 
   // Typewriter animation for placeholder
   useEffect(() => {
@@ -215,8 +218,10 @@ export const QuoteForm = () => {
       navigate(`/quote/${quoteId}`);
     } catch (error: any) {
       console.error('Vehicle lookup error:', error);
-      toast.error(error.message || "Failed to find vehicle. Please try again.");
-      setShowManualEntry(true);
+      
+      // Store error message and open dialog instead of showing toast
+      setLookupErrorMessage(error.message || "Vehicle lookup failed");
+      setShowManualQuoteDialog(true);
     } finally {
       setIsLoading(false);
     }
@@ -359,36 +364,14 @@ export const QuoteForm = () => {
             </div>
           )}
 
-          {showManualEntry && (
-            <Card className="p-4 bg-muted/50 border-muted-foreground/20 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-accent mt-0.5" />
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h4 className="font-semibold text-sm">Can't find your vehicle?</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Enter your VIN number for manual processing
-                    </p>
-                  </div>
-                  <Input
-                    placeholder="Enter VIN number"
-                    value={vinNumber}
-                    onChange={(e) => setVinNumber(e.target.value.toUpperCase())}
-                    className="text-sm"
-                    maxLength={17}
-                  />
-                  <Button
-                    onClick={handleManualEntry}
-                    size="sm"
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Submit VIN for Manual Processing
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
+          {/* Manual Quote Request Dialog */}
+          <ManualQuoteRequestDialog
+            open={showManualQuoteDialog}
+            onOpenChange={setShowManualQuoteDialog}
+            registrationNumber={registration}
+            state={selectedState}
+            errorMessage={lookupErrorMessage}
+          />
         </div>
       </div>
     </Card>
