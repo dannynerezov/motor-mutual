@@ -641,37 +641,30 @@ const QuotePage = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-                          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                          <AlertTitle className="text-blue-900 dark:text-blue-100">About Coverage Value</AlertTitle>
-                          <AlertDescription className="text-blue-700 dark:text-blue-300">
-                            Your coverage value determines the maximum MCM will pay for total loss. 
-                            Choose between {formatCurrency(tradeLow)} (Trade Low) and {formatCurrency(retail)} (Retail).
-                          </AlertDescription>
-                        </Alert>
-
                         {/* Vehicle Display */}
-                        <div className={cn(
-                          "p-4 md:p-6 bg-muted/30 rounded-xl border border-primary/20",
-                          vehicle.vehicle_image_url ? "grid grid-cols-2 gap-3 md:gap-6" : "flex flex-col items-center"
-                        )}>
-                          {vehicle.vehicle_image_url ? (
-                            <div className="flex items-center justify-center">
-                              <div className="w-full p-2 md:p-4 bg-background/50 rounded-lg border border-primary/20 shadow-lg">
-                                <img
-                                  src={vehicle.vehicle_image_url}
-                                  alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
-                                  className="w-full h-auto object-contain rounded-lg max-h-32 md:max-h-none"
-                                />
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="w-full flex items-center justify-center p-8 bg-background/50 rounded-lg border border-primary/20 mb-4">
-                              <Car className="w-24 h-24 text-muted-foreground/30" />
-                            </div>
+                        <div 
+                          className={cn(
+                            "relative p-4 md:p-6 rounded-xl border border-primary/20 overflow-hidden min-h-[200px] md:min-h-[240px]",
+                            vehicle.vehicle_image_url && "bg-muted/30"
+                          )}
+                          style={
+                            vehicle.vehicle_image_url
+                              ? {
+                                  backgroundImage: `url(${vehicle.vehicle_image_url})`,
+                                  backgroundSize: 'contain',
+                                  backgroundPosition: 'center right',
+                                  backgroundRepeat: 'no-repeat',
+                                }
+                              : undefined
+                          }
+                        >
+                          {/* Overlay to reduce image opacity */}
+                          {vehicle.vehicle_image_url && (
+                            <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
                           )}
                           
-                          <div className={cn("space-y-2 md:space-y-4", !vehicle.vehicle_image_url && "max-w-2xl w-full")}>
+                          {/* Content - always fully opaque */}
+                          <div className="relative z-10 space-y-2 md:space-y-4">
                             <div>
                               <h3 className="text-base md:text-2xl font-bold leading-tight">
                                 {vehicle.vehicle_year} {vehicle.vehicle_make}
@@ -680,18 +673,18 @@ const QuotePage = () => {
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm">
-                              <div className="p-2 md:p-3 bg-background/50 rounded-lg">
+                              <div className="p-2 md:p-3 bg-background/80 backdrop-blur-sm rounded-lg border border-border/50">
                                 <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5 md:mb-1">Registration</p>
                                 <p className="font-semibold text-xs md:text-sm">{vehicle.registration_number}</p>
                               </div>
                               {vehicle.state_of_registration && (
-                                <div className="p-2 md:p-3 bg-background/50 rounded-lg">
+                                <div className="p-2 md:p-3 bg-background/80 backdrop-blur-sm rounded-lg border border-border/50">
                                   <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5 md:mb-1">State</p>
                                   <p className="font-semibold text-xs md:text-sm">{vehicle.state_of_registration}</p>
                                 </div>
                               )}
                               {vehicle.vehicle_nvic && (
-                                <div className="p-2 md:p-3 bg-background/50 rounded-lg">
+                                <div className="p-2 md:p-3 bg-background/80 backdrop-blur-sm rounded-lg border border-border/50">
                                   <p className="text-muted-foreground text-[10px] md:text-xs mb-0.5 md:mb-1">NVIC</p>
                                   <Badge variant="secondary" className="font-mono text-[10px] md:text-xs">{vehicle.vehicle_nvic}</Badge>
                                 </div>
@@ -738,6 +731,15 @@ const QuotePage = () => {
                             <p className="text-xs text-muted-foreground mt-1">per year</p>
                           </div>
                         </div>
+
+                        <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <AlertTitle className="text-blue-900 dark:text-blue-100">About Coverage Value</AlertTitle>
+                          <AlertDescription className="text-blue-700 dark:text-blue-300">
+                            Your coverage value determines the maximum MCM will pay for total loss. 
+                            Choose between {formatCurrency(tradeLow)} (Trade Low) and {formatCurrency(retail)} (Retail).
+                          </AlertDescription>
+                        </Alert>
                         
                         <div className="flex justify-end mt-8">
                           <Button 
@@ -1281,13 +1283,13 @@ const QuotePage = () => {
 
           {/* Sidebar */}
           <div className="w-full space-y-6 order-1 lg:order-2 mb-6 lg:mb-0">
-            <Card className="w-full max-w-full lg:sticky lg:top-4 relative overflow-hidden shadow-lg">
+            <Card className="w-full max-w-full sticky top-0 z-30 relative overflow-hidden shadow-lg">
               {/* Watermark */}
               <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
                 <img src={watermarkLogo} alt="" className="w-24 h-24 object-contain" />
               </div>
 
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 relative z-10 py-4 lg:py-6">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 relative z-10 py-2 lg:py-6">
                 {!quoteGenerated ? (
                   <div>
                     <CardTitle className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
@@ -1314,17 +1316,17 @@ const QuotePage = () => {
                   </div>
                 )}
               </CardHeader>
-              <CardContent className="space-y-4 pt-4 lg:pt-6 relative z-10 px-3 lg:px-6">
+              <CardContent className="space-y-2 pt-2 lg:pt-6 relative z-10 px-3 lg:px-6">
                 {!quoteGenerated ? (
                   <>
                     {/* Mobile: Compact 2-column layout */}
-                    <div className="flex flex-col gap-3 lg:grid lg:grid-cols-1 lg:gap-6 lg:space-y-0">
+                    <div className="grid grid-cols-2 gap-2 lg:grid lg:grid-cols-1 lg:gap-6 lg:space-y-0">
                       {/* Column 1: Vehicle Info (Compact on mobile) */}
                       {vehicle && (
-                        <div className="w-full p-3 lg:p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg border border-border/50">
-                          <p className="text-[10px] lg:text-xs text-muted-foreground mb-1 font-medium">Cover for</p>
-                          <p className="font-bold text-sm lg:text-lg text-foreground">{vehicle.registration_number}</p>
-                          <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 line-clamp-2">
+                        <div className="w-full p-2 lg:p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg border border-border/50">
+                          <p className="text-[8px] lg:text-xs text-muted-foreground mb-1 font-medium">Cover for</p>
+                          <p className="font-bold text-xs lg:text-lg text-foreground">{vehicle.registration_number}</p>
+                          <p className="text-[8px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 line-clamp-2">
                             {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
                           </p>
                         </div>
@@ -1332,20 +1334,20 @@ const QuotePage = () => {
                       
                       {/* Column 2: Estimated Price (Compact on mobile) */}
                       {selectedValue > 0 && (
-                        <div className="w-full text-center p-3 lg:p-6 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border border-primary/30 shadow-sm">
-                          <p className="text-[10px] lg:text-sm text-muted-foreground mb-1 lg:mb-2 font-medium">Est. Price</p>
-                          <div className="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                        <div className="w-full text-center p-2 lg:p-6 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border border-primary/30 shadow-sm">
+                          <p className="text-[8px] lg:text-sm text-muted-foreground mb-1 lg:mb-2 font-medium">Est. Price</p>
+                          <div className="text-xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             ${membershipPrice.toFixed(2)}
                           </div>
-                          <p className="text-[9px] lg:text-xs text-muted-foreground mt-0.5 lg:mt-2">per year</p>
+                          <p className="text-[8px] lg:text-xs text-muted-foreground mt-0.5 lg:mt-2">per year</p>
                         </div>
                       )}
                     </div>
                     
                     {/* What's Covered: Full width, 3 columns on mobile, 2 on desktop */}
-                    <div className="space-y-2">
-                      <p className="text-xs lg:text-sm font-semibold text-foreground">What's Covered:</p>
-                      <div className="grid grid-cols-2 lg:grid-cols-2 gap-2 max-w-full">
+                    <div className="space-y-1">
+                      <p className="text-[9px] lg:text-sm font-semibold text-foreground">What's Covered:</p>
+                      <div className="grid grid-cols-2 lg:grid-cols-2 gap-1 max-w-full">
                         {[
                           { icon: CheckCircle2, text: "Collision", color: "text-green-600 dark:text-green-400" },
                           { icon: Droplets, text: "Flood", color: "text-blue-600 dark:text-blue-400" },
@@ -1355,8 +1357,8 @@ const QuotePage = () => {
                           { icon: AlertTriangle, text: "Theft", color: "text-orange-600 dark:text-orange-400" },
                         ].map((item, index) => (
                           <div key={index} className="flex items-center gap-1 text-sm">
-                            <item.icon className={`w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0 ${item.color}`} />
-                            <span className="text-foreground text-[9px] lg:text-xs leading-tight">{item.text}</span>
+                            <item.icon className={`w-2.5 h-2.5 lg:w-4 lg:h-4 flex-shrink-0 ${item.color}`} />
+                            <span className="text-foreground text-[8px] lg:text-xs leading-tight">{item.text}</span>
                           </div>
                         ))}
                       </div>
@@ -1364,26 +1366,25 @@ const QuotePage = () => {
                     
                     {/* MCM Coverage Explanation - Keep as is but more compact on mobile */}
                     {vehicle && selectedValue > 0 && (
-                      <Alert className="w-full bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 py-2 lg:py-4">
-                        <Info className="h-3 w-3 lg:h-4 lg:w-4 text-blue-600 dark:text-blue-400" />
-                        <AlertTitle className="text-blue-900 dark:text-blue-100 text-xs lg:text-sm font-semibold">
+                      <Alert className="w-full bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 py-1.5 lg:py-4">
+                        <Info className="h-2.5 w-2.5 lg:h-4 lg:w-4 text-blue-600 dark:text-blue-400" />
+                        <AlertTitle className="text-blue-900 dark:text-blue-100 text-[9px] lg:text-sm font-semibold">
                           MCM Coverage
                         </AlertTitle>
-                        <AlertDescription className="text-blue-700 dark:text-blue-300 text-[10px] lg:text-xs mt-0.5 lg:mt-1">
+                        <AlertDescription className="text-blue-700 dark:text-blue-300 text-[8px] lg:text-xs mt-0.5 lg:mt-1">
                           Covers damage to {vehicle.registration_number} on rideshare duty. Max: ${formatCurrency(selectedValue)}
                         </AlertDescription>
                       </Alert>
                     )}
                     
                     {/* Progress Indicator */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="font-medium">Quote Progress</span>
-                        <span className="font-semibold">{currentStep}/3 steps</span>
-                      </div>
-                      <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                    <div className="space-y-1 pt-2 border-t border-border/50">
+                      <p className="text-[9px] lg:text-sm font-medium text-muted-foreground">
+                        Progress: Step {currentStep} of 3
+                      </p>
+                      <div className="relative h-2 bg-muted/50 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-primary via-primary/80 to-accent transition-all duration-500 ease-out"
+                          className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${(currentStep / 3) * 100}%` }}
                         />
                       </div>
