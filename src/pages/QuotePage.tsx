@@ -603,14 +603,17 @@ const QuotePage = () => {
                     <AlertTitle className="text-blue-900 dark:text-blue-100">About Coverage Value</AlertTitle>
                     <AlertDescription className="text-blue-700 dark:text-blue-300">
                       Your coverage value determines the maximum MCM will pay for total loss. 
-                      Choose between ${formatCurrency(tradeLow)} (Trade Low) and ${formatCurrency(retail)} (Retail).
+                      Choose between {formatCurrency(tradeLow)} (Trade Low) and {formatCurrency(retail)} (Retail).
                     </AlertDescription>
                   </Alert>
 
                   {/* Vehicle Display */}
-                  <div className="grid md:grid-cols-2 gap-6 p-6 bg-muted/30 rounded-xl border border-primary/20">
-                    <div className="flex items-center justify-center">
-                      {vehicle.vehicle_image_url && (
+                  <div className={cn(
+                    "p-6 bg-muted/30 rounded-xl border border-primary/20",
+                    vehicle.vehicle_image_url ? "grid md:grid-cols-2 gap-6" : "flex flex-col items-center"
+                  )}>
+                    {vehicle.vehicle_image_url ? (
+                      <div className="flex items-center justify-center">
                         <div className="w-full p-4 bg-background/50 rounded-lg border border-primary/20 shadow-lg">
                           <img
                             src={vehicle.vehicle_image_url}
@@ -618,10 +621,14 @@ const QuotePage = () => {
                             className="w-full h-auto object-contain rounded-lg"
                           />
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="w-full flex items-center justify-center p-8 bg-background/50 rounded-lg border border-primary/20 mb-4">
+                        <Car className="w-24 h-24 text-muted-foreground/30" />
+                      </div>
+                    )}
                     
-                    <div className="space-y-4">
+                    <div className={cn("space-y-4", !vehicle.vehicle_image_url && "max-w-2xl w-full")}>
                       <div>
                         <h3 className="text-2xl font-bold">
                           {vehicle.vehicle_year} {vehicle.vehicle_make}
@@ -665,7 +672,7 @@ const QuotePage = () => {
                           <Tooltip>
                             <TooltipTrigger><Info className="h-4 w-4 text-muted-foreground" /></TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p>Range: ${formatCurrency(tradeLow)} to ${formatCurrency(retail)}<br/>
+                              <p>Range: {formatCurrency(tradeLow)} to {formatCurrency(retail)}<br/>
                               Maximum payout for total loss. Higher coverage = higher premium.</p>
                             </TooltipContent>
                           </Tooltip>
@@ -856,17 +863,31 @@ const QuotePage = () => {
               </div>
 
               <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 relative z-10">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-primary" />
-                    {quoteGenerated ? "Your Quote" : "Quote Summary"}
-                  </CardTitle>
-                  {quote?.quote_number && (
-                    <Badge variant="outline" className="text-xs">
-                      #{quote.quote_number}
-                    </Badge>
-                  )}
-                </div>
+                {!quoteGenerated ? (
+                  <div>
+                    <CardTitle className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4" />
+                      Quote Number
+                    </CardTitle>
+                    {quote?.quote_number && (
+                      <div className="text-3xl font-bold text-primary">
+                        #{quote.quote_number}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-primary" />
+                      Your Quote
+                    </CardTitle>
+                    {quote?.quote_number && (
+                      <Badge variant="outline" className="text-xs">
+                        #{quote.quote_number}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="space-y-6 pt-6 relative z-10">
                 {!quoteGenerated ? (
@@ -874,7 +895,7 @@ const QuotePage = () => {
                     {/* Vehicle Info */}
                     {vehicle && (
                       <div className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg border border-border/50">
-                        <p className="text-xs text-muted-foreground mb-2 font-medium">Insuring</p>
+                        <p className="text-xs text-muted-foreground mb-2 font-medium">Loss or damage cover for</p>
                         <p className="font-bold text-lg text-foreground">{vehicle.registration_number}</p>
                         <p className="text-sm text-muted-foreground mt-1">
                           {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
@@ -896,7 +917,7 @@ const QuotePage = () => {
                     {/* What's Covered */}
                     <div className="space-y-3">
                       <p className="text-sm font-semibold text-foreground">What's Covered:</p>
-                      <div className="space-y-2.5">
+                      <div className="grid grid-cols-2 gap-2.5">
                         {[
                           { icon: CheckCircle2, text: "Collision damage", color: "text-green-600 dark:text-green-400" },
                           { icon: Droplets, text: "Flood damage", color: "text-blue-600 dark:text-blue-400" },
@@ -905,9 +926,9 @@ const QuotePage = () => {
                           { icon: CloudRain, text: "Storm damage", color: "text-cyan-600 dark:text-cyan-400" },
                           { icon: AlertTriangle, text: "Theft", color: "text-orange-600 dark:text-orange-400" },
                         ].map((item, index) => (
-                          <div key={index} className="flex items-center gap-3 text-sm">
-                            <item.icon className={`w-4 h-4 ${item.color}`} />
-                            <span className="text-foreground">{item.text}</span>
+                          <div key={index} className="flex items-center gap-2 text-sm">
+                            <item.icon className={`w-4 h-4 flex-shrink-0 ${item.color}`} />
+                            <span className="text-foreground text-xs leading-tight">{item.text}</span>
                           </div>
                         ))}
                       </div>
