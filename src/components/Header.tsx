@@ -20,12 +20,7 @@ export const Header = () => {
           <img 
             src={fullLogo} 
             alt="Motor Cover Mutual - Fair. Transparent. Reliable." 
-            className="hidden md:block h-16 w-auto"
-          />
-          <img 
-            src={iconLogo} 
-            alt="Motor Cover Mutual" 
-            className="md:hidden h-10 w-auto"
+            className="h-12 md:h-16 w-auto"
           />
         </Link>
         
