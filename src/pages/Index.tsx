@@ -16,7 +16,7 @@ const Index = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="min-h-[85vh] flex items-center justify-center relative overflow-hidden px-4 py-20">
+      <section className="min-h-[50vh] md:min-h-[85vh] flex items-center justify-center relative overflow-hidden px-4 py-8 md:py-20">
         {/* Background image with overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -36,47 +36,47 @@ const Index = () => {
         </div>
         
         {/* Content */}
-        <div className="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 text-white animate-in fade-in slide-in-from-left-8 duration-1000">
+        <div className="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-6 md:gap-12 items-center">
+          <div className="space-y-4 md:space-y-8 text-white animate-in fade-in slide-in-from-left-8 duration-1000">
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-7xl font-bold leading-tight mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-7xl font-bold leading-tight mb-2 md:mb-4">
                 <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent animate-shimmer bg-[length:200%_100%]">
                   Affordable, Community-Powered Rideshare Cover
                 </span>
               </h1>
               
-              <h2 className="text-2xl md:text-3xl text-blue-100 leading-relaxed font-semibold">
+              <h2 className="text-lg sm:text-xl md:text-3xl text-blue-100 leading-snug md:leading-relaxed font-semibold">
                 Transparent, All-Risk Protection for Uber & Ola Drivers
               </h2>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              <div className="flex items-start gap-3">
-                <Shield className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+            <div className="grid grid-cols-2 gap-2 md:gap-4 pt-2 md:pt-4">
+              <div className="flex items-start gap-2 md:gap-3">
+                <Shield className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0 mt-0.5 md:mt-1 text-accent" />
                 <div>
-                  <p className="font-semibold text-lg">Comprehensive Cover</p>
-                  <p className="text-sm text-gray-300">All-risk protection that doesn't exclude rideshare</p>
+                  <p className="font-semibold text-sm md:text-lg">Comprehensive Cover</p>
+                  <p className="text-xs md:text-sm text-gray-300 hidden sm:block">All-risk protection that doesn't exclude rideshare</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <BadgeCheck className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+              <div className="flex items-start gap-2 md:gap-3">
+                <BadgeCheck className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0 mt-0.5 md:mt-1 text-accent" />
                 <div>
-                  <p className="font-semibold text-lg">Fully Licenced</p>
-                  <p className="text-sm text-gray-300">ASIC regulated and supervised</p>
+                  <p className="font-semibold text-sm md:text-lg">Fully Licenced</p>
+                  <p className="text-xs md:text-sm text-gray-300 hidden sm:block">ASIC regulated and supervised</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <TrendingUp className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+              <div className="flex items-start gap-2 md:gap-3">
+                <TrendingUp className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0 mt-0.5 md:mt-1 text-accent" />
                 <div>
-                  <p className="font-semibold text-lg">Fair Pricing</p>
-                  <p className="text-sm text-gray-300">Predictable premiums based on vehicle value</p>
+                  <p className="font-semibold text-sm md:text-lg">Fair Pricing</p>
+                  <p className="text-xs md:text-sm text-gray-300 hidden sm:block">Predictable premiums based on vehicle value</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <Clock className="w-6 h-6 flex-shrink-0 mt-1 text-accent" />
+              <div className="flex items-start gap-2 md:gap-3">
+                <Clock className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0 mt-0.5 md:mt-1 text-accent" />
                 <div>
-                  <p className="font-semibold text-lg">24/7 Support</p>
-                  <p className="text-sm text-gray-300">Always available when you need us</p>
+                  <p className="font-semibold text-sm md:text-lg">24/7 Support</p>
+                  <p className="text-xs md:text-sm text-gray-300 hidden sm:block">Always available when you need us</p>
                 </div>
               </div>
             </div>

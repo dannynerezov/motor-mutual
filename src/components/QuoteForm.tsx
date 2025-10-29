@@ -268,7 +268,11 @@ export const QuoteForm = () => {
             <Input
               placeholder={registration ? "" : placeholderText}
               value={registration}
-              onChange={(e) => setRegistration(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                // Strip non-alphanumeric characters and capitalize
+                const sanitized = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                setRegistration(sanitized);
+              }}
               className="border-2 border-accent/50 bg-background text-center font-mono text-xl tracking-wider h-14 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all animate-in fade-in slide-in-from-top-4 duration-500"
               maxLength={8}
             />
