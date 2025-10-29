@@ -27,6 +27,7 @@ interface ProcessingResult {
   marketValue?: number;
   membershipPrice?: number;
   imageExists?: boolean;
+  vehicleImageUrl?: string;
   error?: string;
 }
 
@@ -113,7 +114,7 @@ async function processVehicle(vehicle: VehicleInput): Promise<ProcessingResult> 
     if (imageUrl) {
       try {
         const imageCheck = await fetch(imageUrl, { method: 'HEAD' });
-        imageExists = imageCheck.ok && imageCheck.headers.get('content-type')?.includes('image');
+        imageExists = imageCheck.ok && (imageCheck.headers.get('content-type')?.includes('image') ?? false);
       } catch {
         console.log(`Image check failed for ${registrationNumber}`);
       }
@@ -172,7 +173,8 @@ async function processVehicle(vehicle: VehicleInput): Promise<ProcessingResult> 
       vehicleYear: parseInt(vehicleDetails.yearOfManufacture || '0') || undefined,
       marketValue,
       membershipPrice,
-      imageExists
+      imageExists,
+      vehicleImageUrl: imageUrl || undefined
     };
     
   } catch (error) {

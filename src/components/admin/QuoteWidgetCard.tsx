@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, Download, Trash2 } from "lucide-react";
+import { Loader2, Upload, Download, Trash2, ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -33,6 +33,7 @@ interface ProcessingResult {
   marketValue?: number;
   membershipPrice?: number;
   imageExists?: boolean;
+  vehicleImageUrl?: string;
   error?: string;
 }
 
@@ -338,7 +339,7 @@ export const QuoteWidgetCard = () => {
                           <TableHead>Vehicle</TableHead>
                           <TableHead className="text-right">Value</TableHead>
                           <TableHead className="text-right">Price</TableHead>
-                          <TableHead className="text-center">Image</TableHead>
+                          <TableHead className="w-[100px]">Image</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -368,8 +369,27 @@ export const QuoteWidgetCard = () => {
                             <TableCell className="text-right font-medium">
                               {result.membershipPrice ? `$${result.membershipPrice.toFixed(2)}` : '-'}
                             </TableCell>
-                            <TableCell className="text-center">
-                              {result.imageExists ? '✓' : result.status === 'success' ? '✗' : '-'}
+                            <TableCell>
+                              {result.imageExists && result.vehicleImageUrl ? (
+                                <div className="relative w-20 h-14 rounded overflow-hidden border border-border">
+                                  <img 
+                                    src={result.vehicleImageUrl} 
+                                    alt={`${result.vehicleMake} ${result.vehicleModel || ''}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                      const parent = e.currentTarget.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-muted text-xs text-muted-foreground">No Image</div>';
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-20 h-14 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted">
+                                  <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
+                                </div>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
