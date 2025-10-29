@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, CheckCircle, XCircle, FileCode, ChevronDown, Info, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Car, Shield, Droplets, Cloud, Flame, Zap, AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DriverCard } from "@/components/DriverCard";
@@ -22,6 +22,8 @@ import { QuoteErrorDialog } from "@/components/QuoteErrorDialog";
 import { useSuncorpQuote } from "@/hooks/useSuncorpQuote";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
 import { getDefaultPolicyStartDate } from "@/lib/thirdPartyBulkLogic";
+import { formatCurrency, generateCalculationExample } from "@/lib/pricingHelpers";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import watermarkLogo from "@/assets/mcm-logo-small-watermark.webp";
 import { format, addDays } from "date-fns";
@@ -62,6 +64,13 @@ interface Vehicle {
   vehicle_image_url: string | null;
   trade_low_price: number | null;
   retail_price: number | null;
+  state_of_registration?: string | null;
+  vehicle_desc1?: string | null;
+  vehicle_desc2?: string | null;
+  vehicle_series?: string | null;
+  vehicle_body_style?: string | null;
+  vehicle_transmission?: string | null;
+  vehicle_fuel_type?: string | null;
 }
 
 interface NamedDriver {
@@ -125,6 +134,7 @@ const QuotePage = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [namedDrivers, setNamedDrivers] = useState<NamedDriver[]>([]);
   const [totalClaimsCount, setTotalClaimsCount] = useState(0);
+  const [membershipPrice, setMembershipPrice] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
   const [showClaimsError, setShowClaimsError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -155,6 +165,8 @@ const QuotePage = () => {
     if (quote && vehicles[0]) {
       // Initialize selected value from vehicle market value
       setSelectedValue(vehicles[0].selected_coverage_value || vehicles[0].vehicle_value);
+      const basePrice = calculatePrice(vehicles[0].selected_coverage_value || vehicles[0].vehicle_value);
+      setMembershipPrice(basePrice);
       calculateFinalPrice();
       setQuoteGenerated(!!quote.third_party_quote_number);
     }
@@ -317,6 +329,7 @@ const QuotePage = () => {
     
     // Recalculate price
     const newPrice = calculatePrice(newValue);
+    setMembershipPrice(newPrice);
     setFinalPrice(newPrice);
 
     // Update vehicle in database
@@ -472,8 +485,39 @@ const QuotePage = () => {
 
   const vehicle = vehicles[0];
   const driver = namedDrivers[0];
+  const hasGeneratedQuote = quoteGenerated;
+  const quoteNumber = quote?.quote_number || "Pending";
   const tradeLow = vehicle.trade_low_price || vehicle.vehicle_value * 0.8;
   const retail = vehicle.retail_price || vehicle.vehicle_value * 1.2;
+
+  // Calculate estimated price based on selected coverage
+  const estimatedPrice = selectedValue ? calculatePrice(selectedValue) : membershipPrice;
+
+  // Get calculation example
+  const scheme = quote?.pricing_schemes ? {
+    floor_price: quote.pricing_schemes.floor_price,
+    floor_point: quote.pricing_schemes.floor_point,
+    ceiling_price: quote.pricing_schemes.ceiling_price,
+    ceiling_point: quote.pricing_schemes.ceiling_point,
+  } : null;
+  
+  const calcExample = selectedValue && scheme ? 
+    generateCalculationExample(selectedValue, estimatedPrice, scheme) : null;
+
+  const coverageItems = [
+    { icon: CheckCircle2, text: "Collision damage", color: "text-green-600" },
+    { icon: Droplets, text: "Flood damage", color: "text-blue-600" },
+    { icon: Cloud, text: "Hail damage", color: "text-purple-600" },
+    { icon: Flame, text: "Fire damage", color: "text-red-600" },
+    { icon: Zap, text: "Storm damage", color: "text-cyan-600" },
+    { icon: AlertTriangle, text: "Theft", color: "text-orange-600" },
+  ];
+
+  const steps = [
+    { number: 1, title: "Coverage Value", description: "Choose your protection level" },
+    { number: 2, title: "Your Details", description: "Tell us about yourself" },
+    { number: 3, title: "Start Date", description: "When to begin coverage" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -489,113 +533,145 @@ const QuotePage = () => {
           Back to Home
         </Button>
 
-        {/* Step Indicator - 3 Steps */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3].map((step) => (
-            <div
-              key={step}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                step === currentStep
-                  ? 'bg-primary text-primary-foreground font-bold scale-110'
-                  : step < currentStep
-                  ? 'bg-accent text-accent-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {step < currentStep ? <CheckCircle className="w-5 h-5" /> : step}
+        {/* Progress Bar */}
+        <div className="w-full mb-8">
+          <div className="relative max-w-3xl mx-auto">
+            {/* Progress bar background */}
+            <div className="absolute top-5 left-0 right-0 h-1 bg-muted rounded-full">
+              {/* Active progress bar */}
+              <div 
+                className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
+                style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+              />
             </div>
-          ))}
+            
+            {/* Step indicators */}
+            <div className="relative flex justify-between">
+              {steps.map((step, index) => (
+                <div key={index} className="flex flex-col items-center">
+                  {/* Circle indicator */}
+                  <div className={cn(
+                    "w-10 h-10 rounded-full border-4 flex items-center justify-center",
+                    "transition-all duration-300 bg-background z-10 font-semibold",
+                    index + 1 < currentStep && "border-accent bg-accent text-white",
+                    index + 1 === currentStep && "border-primary bg-primary text-white scale-110",
+                    index + 1 > currentStep && "border-muted-foreground/30 text-muted-foreground"
+                  )}>
+                    {index + 1 < currentStep ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
+                  </div>
+                  
+                  {/* Step label */}
+                  <div className="mt-2 text-center max-w-[150px]">
+                    <p className={cn(
+                      "text-sm font-semibold",
+                      index + 1 === currentStep ? "text-primary" : "text-muted-foreground"
+                    )}>
+                      {step.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 hidden md:block">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Vehicle Display */}
-            <Card className="relative overflow-hidden">
-              <div className="absolute top-0 right-0 opacity-5 pointer-events-none">
-                <img src={watermarkLogo} alt="" className="w-40 h-40 object-contain" />
-              </div>
-              
-              <CardHeader>
-                <CardTitle className="text-2xl">Your Vehicle</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-4 items-start">
-                  {vehicle.vehicle_image_url && (
-                    <img
-                      src={vehicle.vehicle_image_url}
-                      alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
-                      className="w-32 h-24 object-cover rounded-lg"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold">
-                      {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
-                    </h3>
-                    <p className="text-muted-foreground">{vehicle.registration_number}</p>
-                    {vehicle.vehicle_variant && (
-                      <p className="text-sm text-muted-foreground">{vehicle.vehicle_variant}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+          <div className="lg:col-span-2 space-y-8">
             {/* Step 1: Select Your Coverage Value */}
-            {currentStep >= 1 && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Step 1: Select Your Coverage Value</CardTitle>
-                    {isStep1Complete && <Badge variant="default">Complete</Badge>}
-                  </div>
-                </CardHeader>
+            {currentStep === 1 && vehicle && (
+              <Card className="shadow-2xl bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/30 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-transparent rounded-bl-full" />
                 
+                <CardHeader className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <span className="text-primary font-bold">1</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs">Step 1 of 3</Badge>
+                  </div>
+                  <CardTitle className="text-2xl">Select Your Coverage Value</CardTitle>
+                  <CardDescription>
+                    Adjust coverage for your {vehicle.vehicle_year} {vehicle.vehicle_make} {vehicle.vehicle_model}
+                  </CardDescription>
+                </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Informational Alert */}
                   <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    <AlertDescription className="text-sm">
-                      <strong>What is Coverage Value?</strong><br/>
-                      This is the maximum amount the mutual will pay in the event of a total loss of your vehicle. 
-                      You can adjust this between the trade-in value and retail price of your vehicle.
+                    <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <AlertTitle className="text-blue-900 dark:text-blue-100">About Coverage Value</AlertTitle>
+                    <AlertDescription className="text-blue-700 dark:text-blue-300">
+                      Your coverage value determines the maximum MCM will pay for total loss. 
+                      Choose between ${formatCurrency(tradeLow)} (Trade Low) and ${formatCurrency(retail)} (Retail).
                     </AlertDescription>
                   </Alert>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground">Trade Low</p>
-                      <p className="text-lg font-bold">${Math.round(tradeLow).toLocaleString()}</p>
+                  {/* Vehicle Display */}
+                  <div className="grid md:grid-cols-2 gap-6 p-6 bg-muted/30 rounded-xl border border-primary/20">
+                    <div className="flex items-center justify-center">
+                      {vehicle.vehicle_image_url && (
+                        <div className="w-full p-4 bg-background/50 rounded-lg border border-primary/20 shadow-lg">
+                          <img
+                            src={vehicle.vehicle_image_url}
+                            alt={`${vehicle.vehicle_make} ${vehicle.vehicle_model}`}
+                            className="w-full h-auto object-contain rounded-lg"
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div className="text-center p-3 bg-primary/10 rounded-lg border-2 border-primary">
-                      <p className="text-xs text-muted-foreground">Market Value</p>
-                      <p className="text-lg font-bold text-primary">${vehicle.vehicle_value.toLocaleString()}</p>
-                    </div>
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground">Retail</p>
-                      <p className="text-lg font-bold">${Math.round(retail).toLocaleString()}</p>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-2xl font-bold">
+                          {vehicle.vehicle_year} {vehicle.vehicle_make}
+                        </h3>
+                        <p className="text-xl text-muted-foreground">{vehicle.vehicle_model}</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="p-3 bg-background/50 rounded-lg">
+                          <p className="text-muted-foreground text-xs mb-1">Registration</p>
+                          <p className="font-semibold">{vehicle.registration_number}</p>
+                        </div>
+                        {vehicle.state_of_registration && (
+                          <div className="p-3 bg-background/50 rounded-lg">
+                            <p className="text-muted-foreground text-xs mb-1">State</p>
+                            <p className="font-semibold">{vehicle.state_of_registration}</p>
+                          </div>
+                        )}
+                        {vehicle.vehicle_nvic && (
+                          <div className="p-3 bg-background/50 rounded-lg">
+                            <p className="text-muted-foreground text-xs mb-1">NVIC</p>
+                            <Badge variant="secondary" className="font-mono text-xs">{vehicle.vehicle_nvic}</Badge>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {(vehicle.vehicle_desc1 || vehicle.vehicle_desc2) && (
+                        <div className="space-y-1 pt-2 border-t border-border/50">
+                          {vehicle.vehicle_desc1 && <p className="text-sm text-muted-foreground">{vehicle.vehicle_desc1}</p>}
+                          {vehicle.vehicle_desc2 && <p className="text-sm text-muted-foreground">{vehicle.vehicle_desc2}</p>}
+                        </div>
+                      )}
                     </div>
                   </div>
                   
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Label>Selected Coverage Value</Label>
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                            </TooltipTrigger>
+                            <TooltipTrigger><Info className="h-4 w-4 text-muted-foreground" /></TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p className="text-sm">
-                                <strong>Coverage Range:</strong> ${Math.round(tradeLow).toLocaleString()} to ${Math.round(retail).toLocaleString()}<br/><br/>
-                                This value determines the maximum payout for total loss. Higher coverage = higher premium.
-                              </p>
+                              <p>Range: ${formatCurrency(tradeLow)} to ${formatCurrency(retail)}<br/>
+                              Maximum payout for total loss. Higher coverage = higher premium.</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </div>
-                      <Badge variant="outline" className="text-lg">${selectedValue.toLocaleString()}</Badge>
+                      <span className="text-2xl font-bold text-primary">{formatCurrency(selectedValue)}</span>
                     </div>
                     
                     <Slider
@@ -604,32 +680,25 @@ const QuotePage = () => {
                       step={100}
                       value={[selectedValue]}
                       onValueChange={handleValueChange}
-                      className="w-full"
                     />
                     
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>${Math.round(tradeLow).toLocaleString()}</span>
-                      <span>${Math.round(retail).toLocaleString()}</span>
+                    <div className="text-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">Estimated Premium</p>
+                      <p className="text-3xl font-bold text-primary">{formatCurrency(membershipPrice)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">per year</p>
                     </div>
                   </div>
-
-                  {/* Call to Action */}
-                  <div className="p-4 bg-accent/30 rounded-lg border border-accent">
-                    <p className="text-sm font-medium mb-2">💡 Pro Tip:</p>
-                    <p className="text-sm text-muted-foreground">
-                      Adjust the slider above to find the right balance between coverage and premium cost for your needs.
-                    </p>
+                  
+                  <div className="sticky bottom-0 bg-background/95 backdrop-blur-md border-t border-border p-4 -mx-6 -mb-6 mt-6">
+                    <div className="flex gap-4">
+                      <Button variant="outline" size="lg" disabled className="flex-1">
+                        <ChevronLeft className="w-4 h-4 mr-2" />Back
+                      </Button>
+                      <Button size="lg" onClick={() => setCurrentStep(2)} disabled={!isStep1Complete} className="flex-1 bg-gradient-to-r from-primary to-accent">
+                        Next<ChevronRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
                   </div>
-
-                  {canProceedToStep2 && currentStep === 1 && (
-                    <Button
-                      onClick={() => setCurrentStep(2)}
-                      className="w-full"
-                      size="lg"
-                    >
-                      Continue to Your Details
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
             )}

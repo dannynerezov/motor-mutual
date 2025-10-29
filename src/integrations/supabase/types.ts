@@ -492,11 +492,18 @@ export type Database = {
           registration_number: string
           retail_price: number | null
           selected_coverage_value: number
+          state_of_registration: string | null
           trade_low_price: number | null
+          vehicle_body_style: string | null
+          vehicle_desc1: string | null
+          vehicle_desc2: string | null
+          vehicle_fuel_type: string | null
           vehicle_image_url: string | null
           vehicle_make: string
           vehicle_model: string
           vehicle_nvic: string | null
+          vehicle_series: string | null
+          vehicle_transmission: string | null
           vehicle_value: number
           vehicle_variant: string | null
           vehicle_year: number
@@ -509,11 +516,18 @@ export type Database = {
           registration_number: string
           retail_price?: number | null
           selected_coverage_value: number
+          state_of_registration?: string | null
           trade_low_price?: number | null
+          vehicle_body_style?: string | null
+          vehicle_desc1?: string | null
+          vehicle_desc2?: string | null
+          vehicle_fuel_type?: string | null
           vehicle_image_url?: string | null
           vehicle_make: string
           vehicle_model: string
           vehicle_nvic?: string | null
+          vehicle_series?: string | null
+          vehicle_transmission?: string | null
           vehicle_value: number
           vehicle_variant?: string | null
           vehicle_year: number
@@ -526,11 +540,18 @@ export type Database = {
           registration_number?: string
           retail_price?: number | null
           selected_coverage_value?: number
+          state_of_registration?: string | null
           trade_low_price?: number | null
+          vehicle_body_style?: string | null
+          vehicle_desc1?: string | null
+          vehicle_desc2?: string | null
+          vehicle_fuel_type?: string | null
           vehicle_image_url?: string | null
           vehicle_make?: string
           vehicle_model?: string
           vehicle_nvic?: string | null
+          vehicle_series?: string | null
+          vehicle_transmission?: string | null
           vehicle_value?: number
           vehicle_variant?: string | null
           vehicle_year?: number

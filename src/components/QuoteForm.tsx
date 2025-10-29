@@ -195,6 +195,13 @@ export const QuoteForm = () => {
             base_price: calculatedPrice,
             trade_low_price: data.vehicleValueInfo.tradeLowPrice,
             retail_price: data.vehicleValueInfo.retailPrice,
+            state_of_registration: selectedState,
+            vehicle_desc1: data.vehicleDetails.description1 || data.vehicleDetails.variant || null,
+            vehicle_desc2: data.vehicleDetails.description2 || null,
+            vehicle_series: data.vehicleDetails.series || null,
+            vehicle_body_style: data.vehicleDetails.bodyStyle || null,
+            vehicle_transmission: data.vehicleDetails.transmissionDescription || null,
+            vehicle_fuel_type: data.vehicleDetails.fuelType || null,
           });
 
         if (vehicleError) throw vehicleError;
