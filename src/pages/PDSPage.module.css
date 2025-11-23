@@ -182,6 +182,36 @@
   margin-top: 0;
 }
 
+.exampleWarning {
+  background: hsl(45 100% 96%);
+  border: 1px solid hsl(38 100% 75%);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+}
+
+.exampleWarning h4 {
+  color: hsl(30 70% 30%);
+  margin-top: 0;
+}
+
+.exampleError {
+  background: hsl(0 100% 97%);
+  border: 1px solid hsl(0 80% 80%);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+}
+
+.exampleError h4 {
+  color: hsl(0 70% 30%);
+  margin-top: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 @media (max-width: 768px) {
   .pdsDocument {
     padding: 20px 15px;
