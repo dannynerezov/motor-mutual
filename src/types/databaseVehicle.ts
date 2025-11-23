@@ -1,18 +1,4 @@
-export type SortMode = 'random' | 'price-asc' | 'price-desc';
-
-export interface DatabaseVehicle {
-  id: string;
-  state: string;
-  registration_number: string;
-  vehicle_make: string;
-  vehicle_model: string | null;
-  vehicle_year: number | null;
-  vehicle_series: string | null;
-  vehicle_variant: string | null;
-  market_value: number | null;
-  calculated_membership_price: number | null;
-  vehicle_image_url: string;
-}
+import { DatabaseVehicle } from '@/hooks/useRandomVehicles';
 
 export interface DisplayVehicle {
   id: string;

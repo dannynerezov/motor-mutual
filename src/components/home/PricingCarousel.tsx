@@ -4,8 +4,8 @@ import { ChevronLeft, ChevronRight, RefreshCw, TrendingUp, TrendingDown, Shuffle
 import { Button } from "@/components/ui/button";
 import { VehiclePricingCard } from "./VehiclePricingCard";
 import { usePricingScheme } from "@/hooks/usePricingScheme";
-import { useRandomVehicles } from "@/hooks/useRandomVehicles";
-import { adaptDatabaseVehicle, SortMode } from "@/types/databaseVehicle";
+import { useRandomVehicles, SortMode } from "@/hooks/useRandomVehicles";
+import { adaptDatabaseVehicle } from "@/types/databaseVehicle";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function PricingCarousel() {
