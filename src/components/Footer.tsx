@@ -55,6 +55,11 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/pds" className="text-sm opacity-90 hover:opacity-100 transition-opacity">
+                  Product Disclosure Statement
+                </Link>
+              </li>
+              <li>
                 <Link to="/admin" className="text-sm opacity-90 hover:opacity-100 transition-opacity">
                   Admin
                 </Link>
