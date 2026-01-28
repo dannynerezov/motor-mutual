@@ -782,7 +782,7 @@ const PDSPage = () => {
               <h2>Section 16 — Complaints & Dispute Resolution (IDR & AFCA)</h2>
 
               <h3>16.1 Overview</h3>
-              <p>Motor Cover Mutual Ltd is committed to fair, efficient, and transparent handling of complaints. All complaints are managed in accordance with the Corporations Act 2001 (Cth), ASIC Regulatory Guide 271 (Internal Dispute Resolution), and the Mutual's internal policies.</p>
+              <p>The Product Issuer and the AFSL holder are committed to fair, efficient, and transparent handling of complaints. All complaints are managed in accordance with the Corporations Act 2001 (Cth), ASIC Regulatory Guide 271 (Internal Dispute Resolution), and the Mutual's internal policies.</p>
 
               <h3>16.2 What You May Complain About</h3>
               <p>Members may lodge complaints regarding:</p>
