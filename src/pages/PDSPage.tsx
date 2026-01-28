@@ -303,8 +303,8 @@ const PDSPage = () => {
                 <li>Has repeated similar claims</li>
               </ul>
 
-              <h3>9.7 No Right to Appeal Payment Amounts</h3>
-              <p>Members may request internal review of a decision. However, Members have no right to demand any particular outcome. AFCA may review conduct but cannot compel the Mutual to pay benefits.</p>
+              <h3>9.7 Claim Decision Review</h3>
+              <p>The Mutual retains full discretion in relation to all claim decisions. Members may request an internal review of a decision in accordance with the Mutual's internal dispute resolution procedures. As a discretionary mutual fund, the Mutual is not legally obliged to approve or settle any claim and may, at its discretion, decline or vary a claim, subject always to the terms of the Constitution and this Product Disclosure Statement.</p>
             </section>
 
             <section id="section-10">
