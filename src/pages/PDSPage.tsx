@@ -214,7 +214,39 @@ const PDSPage = () => {
               <p>Our Board follows established guidelines to ensure its discretion is exercised fairly, consistently and in the collective interests of all Members when assessing the merits of a claim.</p>
               <p>If you wish to dispute a claim decision, you may ask us to reconsider our decision by submitting a written request to the Manager, who will refer the matter to the Board.</p>
 
-              <h3>7.1 External dispute resolution</h3>
+              <h3 id="section-7-1">7.1 Internal Dispute Resolution</h3>
+              <p>The Mutual maintains an internal dispute resolution (IDR) procedure in compliance with <strong>section 912A(1)(g) of the Corporations Act 2001 (Cth)</strong>, which requires financial services licensees to have adequate arrangements for handling complaints from members and other persons.</p>
+              
+              <h4>Step 1 — Lodge Your Complaint</h4>
+              <p>You may lodge a complaint by phone, email, online helpdesk, or in writing. When lodging your complaint, please provide:</p>
+              <ul>
+                <li>Your name and contact details</li>
+                <li>A clear explanation of your complaint</li>
+                <li>Your desired outcome</li>
+                <li>Any supporting evidence or documentation</li>
+              </ul>
+
+              <h4>Step 2 — Acknowledgement</h4>
+              <p>Your complaint will be acknowledged within <strong>one business day</strong> (verbally or in writing). You will receive a reference number for tracking purposes.</p>
+
+              <h4>Step 3 — Investigation</h4>
+              <p>A dedicated Customer Relations Specialist will investigate your complaint. This may include:</p>
+              <ul>
+                <li>Reviewing relevant policies and documentation</li>
+                <li>Contacting you if additional information is required</li>
+                <li>Consulting with relevant departments or third parties as needed</li>
+              </ul>
+
+              <h4>Step 4 — Resolution & Outcome</h4>
+              <p>You will receive a written decision that includes:</p>
+              <ul>
+                <li>Our findings and conclusions</li>
+                <li>Clear reasons if the complaint is not upheld</li>
+                <li>Details of any remedial action to be taken</li>
+                <li>Information about external dispute resolution options if you remain unsatisfied</li>
+              </ul>
+
+              <h3 id="section-7-2">7.2 External Dispute Resolution</h3>
               <p>If you are not satisfied with the decision or if your complaint remains unresolved after 30 days, you can refer the matter to the Australian Financial Complaints Authority (AFCA). AFCA is an independent body that provides its services free of charge. AMIR, as the AFSL holder, is a member of AFCA.</p>
               <p><strong>AFCA Contact Details:</strong><br />
               Email: info@afca.org.au<br />
