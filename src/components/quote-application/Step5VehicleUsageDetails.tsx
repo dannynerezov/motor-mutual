@@ -41,12 +41,7 @@ export function Step5VehicleUsageDetails({ formData, updateField }: Props) {
       </div>
 
       <RadioGrid label="Exclude drivers under 25?" field="exclude_under_25" options={["No", "Yes"]} formData={formData} updateField={updateField} />
-      <RadioGrid label="Is the car used for ridesharing, car sharing or delivery?" field="rideshare_delivery" options={["No", "Yes"]} formData={formData} updateField={updateField} />
       <RadioGrid label="Is the car currently undamaged, roadworthy and registered?" field="undamaged_roadworthy" options={["No", "Yes"]} formData={formData} updateField={updateField} />
-      <RadioGrid label="Days per week used for work or study?" field="days_per_week_work" options={["0 Days", "1-2 Days", "3-4 Days", "5+ Days"]} formData={formData} updateField={updateField} cols="grid-cols-4" />
-      <RadioGrid label="Approximate kilometres driven each year?" field="km_per_year" options={["0 - 5000kms", "5000 - 10000kms", "10000 - 15000kms", "15000+ kms"]} formData={formData} updateField={updateField} />
-      <RadioGrid label="Driven 3+ weekdays during peak times?" field="peak_times" options={["No", "Yes"]} formData={formData} updateField={updateField} />
-      <RadioGrid label="Where is the vehicle usually parked overnight?" field="parking_location" options={["Garage", "Carport", "Driveway", "Street"]} formData={formData} updateField={updateField} cols="grid-cols-4" />
     </div>
   );
 }

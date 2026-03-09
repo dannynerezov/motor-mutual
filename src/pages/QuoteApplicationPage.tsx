@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -23,7 +23,7 @@ const STEP_TITLES = [
   "Vehicle Details",
   "Usage Details",
   "Cover Options",
-  "Terms & Signature",
+  "Contact to Complete",
 ];
 
 const QuoteApplicationPage = () => {
@@ -76,7 +76,8 @@ const QuoteApplicationPage = () => {
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
+      // Skip step 0 (auto-advance) when going back
+      setCurrentStep((s) => (s === 1 ? 1 : s - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -130,13 +131,13 @@ const QuoteApplicationPage = () => {
   const renderStep = () => {
     const props = { formData, updateField };
     switch (currentStep) {
-      case 0: return <Step1VehicleUsage {...props} />;
+      case 0: return <Step1VehicleUsage {...props} onAutoAdvance={handleNext} />;
       case 1: return <Step2ContactDetails {...props} />;
       case 2: return <Step3DrivingHistory {...props} />;
       case 3: return <Step4VehicleDetails {...props} />;
       case 4: return <Step5VehicleUsageDetails {...props} />;
       case 5: return <Step6CoverOptions {...props} />;
-      case 6: return <Step7TermsSignature {...props} />;
+      case 6: return <Step7TermsSignature />;
       default: return null;
     }
   };
@@ -154,7 +155,7 @@ const QuoteApplicationPage = () => {
             </p>
           </div>
           <p className="text-sm text-muted-foreground">
-            {formData.vehicle_usage || "Rideshare"} Insurance Application
+            Rideshare Insurance Application
           </p>
         </div>
 
@@ -169,7 +170,7 @@ const QuoteApplicationPage = () => {
             {STEP_TITLES.map((title, i) => (
               <button
                 key={i}
-                onClick={() => i < currentStep && setCurrentStep(i)}
+                onClick={() => i < currentStep && i > 0 && setCurrentStep(i)}
                 className={`text-xs px-1 py-0.5 rounded transition-colors ${
                   i === currentStep
                     ? "text-primary font-semibold"
@@ -177,7 +178,7 @@ const QuoteApplicationPage = () => {
                     ? "text-primary/60 hover:text-primary cursor-pointer"
                     : "text-muted-foreground/50"
                 }`}
-                disabled={i > currentStep}
+                disabled={i >= currentStep || i === 0}
               >
                 {i + 1}
               </button>
@@ -195,7 +196,7 @@ const QuoteApplicationPage = () => {
           <Button
             variant="outline"
             onClick={handleBack}
-            disabled={currentStep === 0}
+            disabled={currentStep <= 1}
             className="px-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -221,7 +222,7 @@ const QuoteApplicationPage = () => {
               ) : (
                 <span className="flex items-center gap-2">
                   <Send className="w-4 h-4" />
-                  Submit Application
+                  Submit & Contact National Cover
                 </span>
               )}
             </Button>

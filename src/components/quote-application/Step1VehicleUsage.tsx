@@ -1,10 +1,12 @@
+import { useEffect } from "react";
 import { QuoteApplicationFormData } from "@/types/quoteApplication";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Car, CheckCircle2 } from "lucide-react";
 
 interface Props {
   formData: QuoteApplicationFormData;
   updateField: (field: keyof QuoteApplicationFormData, value: string) => void;
+  onAutoAdvance?: () => void;
 }
 
 const VEHICLE_USAGE_OPTIONS = [
@@ -16,32 +18,15 @@ const VEHICLE_USAGE_OPTIONS = [
   "Business (Non-Passenger Transport)",
 ];
 
-const BUSINESS_USAGE_OPTIONS = [
-  "On road professional", "Salesperson", "Tradesperson", "Courier",
-  "Delivery driver", "Driver education", "Hire", "Courtesy",
-  "Car Sharing", "Taxi", "Racing / Sporting events", "Removalist",
-];
-
-function RadioOption({ value, selected, onClick, label }: { value: string; selected: boolean; onClick: () => void; label?: string }) {
-  return (
-    <div
-      className={`flex items-center justify-center border-2 rounded-lg p-4 cursor-pointer transition-all ${
-        selected ? "border-primary bg-primary/10 text-primary font-medium" : "border-border bg-muted/30 hover:bg-muted"
-      }`}
-      onClick={onClick}
-    >
-      <RadioGroupItem value={value} id={`usage-${value}`} className="sr-only" />
-      <Label htmlFor={`usage-${value}`} className="cursor-pointer w-full text-center font-normal text-sm">
-        {label || value}
-      </Label>
-    </div>
-  );
-}
-
-export function Step1VehicleUsage({ formData, updateField }: Props) {
-  const showDelivery = formData.vehicle_usage === "Courier Delivery";
-  const showRideshare = formData.vehicle_usage === "Rideshare";
-  const showBusiness = formData.vehicle_usage === "Business (Non-Passenger Transport)";
+export function Step1VehicleUsage({ formData, updateField, onAutoAdvance }: Props) {
+  useEffect(() => {
+    updateField("vehicle_usage", "Rideshare");
+    updateField("is_rideshare", "Yes");
+    const timer = setTimeout(() => {
+      onAutoAdvance?.();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -50,86 +35,35 @@ export function Step1VehicleUsage({ formData, updateField }: Props) {
       </div>
 
       <div className="space-y-3">
-        <Label className="text-base">How is your car used? <span className="text-destructive">*</span></Label>
-        <RadioGroup value={formData.vehicle_usage} onValueChange={(val) => updateField("vehicle_usage", val)}>
-          <div className="grid grid-cols-2 gap-3">
-            {VEHICLE_USAGE_OPTIONS.map((opt) => (
-              <RadioOption
+        <Label className="text-base">How is your car used?</Label>
+        <div className="grid grid-cols-2 gap-3">
+          {VEHICLE_USAGE_OPTIONS.map((opt) => {
+            const isRideshare = opt === "Rideshare";
+            return (
+              <div
                 key={opt}
-                value={opt}
-                selected={formData.vehicle_usage === opt}
-                onClick={() => updateField("vehicle_usage", opt)}
-                label={opt === "Business (Non-Passenger Transport)" ? "Business (Non-Passenger)" : opt}
-              />
-            ))}
-          </div>
-        </RadioGroup>
+                className={`flex items-center justify-center border-2 rounded-lg p-4 transition-all ${
+                  isRideshare
+                    ? "border-primary bg-primary/10 text-primary font-medium"
+                    : "border-border bg-muted/20 text-muted-foreground/40 cursor-not-allowed"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {isRideshare && <CheckCircle2 className="w-4 h-4" />}
+                  <Label className={`text-sm ${isRideshare ? "font-medium" : "font-normal"}`}>
+                    {opt === "Business (Non-Passenger Transport)" ? "Business (Non-Passenger)" : opt}
+                  </Label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {showBusiness && (
-        <div className="space-y-3 animate-in fade-in duration-300">
-          <Label className="text-base">Primary business use? <span className="text-destructive">*</span></Label>
-          <RadioGroup value={formData.business_usage_type} onValueChange={(val) => updateField("business_usage_type", val)}>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {BUSINESS_USAGE_OPTIONS.map((opt) => (
-                <RadioOption key={opt} value={opt} selected={formData.business_usage_type === opt} onClick={() => updateField("business_usage_type", opt)} />
-              ))}
-            </div>
-          </RadioGroup>
-        </div>
-      )}
-
-      {(showDelivery || showRideshare) && (
-        <div className="space-y-3 animate-in fade-in duration-300">
-          <Label className="text-base">Is the vehicle being used for food delivery? <span className="text-destructive">*</span></Label>
-          <RadioGroup value={formData.is_delivery} onValueChange={(val) => updateField("is_delivery", val)}>
-            <div className="grid grid-cols-2 gap-3">
-              {["No", "Yes"].map((opt) => (
-                <RadioOption key={opt} value={opt} selected={formData.is_delivery === opt} onClick={() => updateField("is_delivery", opt)} />
-              ))}
-            </div>
-          </RadioGroup>
-        </div>
-      )}
-
-      {showRideshare && (
-        <div className="space-y-3 animate-in fade-in duration-300">
-          <Label className="text-base">Is the vehicle being rented out to anyone? <span className="text-destructive">*</span></Label>
-          <RadioGroup value={formData.is_rented} onValueChange={(val) => updateField("is_rented", val)}>
-            <div className="grid grid-cols-2 gap-3">
-              {["No", "Yes"].map((opt) => (
-                <RadioOption key={opt} value={opt} selected={formData.is_rented === opt} onClick={() => updateField("is_rented", opt)} />
-              ))}
-            </div>
-          </RadioGroup>
-        </div>
-      )}
-
-      {showDelivery && (
-        <div className="space-y-3 animate-in fade-in duration-300">
-          <Label className="text-base">Is your vehicle refrigerated? <span className="text-destructive">*</span></Label>
-          <RadioGroup value={formData.is_refrigerated} onValueChange={(val) => updateField("is_refrigerated", val)}>
-            <div className="grid grid-cols-2 gap-3">
-              {["No", "Yes"].map((opt) => (
-                <RadioOption key={opt} value={opt} selected={formData.is_refrigerated === opt} onClick={() => updateField("is_refrigerated", opt)} />
-              ))}
-            </div>
-          </RadioGroup>
-        </div>
-      )}
-
-      {((showDelivery && formData.is_delivery === "Yes") || (showRideshare && formData.is_delivery === "Yes")) && (
-        <div className="space-y-3 animate-in fade-in duration-300">
-          <Label className="text-base">How many hours per week do you deliver food? <span className="text-destructive">*</span></Label>
-          <RadioGroup value={formData.food_delivery_hours} onValueChange={(val) => updateField("food_delivery_hours", val)}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {["Less than 10hrs per week", "More than 10hrs per week"].map((opt) => (
-                <RadioOption key={opt} value={opt} selected={formData.food_delivery_hours === opt} onClick={() => updateField("food_delivery_hours", opt)} />
-              ))}
-            </div>
-          </RadioGroup>
-        </div>
-      )}
+      <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-lg animate-pulse">
+        <Car className="w-5 h-5 text-primary" />
+        <p className="text-sm text-primary font-medium">Rideshare selected — advancing to next step...</p>
+      </div>
     </div>
   );
 }
