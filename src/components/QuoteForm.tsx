@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Shield, Info, User, Phone, Mail } from "lucide-react";
+import { Shield, User, Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const QuoteForm = () => {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -25,7 +27,7 @@ export const QuoteForm = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.from("form1_submissions").insert({
+      const { data, error } = await supabase.from("form1_submissions").insert({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         phone: phone.trim(),
@@ -35,14 +37,10 @@ export const QuoteForm = () => {
         channel: "website",
         submission_status: "received",
         user_agent: navigator.userAgent,
-      });
+      }).select("id").single();
 
       if (error) throw error;
-      toast.success("Thank you! We'll be in touch shortly.");
-      setFirstName("");
-      setLastName("");
-      setPhone("");
-      setEmail("");
+      navigate(`/apply/${data.id}`);
     } catch (error: any) {
       console.error("Submission error:", error);
       toast.error("Something went wrong. Please try again.");
