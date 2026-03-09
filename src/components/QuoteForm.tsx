@@ -27,7 +27,7 @@ export const QuoteForm = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.from("form1_submissions").insert({
+      const { data, error } = await supabase.from("form1_submissions").insert({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         phone: phone.trim(),
@@ -37,14 +37,10 @@ export const QuoteForm = () => {
         channel: "website",
         submission_status: "received",
         user_agent: navigator.userAgent,
-      });
+      }).select("id").single();
 
       if (error) throw error;
-      toast.success("Thank you! We'll be in touch shortly.");
-      setFirstName("");
-      setLastName("");
-      setPhone("");
-      setEmail("");
+      navigate(`/apply/${data.id}`);
     } catch (error: any) {
       console.error("Submission error:", error);
       toast.error("Something went wrong. Please try again.");
