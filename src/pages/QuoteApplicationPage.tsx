@@ -13,8 +13,8 @@ import { Step4VehicleDetails } from "@/components/quote-application/Step4Vehicle
 import { Step5VehicleUsageDetails } from "@/components/quote-application/Step5VehicleUsageDetails";
 import { Step6CoverOptions } from "@/components/quote-application/Step6CoverOptions";
 import { Step7TermsSignature } from "@/components/quote-application/Step7TermsSignature";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const STEP_TITLES = [
   "Vehicle Usage",
