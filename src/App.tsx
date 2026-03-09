@@ -39,6 +39,7 @@ const App = () => (
           <Route path="/benefits" element={<BenefitsPage />} />
           <Route path="/third-party-bulk" element={<ThirdPartyBulk />} />
           <Route path="/pds" element={<PDSPage />} />
+          <Route path="/apply/:form1Id" element={<QuoteApplicationPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
