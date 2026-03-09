@@ -2,6 +2,7 @@ import { QuoteApplicationFormData } from "@/types/quoteApplication";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Info } from "lucide-react";
 
 interface Props {
@@ -28,50 +29,13 @@ export function Step6CoverOptions({ formData, updateField }: Props) {
         <h2 className="text-xl font-medium">Cover Options</h2>
       </div>
 
-      <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-start gap-3">
-        <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-        <p className="text-sm text-muted-foreground">
-          <strong>How to choose:</strong> For best coverage, choose Comprehensive / Low Excess / With Extras.
-          For lowest price, choose Third Party / High excess / Without Extras.
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">Coverage Level <span className="text-destructive">*</span></Label>
-        <RadioGroup value={formData.coverage_level} onValueChange={(val) => updateField("coverage_level", val)}>
-          {[
-            { value: "Comprehensive", desc: "Full coverage for your vehicle and third party damage" },
-            { value: "Third Party Fire & Theft", desc: "Covers third party damage, fire and theft" },
-            { value: "Third Party Property Damage", desc: "Basic coverage for damage to other vehicles" },
-          ].map((opt) => (
-            <div key={opt.value} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer">
-              <RadioGroupItem value={opt.value} id={`cov-${opt.value}`} />
-              <Label htmlFor={`cov-${opt.value}`} className="flex-1 cursor-pointer">
-                <div className="font-semibold">{opt.value}</div>
-                <div className="text-sm text-muted-foreground">{opt.desc}</div>
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
-      </div>
-
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">Excess Level <span className="text-destructive">*</span></Label>
-        <RadioGroup value={formData.excess_level} onValueChange={(val) => updateField("excess_level", val)}>
-          {[
-            { value: "Low excess (under $1000)", desc: "Pay less when you make a claim" },
-            { value: "Medium excess ($1000 - $2000)", desc: "Balanced option" },
-            { value: "High excess (over $2000)", desc: "Lower premiums, higher out-of-pocket" },
-          ].map((opt) => (
-            <div key={opt.value} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer">
-              <RadioGroupItem value={opt.value} id={`exc-${opt.value}`} />
-              <Label htmlFor={`exc-${opt.value}`} className="flex-1 cursor-pointer">
-                <div className="font-semibold">{opt.value}</div>
-                <div className="text-sm text-muted-foreground">{opt.desc}</div>
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
+      <div className="space-y-2">
+        <Label>When would you like the policy to start?</Label>
+        <Input
+          type="date"
+          value={formData.policy_start_date}
+          onChange={(e) => updateField("policy_start_date", e.target.value)}
+        />
       </div>
 
       <div className="space-y-3">

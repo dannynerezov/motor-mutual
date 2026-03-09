@@ -1,73 +1,63 @@
 
 
-## Plan: Overhaul Quote Application Steps
+## Plan: Add Internal Dispute Resolution Subsection to Section 7
 
-This is a large set of UI/UX changes across the multi-step quote application form. Here is the breakdown:
+### Overview
+Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
 
-### 1. Step 1 - Auto-select Rideshare & Skip (Step1VehicleUsage.tsx)
-- Auto-set `vehicle_usage` to "Rideshare" on mount
-- Auto-advance to step 2 after a brief delay (or immediately)
-- Disable/grey out all non-Rideshare options visually
-- The step essentially becomes a pass-through
+### Changes Required
 
-### 2. Step 2 - Contact Details (Step2ContactDetails.tsx)
+**File: `src/pages/PDSPage.tsx`**
 
-**Gender as icon buttons**: Replace the Select dropdown with two styled buttons showing universal Male (♂) and Female (♀) symbols side by side.
+Update the Section 7 content (lines 211-223) to insert a new subsection:
 
-**DOB on same line as Gender**: Arrange Gender and DOB fields on a single horizontal row (Gender left, DOB right) using a responsive grid.
+#### Current Structure:
+```
+Section 7 — Complaints
+├── Intro paragraphs
+└── 7.1 External dispute resolution
+```
 
-**Address with Suncorp autosuggest**: Replace the plain text Input with the existing `AddressAutosuggest` component already in this project. Wire `onAddressSelect` to format and store the full address string in `formData.address`.
+#### New Structure:
+```
+Section 7 — Complaints
+├── Intro paragraphs
+├── 7.1 Internal Dispute Resolution (NEW)
+│   ├── Statutory obligation statement (s912A(1)(g))
+│   └── 4-Step IDR Process
+│       ├── Step 1: Lodge Your Complaint
+│       ├── Step 2: Acknowledgement
+│       ├── Step 3: Investigation
+│       └── Step 4: Resolution & Outcome
+└── 7.2 External dispute resolution (renumbered from 7.1)
+```
 
-**Hide Housing Status**: Remove or conditionally hide the housing_status field.
+### Content to Add
 
-### 3. Step 3 - Driving History (Step3DrivingHistory.tsx)
+**7.1 Internal Dispute Resolution**
 
-**Claims list like the other project**: When `claims_made === "Yes"`, show a structured claims list (max 3 claims) instead of just a count field. Each claim has:
-- Claim Description (Select from: "At fault with excess", "Other excess claim", "No excess claim", "Windscreen", "Natural hazard")
-- Date (Month + Year selectors)
-- Remove button
+The subsection will include:
 
-Add "+ Add Another Claim" button. Store as JSON string in `claims_list` field. Auto-initialize first claim when "Yes" selected. Show dialog if user tries to add more than 3.
+1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
 
-### 4. Step 4 - Vehicle Details (Step4VehicleDetails.tsx)
+2. **4-Step IDR Process** (summarised from the screenshot):
 
-**Suncorp rego lookup**: Add a "Lookup Vehicle" button. When clicked, call `suncorp-proxy` edge function with `action: 'vehicleLookup'` using the rego + state. On success, auto-populate make, model, year, NVIC, variant, body style, description, market/trade/retail values. Show a success card with vehicle image (from Suncorp NVIC image URL). Show interesting facts about the car (year manufactured, body style, etc.) in a fun info card.
+   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
 
-**Vehicle not registered button**: Allow manual entry if rego lookup fails or vehicle is unregistered.
+   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
 
-### 5. Step 5 - Vehicle Usage Details (Step5VehicleUsageDetails.tsx)
+   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
 
-**Hide these fields**:
-- `rideshare_delivery` (Is the car used for ridesharing...)
-- `days_per_week_work`
-- `km_per_year`
-- `peak_times`
-- `parking_location`
+   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
 
-Keep only: `exclude_under_25`, `undamaged_roadworthy`, and vehicle condition/finance questions.
+### Technical Details
 
-### 6. Step 6 - Cover Options (Step6CoverOptions.tsx)
+- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
+- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
+- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
+- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
 
-**Hide**: `coverage_level`, `excess_level` selectors. Keep policy extras and roadside assistance visible.
+### Optional Enhancement
 
-### 7. Step 7 - Terms & Signature (Step7TermsSignature.tsx)
-
-**Replace entire content** with a "Contact National Cover" message page instead of declarations/checkboxes. Show:
-- A branded message card with phone number and email
-- "Your application has been saved. To complete your quote, please contact National Cover directly."
-- Contact details and business hours
-- The submit button text changes to "Complete & Contact National Cover"
-
-### Files Modified
-- `src/components/quote-application/Step1VehicleUsage.tsx`
-- `src/components/quote-application/Step2ContactDetails.tsx`
-- `src/components/quote-application/Step3DrivingHistory.tsx`
-- `src/components/quote-application/Step4VehicleDetails.tsx`
-- `src/components/quote-application/Step5VehicleUsageDetails.tsx`
-- `src/components/quote-application/Step6CoverOptions.tsx`
-- `src/components/quote-application/Step7TermsSignature.tsx`
-- `src/pages/QuoteApplicationPage.tsx` (auto-skip step 1 logic)
-
-### No Database Changes
-All changes are frontend-only. The existing `form2_submissions` schema already supports all these fields.
+Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
 
