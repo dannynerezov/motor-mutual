@@ -78,26 +78,25 @@ export function Step4VehicleDetails({ formData, updateField }: Props) {
       if (error) throw error;
 
       if (data?.success && data.data) {
-        const v = data.data;
-        const vehicles = v.vehicles || v.vehicleList || [v];
-        const vehicle = vehicles[0] || v;
+        const vehicle = data.data.vehicleDetails || data.data;
+        const valueInfo = data.data.vehicleValueInfo;
         
-        const nvic = vehicle.nvic || vehicle.nvicCode || "";
-        const make = vehicle.make || vehicle.vehicleMake || "";
-        const model = vehicle.model || vehicle.vehicleModel || "";
-        const year = vehicle.year || vehicle.vehicleYear || vehicle.manufactureYear || "";
-        const variant = vehicle.variant || vehicle.vehicleVariant || "";
-        const bodyStyle = vehicle.bodyStyle || vehicle.vehicleBodyStyle || "";
-        const transmission = vehicle.transmission || "";
+        const nvic = vehicle.nvic || "";
+        const make = vehicle.make || "";
+        const model = vehicle.family || vehicle.model || "";
+        const year = vehicle.year || "";
+        const variant = vehicle.variant || "";
+        const bodyStyle = vehicle.bodyStyle || "";
+        const transmission = vehicle.transmissionDescription || vehicle.transmission || "";
         const series = vehicle.series || "";
-        const desc1 = vehicle.description1 || vehicle.desc1 || vehicle.vehicleDescription || "";
-        const desc2 = vehicle.description2 || vehicle.desc2 || "";
-        const marketValue = vehicle.marketValue || vehicle.averageMarketValue || null;
-        const tradeValue = vehicle.tradeLowPrice || vehicle.tradeValue || null;
-        const retailValue = vehicle.retailPrice || vehicle.retailValue || null;
+        const desc1 = `${year} ${make} ${model} ${variant}`.trim();
+        const desc2 = "";
+        const marketValue = valueInfo?.marketValue || null;
+        const tradeValue = valueInfo?.tradePrice || valueInfo?.tradeLowPrice || null;
+        const retailValue = valueInfo?.retailPrice || null;
         
         const imageUrl = nvic 
-          ? `https://resource.digitalasset.suncorp.com.au/image/upload/b_white,c_pad,f_auto,q_auto,h_200,w_300/v1/suncorp/cars/${nvic}.png`
+          ? `https://sales-assets.suncorp.com.au/vehicles/nvic/${nvic}.jpg`
           : "";
 
         const info: VehicleInfo = {
