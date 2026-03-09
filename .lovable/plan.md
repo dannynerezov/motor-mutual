@@ -1,63 +1,35 @@
 
 
-## Plan: Add Internal Dispute Resolution Subsection to Section 7
+## Plan: Add Oxylabs Proxy Support to suncorp-proxy Edge Function
 
-### Overview
-Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
+### Problem
+The current `suncorp-proxy` edge function in this project makes direct API calls to Suncorp's address search/validation endpoints. These calls get blocked (403/429/503) because there's no proxy fallback. The other project (No-Database Webform) has a working implementation with Oxylabs residential proxy support using a "direct-first, proxy-fallback" strategy.
 
 ### Changes Required
 
-**File: `src/pages/PDSPage.tsx`**
+**1. Add OXYLABS secrets to this project**
+- Need to add `OXYLABS_USERNAME` and `OXYLABS_PASSWORD` secrets (same credentials as the other project)
 
-Update the Section 7 content (lines 211-223) to insert a new subsection:
+**2. Rewrite `supabase/functions/suncorp-proxy/index.ts`**
+Replace the current simple proxy with the battle-tested version from the No-Database Webform project. Key additions:
 
-#### Current Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-└── 7.1 External dispute resolution
-```
+- **Oxylabs proxy client**: `createProxyClient()` using `Deno.createHttpClient` with Australian residential IP geo-targeting and session control
+- **Direct-first strategy**: `fetchWithDirectFirst()` — tries direct call with 8s timeout, falls back to proxy with 25s timeout and retries
+- **Search strategies**: `generateSearchStrategies()` — tries exact query, truncated postcode, and no-postcode variants
+- **Dedicated handlers**: `handleAddressSearch()` and `handleAddressValidate()` with proper error handling and strategy rotation
+- **Proxy diagnostics**: `handleProxyDiagnostics()` endpoint for testing proxy connectivity
+- **Updated ping**: Returns proxy status info
+- **Proper headers**: Includes `user-agent` header for all requests
 
-#### New Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-├── 7.1 Internal Dispute Resolution (NEW)
-│   ├── Statutory obligation statement (s912A(1)(g))
-│   └── 4-Step IDR Process
-│       ├── Step 1: Lodge Your Complaint
-│       ├── Step 2: Acknowledgement
-│       ├── Step 3: Investigation
-│       └── Step 4: Resolution & Outcome
-└── 7.2 External dispute resolution (renumbered from 7.1)
-```
+The existing `vehicleLookup`, `createQuote`, and `updateQuote` actions will also be converted to use the direct-first strategy (matching the other project's implementation).
 
-### Content to Add
+**3. Update `AddressAutosuggest.tsx`**
+Minor update to align the request/response format with the new handler signatures:
+- `addressSearch`: Send `{ action: 'addressSearch', payload: { query: searchTerm } }` instead of `{ action: 'addressSearch', searchText: searchTerm }`
+- `addressValidate`: Send `{ action: 'addressValidate', payload: { addressData: {...} } }` instead of `{ action: 'addressValidate', address: {...} }`
 
-**7.1 Internal Dispute Resolution**
-
-The subsection will include:
-
-1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
-
-2. **4-Step IDR Process** (summarised from the screenshot):
-
-   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
-
-   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
-
-   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
-
-   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
-
-### Technical Details
-
-- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
-- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
-- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
-- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
-
-### Optional Enhancement
-
-Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
+### Technical Notes
+- The proxy uses Oxylabs residential proxies (`pr.oxylabs.io:7777`) with Australian IP targeting (`-cc-au`)
+- Session IDs ensure IP consistency within a request batch (`-sessid-{random}-sesstime-10`)
+- Vehicle lookup uses a shorter 2s direct timeout since that endpoint consistently hangs on direct calls
 
