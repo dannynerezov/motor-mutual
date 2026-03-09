@@ -238,6 +238,7 @@ export type Database = {
           phone: string | null
           previously_insured: string | null
           price_target: string | null
+          quote_number: string | null
           renewal: string | null
           submission_status: string | null
           support_type: string | null
@@ -271,6 +272,7 @@ export type Database = {
           phone?: string | null
           previously_insured?: string | null
           price_target?: string | null
+          quote_number?: string | null
           renewal?: string | null
           submission_status?: string | null
           support_type?: string | null
@@ -304,6 +306,7 @@ export type Database = {
           phone?: string | null
           previously_insured?: string | null
           price_target?: string | null
+          quote_number?: string | null
           renewal?: string | null
           submission_status?: string | null
           support_type?: string | null
