@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.suncorp-single-quote]
 verify_jwt = false
+
+[functions.mcm-quote-api]
+verify_jwt = false
