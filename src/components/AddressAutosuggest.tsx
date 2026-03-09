@@ -239,15 +239,6 @@ export const AddressAutosuggest = ({
         setValidatedAddress(completeAddress);
         onAddressSelect(completeAddress);
         
-        if (!extractedLatitude || !extractedLongitude) {
-          toast({ 
-            title: 'Address validated', 
-            description: 'Warning: Coordinates not available',
-            variant: 'default'
-          });
-        } else {
-          toast({ title: 'Address validated' });
-        }
       }
     } catch (error) {
       console.error('[AddressAutosuggest] Validation error:', error);
