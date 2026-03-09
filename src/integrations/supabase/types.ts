@@ -362,6 +362,7 @@ export type Database = {
           first_name: string | null
           first_owner: string | null
           food_delivery_hours: string | null
+          form1_submission_id: string | null
           gender: string | null
           h_plate: string | null
           home_insurance_opt_in: boolean | null
@@ -469,6 +470,7 @@ export type Database = {
           first_name?: string | null
           first_owner?: string | null
           food_delivery_hours?: string | null
+          form1_submission_id?: string | null
           gender?: string | null
           h_plate?: string | null
           home_insurance_opt_in?: boolean | null
@@ -576,6 +578,7 @@ export type Database = {
           first_name?: string | null
           first_owner?: string | null
           food_delivery_hours?: string | null
+          form1_submission_id?: string | null
           gender?: string | null
           h_plate?: string | null
           home_insurance_opt_in?: boolean | null
@@ -638,7 +641,15 @@ export type Database = {
           vehicle_year?: string | null
           which_insurer?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "form2_submissions_form1_submission_id_fkey"
+            columns: ["form1_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form1_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       form3_submissions: {
         Row: {
@@ -680,7 +691,14 @@ export type Database = {
           total_monthly_premium: number | null
           updated_at: string
           user_agent: string | null
+          uw_base_premium: number | null
+          uw_fire_levy: number | null
+          uw_gst: number | null
           uw_levy: number | null
+          uw_name: string | null
+          uw_quote_number: string | null
+          uw_stamp_duty: number | null
+          uw_total_premium: number | null
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_rego: string | null
@@ -726,7 +744,14 @@ export type Database = {
           total_monthly_premium?: number | null
           updated_at?: string
           user_agent?: string | null
+          uw_base_premium?: number | null
+          uw_fire_levy?: number | null
+          uw_gst?: number | null
           uw_levy?: number | null
+          uw_name?: string | null
+          uw_quote_number?: string | null
+          uw_stamp_duty?: number | null
+          uw_total_premium?: number | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_rego?: string | null
@@ -772,7 +797,14 @@ export type Database = {
           total_monthly_premium?: number | null
           updated_at?: string
           user_agent?: string | null
+          uw_base_premium?: number | null
+          uw_fire_levy?: number | null
+          uw_gst?: number | null
           uw_levy?: number | null
+          uw_name?: string | null
+          uw_quote_number?: string | null
+          uw_stamp_duty?: number | null
+          uw_total_premium?: number | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_rego?: string | null
