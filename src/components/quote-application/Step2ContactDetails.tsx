@@ -61,12 +61,31 @@ export function Step2ContactDetails({ formData, updateField }: Props) {
 
         <div className="space-y-2">
           <Label>Date of Birth <span className="text-destructive">*</span></Label>
-          <div className="flex gap-2 items-center">
-            <Input placeholder="DD" type="number" min="1" max="31" value={formData.dob_day} onChange={(e) => updateField("dob_day", e.target.value)} className="w-16 text-center" />
-            <span className="text-muted-foreground">/</span>
-            <Input placeholder="MM" type="number" min="1" max="12" value={formData.dob_month} onChange={(e) => updateField("dob_month", e.target.value)} className="w-16 text-center" />
-            <span className="text-muted-foreground">/</span>
-            <Input placeholder="YYYY" type="number" min="1900" max="2008" value={formData.dob_year} onChange={(e) => updateField("dob_year", e.target.value)} className="w-24 text-center" />
+          <div className="flex gap-2">
+            <Select value={formData.dob_day} onValueChange={(v) => updateField("dob_day", v)}>
+              <SelectTrigger className="w-[80px]"><SelectValue placeholder="Day" /></SelectTrigger>
+              <SelectContent className="max-h-[200px]">
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                  <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={formData.dob_month} onValueChange={(v) => updateField("dob_month", v)}>
+              <SelectTrigger className="flex-1"><SelectValue placeholder="Month" /></SelectTrigger>
+              <SelectContent className="max-h-[200px]">
+                {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+                  <SelectItem key={i} value={(i + 1).toString()}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={formData.dob_year} onValueChange={(v) => updateField("dob_year", v)}>
+              <SelectTrigger className="w-[100px]"><SelectValue placeholder="Year" /></SelectTrigger>
+              <SelectContent className="max-h-[200px]">
+                {Array.from({ length: 82 }, (_, i) => new Date().getFullYear() - 18 - i).map((y) => (
+                  <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
