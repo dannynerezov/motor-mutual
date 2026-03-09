@@ -211,6 +211,706 @@ export type Database = {
         }
         Relationships: []
       }
+      form1_submissions: {
+        Row: {
+          attachments: Json | null
+          cc_email: string | null
+          channel: string | null
+          claim_description: string | null
+          contact_type: string | null
+          created_at: string
+          deal_id: string | null
+          email: string | null
+          enquiry_description: string | null
+          first_name: string | null
+          home_insurance_type: string | null
+          how_can: string | null
+          id: string
+          insurance_expiry: string | null
+          insurance_expiry_day: string | null
+          insurance_expiry_month: string | null
+          insurance_expiry_year: string | null
+          insurance_type: string | null
+          ip_address: string | null
+          last_name: string | null
+          notes: string | null
+          partner_name: string | null
+          phone: string | null
+          previously_insured: string | null
+          price_target: string | null
+          renewal: string | null
+          submission_status: string | null
+          support_type: string | null
+          updated_at: string
+          user_agent: string | null
+          user_field: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          cc_email?: string | null
+          channel?: string | null
+          claim_description?: string | null
+          contact_type?: string | null
+          created_at?: string
+          deal_id?: string | null
+          email?: string | null
+          enquiry_description?: string | null
+          first_name?: string | null
+          home_insurance_type?: string | null
+          how_can?: string | null
+          id?: string
+          insurance_expiry?: string | null
+          insurance_expiry_day?: string | null
+          insurance_expiry_month?: string | null
+          insurance_expiry_year?: string | null
+          insurance_type?: string | null
+          ip_address?: string | null
+          last_name?: string | null
+          notes?: string | null
+          partner_name?: string | null
+          phone?: string | null
+          previously_insured?: string | null
+          price_target?: string | null
+          renewal?: string | null
+          submission_status?: string | null
+          support_type?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_field?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          cc_email?: string | null
+          channel?: string | null
+          claim_description?: string | null
+          contact_type?: string | null
+          created_at?: string
+          deal_id?: string | null
+          email?: string | null
+          enquiry_description?: string | null
+          first_name?: string | null
+          home_insurance_type?: string | null
+          how_can?: string | null
+          id?: string
+          insurance_expiry?: string | null
+          insurance_expiry_day?: string | null
+          insurance_expiry_month?: string | null
+          insurance_expiry_year?: string | null
+          insurance_type?: string | null
+          ip_address?: string | null
+          last_name?: string | null
+          notes?: string | null
+          partner_name?: string | null
+          phone?: string | null
+          previously_insured?: string | null
+          price_target?: string | null
+          renewal?: string | null
+          submission_status?: string | null
+          support_type?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_field?: string | null
+        }
+        Relationships: []
+      }
+      form2_submissions: {
+        Row: {
+          abn: string | null
+          abn_duration: string | null
+          add_more_vehicles: string | null
+          address: string | null
+          address_suncorp_validated: string | null
+          age_received_license: string | null
+          agreed_value: number | null
+          all_drivers_2_years: string | null
+          bankruptcy: string | null
+          better_quote_calculated_price: string | null
+          better_quote_evidence_url: string | null
+          better_quote_target_insurer: string | null
+          better_quote_target_price: string | null
+          broker_terms_accepted: boolean | null
+          business_usage_type: string | null
+          cc_email: string | null
+          claim_denied_fraud: string | null
+          claims_count: string | null
+          claims_list: Json | null
+          claims_made: string | null
+          company_name: string | null
+          continuously_insured: string | null
+          coverage_level: string | null
+          created_at: string
+          criminal_offences: string | null
+          current_cover: string | null
+          current_excess: string | null
+          current_insurer: string | null
+          current_premium: string | null
+          customer_type: string | null
+          days_per_week_work: string | null
+          deal_id: string | null
+          demerit_points: string | null
+          dob_day: string | null
+          dob_month: string | null
+          dob_year: string | null
+          domain_alias: string | null
+          email: string | null
+          excess_level: string | null
+          exclude_under_25: string | null
+          finance_company: string | null
+          first_name: string | null
+          first_owner: string | null
+          food_delivery_hours: string | null
+          gender: string | null
+          h_plate: string | null
+          home_insurance_opt_in: boolean | null
+          housing_status: string | null
+          id: string
+          insurance_declined: string | null
+          international_license: string | null
+          international_years: string | null
+          ip_address: string | null
+          is_delivery: boolean | null
+          is_financed: string | null
+          is_modified: string | null
+          is_refrigerated: boolean | null
+          is_rented: boolean | null
+          is_rideshare: boolean | null
+          is_vehicle_unregistered: boolean | null
+          km_per_year: string | null
+          last_name: string | null
+          license_suspended: string | null
+          license_type: string | null
+          market_value: number | null
+          modification_details: string | null
+          nominated_drivers_list: Json | null
+          owner_drives: string | null
+          parking_address: string | null
+          parking_location: string | null
+          peak_times: string | null
+          phone: string | null
+          policy_extras: string | null
+          policy_start_date: string | null
+          previously_insured: string | null
+          privacy_accepted: boolean | null
+          purchase_type: string | null
+          quote_type: string | null
+          retail_value: number | null
+          rideshare_delivery: string | null
+          roadside_assistance: string | null
+          security: string | null
+          signature: string | null
+          submission_status: string | null
+          sum_insured_type: string | null
+          trade_value: number | null
+          undamaged_roadworthy: string | null
+          updated_at: string
+          user_agent: string | null
+          user_field: string | null
+          vehicle_body_style: string | null
+          vehicle_description: string | null
+          vehicle_identification_method: string | null
+          vehicle_image_url: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_nvic: string | null
+          vehicle_registration: string | null
+          vehicle_series: string | null
+          vehicle_state: string | null
+          vehicle_transmission: string | null
+          vehicle_usage: string | null
+          vehicle_variant: string | null
+          vehicle_year: string | null
+          which_insurer: string | null
+        }
+        Insert: {
+          abn?: string | null
+          abn_duration?: string | null
+          add_more_vehicles?: string | null
+          address?: string | null
+          address_suncorp_validated?: string | null
+          age_received_license?: string | null
+          agreed_value?: number | null
+          all_drivers_2_years?: string | null
+          bankruptcy?: string | null
+          better_quote_calculated_price?: string | null
+          better_quote_evidence_url?: string | null
+          better_quote_target_insurer?: string | null
+          better_quote_target_price?: string | null
+          broker_terms_accepted?: boolean | null
+          business_usage_type?: string | null
+          cc_email?: string | null
+          claim_denied_fraud?: string | null
+          claims_count?: string | null
+          claims_list?: Json | null
+          claims_made?: string | null
+          company_name?: string | null
+          continuously_insured?: string | null
+          coverage_level?: string | null
+          created_at?: string
+          criminal_offences?: string | null
+          current_cover?: string | null
+          current_excess?: string | null
+          current_insurer?: string | null
+          current_premium?: string | null
+          customer_type?: string | null
+          days_per_week_work?: string | null
+          deal_id?: string | null
+          demerit_points?: string | null
+          dob_day?: string | null
+          dob_month?: string | null
+          dob_year?: string | null
+          domain_alias?: string | null
+          email?: string | null
+          excess_level?: string | null
+          exclude_under_25?: string | null
+          finance_company?: string | null
+          first_name?: string | null
+          first_owner?: string | null
+          food_delivery_hours?: string | null
+          gender?: string | null
+          h_plate?: string | null
+          home_insurance_opt_in?: boolean | null
+          housing_status?: string | null
+          id?: string
+          insurance_declined?: string | null
+          international_license?: string | null
+          international_years?: string | null
+          ip_address?: string | null
+          is_delivery?: boolean | null
+          is_financed?: string | null
+          is_modified?: string | null
+          is_refrigerated?: boolean | null
+          is_rented?: boolean | null
+          is_rideshare?: boolean | null
+          is_vehicle_unregistered?: boolean | null
+          km_per_year?: string | null
+          last_name?: string | null
+          license_suspended?: string | null
+          license_type?: string | null
+          market_value?: number | null
+          modification_details?: string | null
+          nominated_drivers_list?: Json | null
+          owner_drives?: string | null
+          parking_address?: string | null
+          parking_location?: string | null
+          peak_times?: string | null
+          phone?: string | null
+          policy_extras?: string | null
+          policy_start_date?: string | null
+          previously_insured?: string | null
+          privacy_accepted?: boolean | null
+          purchase_type?: string | null
+          quote_type?: string | null
+          retail_value?: number | null
+          rideshare_delivery?: string | null
+          roadside_assistance?: string | null
+          security?: string | null
+          signature?: string | null
+          submission_status?: string | null
+          sum_insured_type?: string | null
+          trade_value?: number | null
+          undamaged_roadworthy?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_field?: string | null
+          vehicle_body_style?: string | null
+          vehicle_description?: string | null
+          vehicle_identification_method?: string | null
+          vehicle_image_url?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_nvic?: string | null
+          vehicle_registration?: string | null
+          vehicle_series?: string | null
+          vehicle_state?: string | null
+          vehicle_transmission?: string | null
+          vehicle_usage?: string | null
+          vehicle_variant?: string | null
+          vehicle_year?: string | null
+          which_insurer?: string | null
+        }
+        Update: {
+          abn?: string | null
+          abn_duration?: string | null
+          add_more_vehicles?: string | null
+          address?: string | null
+          address_suncorp_validated?: string | null
+          age_received_license?: string | null
+          agreed_value?: number | null
+          all_drivers_2_years?: string | null
+          bankruptcy?: string | null
+          better_quote_calculated_price?: string | null
+          better_quote_evidence_url?: string | null
+          better_quote_target_insurer?: string | null
+          better_quote_target_price?: string | null
+          broker_terms_accepted?: boolean | null
+          business_usage_type?: string | null
+          cc_email?: string | null
+          claim_denied_fraud?: string | null
+          claims_count?: string | null
+          claims_list?: Json | null
+          claims_made?: string | null
+          company_name?: string | null
+          continuously_insured?: string | null
+          coverage_level?: string | null
+          created_at?: string
+          criminal_offences?: string | null
+          current_cover?: string | null
+          current_excess?: string | null
+          current_insurer?: string | null
+          current_premium?: string | null
+          customer_type?: string | null
+          days_per_week_work?: string | null
+          deal_id?: string | null
+          demerit_points?: string | null
+          dob_day?: string | null
+          dob_month?: string | null
+          dob_year?: string | null
+          domain_alias?: string | null
+          email?: string | null
+          excess_level?: string | null
+          exclude_under_25?: string | null
+          finance_company?: string | null
+          first_name?: string | null
+          first_owner?: string | null
+          food_delivery_hours?: string | null
+          gender?: string | null
+          h_plate?: string | null
+          home_insurance_opt_in?: boolean | null
+          housing_status?: string | null
+          id?: string
+          insurance_declined?: string | null
+          international_license?: string | null
+          international_years?: string | null
+          ip_address?: string | null
+          is_delivery?: boolean | null
+          is_financed?: string | null
+          is_modified?: string | null
+          is_refrigerated?: boolean | null
+          is_rented?: boolean | null
+          is_rideshare?: boolean | null
+          is_vehicle_unregistered?: boolean | null
+          km_per_year?: string | null
+          last_name?: string | null
+          license_suspended?: string | null
+          license_type?: string | null
+          market_value?: number | null
+          modification_details?: string | null
+          nominated_drivers_list?: Json | null
+          owner_drives?: string | null
+          parking_address?: string | null
+          parking_location?: string | null
+          peak_times?: string | null
+          phone?: string | null
+          policy_extras?: string | null
+          policy_start_date?: string | null
+          previously_insured?: string | null
+          privacy_accepted?: boolean | null
+          purchase_type?: string | null
+          quote_type?: string | null
+          retail_value?: number | null
+          rideshare_delivery?: string | null
+          roadside_assistance?: string | null
+          security?: string | null
+          signature?: string | null
+          submission_status?: string | null
+          sum_insured_type?: string | null
+          trade_value?: number | null
+          undamaged_roadworthy?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_field?: string | null
+          vehicle_body_style?: string | null
+          vehicle_description?: string | null
+          vehicle_identification_method?: string | null
+          vehicle_image_url?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_nvic?: string | null
+          vehicle_registration?: string | null
+          vehicle_series?: string | null
+          vehicle_state?: string | null
+          vehicle_transmission?: string | null
+          vehicle_usage?: string | null
+          vehicle_variant?: string | null
+          vehicle_year?: string | null
+          which_insurer?: string | null
+        }
+        Relationships: []
+      }
+      form3_submissions: {
+        Row: {
+          additional_vehicles: string | null
+          age_restriction: string | null
+          agreed_value: number | null
+          base_premium: number | null
+          broker_fee_total: number | null
+          brokerage_fee: number | null
+          created_at: string
+          customer_excess: number | null
+          deal_id: string | null
+          difference_monthly_to_yearly: number | null
+          excess_cashback: number | null
+          fire_levy: number | null
+          form2_excess_level: string | null
+          form2_submission_id: string | null
+          gst: number | null
+          id: string
+          insurance_type: string | null
+          insurer_quotation_url: string | null
+          insurer_reference: string | null
+          insurer_total: number | null
+          ip_address: string | null
+          named_drivers: Json | null
+          overseas_licences: string | null
+          policy_coverage: string | null
+          policy_description: string | null
+          policy_extras: Json | null
+          policy_start_date: string | null
+          policy_type: string | null
+          processing_fee: number | null
+          product: string | null
+          quote_agent: string | null
+          stamp_duty: number | null
+          standard_excess: number | null
+          submission_status: string | null
+          total_annual_premium: number | null
+          total_monthly_premium: number | null
+          updated_at: string
+          user_agent: string | null
+          uw_levy: number | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_rego: string | null
+          vehicle_value: number | null
+          vehicle_year: string | null
+        }
+        Insert: {
+          additional_vehicles?: string | null
+          age_restriction?: string | null
+          agreed_value?: number | null
+          base_premium?: number | null
+          broker_fee_total?: number | null
+          brokerage_fee?: number | null
+          created_at?: string
+          customer_excess?: number | null
+          deal_id?: string | null
+          difference_monthly_to_yearly?: number | null
+          excess_cashback?: number | null
+          fire_levy?: number | null
+          form2_excess_level?: string | null
+          form2_submission_id?: string | null
+          gst?: number | null
+          id?: string
+          insurance_type?: string | null
+          insurer_quotation_url?: string | null
+          insurer_reference?: string | null
+          insurer_total?: number | null
+          ip_address?: string | null
+          named_drivers?: Json | null
+          overseas_licences?: string | null
+          policy_coverage?: string | null
+          policy_description?: string | null
+          policy_extras?: Json | null
+          policy_start_date?: string | null
+          policy_type?: string | null
+          processing_fee?: number | null
+          product?: string | null
+          quote_agent?: string | null
+          stamp_duty?: number | null
+          standard_excess?: number | null
+          submission_status?: string | null
+          total_annual_premium?: number | null
+          total_monthly_premium?: number | null
+          updated_at?: string
+          user_agent?: string | null
+          uw_levy?: number | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_rego?: string | null
+          vehicle_value?: number | null
+          vehicle_year?: string | null
+        }
+        Update: {
+          additional_vehicles?: string | null
+          age_restriction?: string | null
+          agreed_value?: number | null
+          base_premium?: number | null
+          broker_fee_total?: number | null
+          brokerage_fee?: number | null
+          created_at?: string
+          customer_excess?: number | null
+          deal_id?: string | null
+          difference_monthly_to_yearly?: number | null
+          excess_cashback?: number | null
+          fire_levy?: number | null
+          form2_excess_level?: string | null
+          form2_submission_id?: string | null
+          gst?: number | null
+          id?: string
+          insurance_type?: string | null
+          insurer_quotation_url?: string | null
+          insurer_reference?: string | null
+          insurer_total?: number | null
+          ip_address?: string | null
+          named_drivers?: Json | null
+          overseas_licences?: string | null
+          policy_coverage?: string | null
+          policy_description?: string | null
+          policy_extras?: Json | null
+          policy_start_date?: string | null
+          policy_type?: string | null
+          processing_fee?: number | null
+          product?: string | null
+          quote_agent?: string | null
+          stamp_duty?: number | null
+          standard_excess?: number | null
+          submission_status?: string | null
+          total_annual_premium?: number | null
+          total_monthly_premium?: number | null
+          updated_at?: string
+          user_agent?: string | null
+          uw_levy?: number | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_rego?: string | null
+          vehicle_value?: number | null
+          vehicle_year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form3_submissions_form2_submission_id_fkey"
+            columns: ["form2_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form2_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form4_submissions: {
+        Row: {
+          additional_vehicles: string | null
+          change_request_category: string | null
+          change_request_text: string | null
+          confirmation_choice: string | null
+          created_at: string
+          customer_email: string | null
+          customer_excess: number | null
+          customer_first_name: string | null
+          customer_last_name: string | null
+          customer_phone: string | null
+          deal_id: string | null
+          details_confirmed: boolean | null
+          form3_submission_id: string | null
+          id: string
+          insurance_type: string | null
+          ip_address: string | null
+          payment_method: string | null
+          policy_coverage: string | null
+          policy_start_date: string | null
+          policy_type: string | null
+          standard_excess: number | null
+          submission_status: string | null
+          terms_accepted: boolean | null
+          total_annual_premium: number | null
+          total_monthly_premium: number | null
+          underwriter: string | null
+          updated_at: string
+          user_agent: string | null
+          vehicle_image_url: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_rego: string | null
+          vehicle_state: string | null
+          vehicle_usage: string | null
+          vehicle_value: number | null
+          vehicle_year: string | null
+        }
+        Insert: {
+          additional_vehicles?: string | null
+          change_request_category?: string | null
+          change_request_text?: string | null
+          confirmation_choice?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_excess?: number | null
+          customer_first_name?: string | null
+          customer_last_name?: string | null
+          customer_phone?: string | null
+          deal_id?: string | null
+          details_confirmed?: boolean | null
+          form3_submission_id?: string | null
+          id?: string
+          insurance_type?: string | null
+          ip_address?: string | null
+          payment_method?: string | null
+          policy_coverage?: string | null
+          policy_start_date?: string | null
+          policy_type?: string | null
+          standard_excess?: number | null
+          submission_status?: string | null
+          terms_accepted?: boolean | null
+          total_annual_premium?: number | null
+          total_monthly_premium?: number | null
+          underwriter?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          vehicle_image_url?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_rego?: string | null
+          vehicle_state?: string | null
+          vehicle_usage?: string | null
+          vehicle_value?: number | null
+          vehicle_year?: string | null
+        }
+        Update: {
+          additional_vehicles?: string | null
+          change_request_category?: string | null
+          change_request_text?: string | null
+          confirmation_choice?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_excess?: number | null
+          customer_first_name?: string | null
+          customer_last_name?: string | null
+          customer_phone?: string | null
+          deal_id?: string | null
+          details_confirmed?: boolean | null
+          form3_submission_id?: string | null
+          id?: string
+          insurance_type?: string | null
+          ip_address?: string | null
+          payment_method?: string | null
+          policy_coverage?: string | null
+          policy_start_date?: string | null
+          policy_type?: string | null
+          standard_excess?: number | null
+          submission_status?: string | null
+          terms_accepted?: boolean | null
+          total_annual_premium?: number | null
+          total_monthly_premium?: number | null
+          underwriter?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          vehicle_image_url?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_rego?: string | null
+          vehicle_state?: string | null
+          vehicle_usage?: string | null
+          vehicle_value?: number | null
+          vehicle_year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form4_submissions_form3_submission_id_fkey"
+            columns: ["form3_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form3_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insurance_pricing_data: {
         Row: {
           created_at: string
