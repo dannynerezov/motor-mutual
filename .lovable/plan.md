@@ -1,80 +1,63 @@
 
 
-## Plan: Create MCM Quote Integration Endpoint
+## Plan: Add Internal Dispute Resolution Subsection to Section 7
 
 ### Overview
+Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
 
-Create a single edge function `mcm-quote-api` that handles creating form1, form2, and form3 records via separate actions. The other project calls this endpoint sequentially to build a complete Motor Cover Mutual quote.
+### Changes Required
 
-### Flow
+**File: `src/pages/PDSPage.tsx`**
 
-```text
-Other Project                          This Project (MCM)
-─────────────                          ──────────────────
-1. POST /mcm-quote-api                 
-   action: "create_form1"         →    Insert form1_submissions
-   (deal_id, customer info)       ←    Return { form1_id, quote_number }
+Update the Section 7 content (lines 211-223) to insert a new subsection:
 
-2. POST /mcm-quote-api                 
-   action: "create_form2"         →    Insert form2_submissions  
-   (form1_id, vehicle, driver)    ←    Return { form2_id }
-
-3. POST /mcm-quote-api                 
-   action: "create_form3"         →    Insert form3_submissions
-   (form2_id, pricing data)       ←    Return { form3_id }
+#### Current Structure:
+```
+Section 7 — Complaints
+├── Intro paragraphs
+└── 7.1 External dispute resolution
 ```
 
-### Database Migration
-
-Add underwriter fields to `form3_submissions`:
-
-```sql
-ALTER TABLE form3_submissions
-  ADD COLUMN IF NOT EXISTS uw_quote_number text,
-  ADD COLUMN IF NOT EXISTS uw_name text,
-  ADD COLUMN IF NOT EXISTS uw_base_premium numeric,
-  ADD COLUMN IF NOT EXISTS uw_stamp_duty numeric,
-  ADD COLUMN IF NOT EXISTS uw_fire_levy numeric,
-  ADD COLUMN IF NOT EXISTS uw_gst numeric,
-  ADD COLUMN IF NOT EXISTS uw_total_premium numeric;
+#### New Structure:
+```
+Section 7 — Complaints
+├── Intro paragraphs
+├── 7.1 Internal Dispute Resolution (NEW)
+│   ├── Statutory obligation statement (s912A(1)(g))
+│   └── 4-Step IDR Process
+│       ├── Step 1: Lodge Your Complaint
+│       ├── Step 2: Acknowledgement
+│       ├── Step 3: Investigation
+│       └── Step 4: Resolution & Outcome
+└── 7.2 External dispute resolution (renumbered from 7.1)
 ```
 
-Also add `form1_submission_id` to `form2_submissions` for proper linking:
+### Content to Add
 
-```sql
-ALTER TABLE form2_submissions
-  ADD COLUMN IF NOT EXISTS form1_submission_id uuid REFERENCES form1_submissions(id);
-```
+**7.1 Internal Dispute Resolution**
 
-### Edge Function: `supabase/functions/mcm-quote-api/index.ts`
+The subsection will include:
 
-Single endpoint with `action` field in the JSON body:
+1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
 
-- **`create_form1`**: Accepts `deal_id`, `first_name`, `last_name`, `email`, `phone`, `insurance_type`, `channel`. Inserts into `form1_submissions` with auto-generated `quote_number` (from the existing `generate_quote_number()` DB function -- but that's on the `quotes` table trigger, so we'll generate one in the edge function using format `MCM-YYYYMMDD-XXXX`). Returns `form1_id` and `quote_number`.
+2. **4-Step IDR Process** (summarised from the screenshot):
 
-- **`create_form2`**: Accepts `form1_submission_id`, `deal_id`, and all customer/vehicle/driving fields. Inserts into `form2_submissions`. Returns `form2_id`.
+   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
 
-- **`create_form3`**: Accepts `form2_submission_id`, `deal_id`, membership fee (mapped to `base_premium`), `stamp_duty` = 0, `fire_levy` = 0, `gst` = 0, plus underwriter fields: `uw_quote_number`, `uw_name`, `uw_base_premium`, `uw_stamp_duty`, `uw_fire_levy`, `uw_gst`. Inserts into `form3_submissions`. Returns `form3_id`.
+   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
 
-**Config**: Add `[functions.mcm-quote-api]` with `verify_jwt = false` to `supabase/config.toml`.
+   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
 
-### Endpoint URL
+   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
 
-```
-https://ajwtlemiupyquwmhzxqi.supabase.co/functions/v1/mcm-quote-api
-```
+### Technical Details
 
-### Integration Prompt for Other Project
+- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
+- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
+- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
+- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
 
-A detailed prompt will be provided covering:
-- Endpoint URL and request format for each of the 3 actions
-- Complete field mappings from the other project's data model to MCM's form1/form2/form3 fields
-- Expected responses and error handling
-- Sequential flow: create_form1 → get quote_number → create_form2 → get form2_id → create_form3
+### Optional Enhancement
 
-### Files to Create/Modify
-
-1. **Create** `supabase/functions/mcm-quote-api/index.ts` -- the edge function
-2. **Modify** `supabase/config.toml` -- add function config (but this file is auto-managed, so just add the entry)
-3. **Migration** -- add underwriter columns to form3_submissions, add form1_submission_id to form2_submissions
+Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
 
