@@ -9,6 +9,7 @@ import QuotePage from "./pages/QuotePage";
 import AdminPage from "./pages/AdminPage";
 import AdminPricingAnalysis from "./pages/AdminPricingAnalysis";
 import AdminPricingSchemes from "./pages/AdminPricingSchemes";
+import AdminSubmissions from "./pages/AdminSubmissions";
 import PricingAnalysisPage from "./pages/PricingAnalysisPage";
 import WidgetPage from "./pages/WidgetPage";
 import ClaimsPage from "./pages/ClaimsPage";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/admin/pricing-analysis" element={<AdminPricingAnalysis />} />
           <Route path="/admin/pricing-schemes" element={<AdminPricingSchemes />} />
+          <Route path="/admin/submissions" element={<AdminSubmissions />} />
           <Route path="/pricing-analysis" element={<PricingAnalysisPage />} />
           <Route path="/widget" element={<WidgetPage />} />
           <Route path="/claims" element={<ClaimsPage />} />

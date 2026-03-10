@@ -1,31 +1,63 @@
 
 
-## Plan: Create Submissions Viewer Page
+## Plan: Add Internal Dispute Resolution Subsection to Section 7
 
-### What
-A new `/admin/submissions` page with 4 tabs (Form 1, Form 2, Form 3, Form 4) showing records from each `formX_submissions` table in a sortable table view with auto-refresh.
+### Overview
+Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
 
-### Implementation
+### Changes Required
 
-1. **Create `src/pages/AdminSubmissions.tsx`**
-   - Uses Tabs component with 4 tabs: Form 1, Form 2, Form 3, Form 4
-   - Each tab fetches from its respective table using `supabase.from('formX_submissions').select('*').order('created_at', { ascending: false })`
-   - Display key columns in a table:
-     - **Form 1**: id, deal_id, quote_number, first_name, last_name, email, insurance_type, channel, submission_status, created_at
-     - **Form 2**: id, deal_id, form1_submission_id, first_name, last_name, vehicle_registration, vehicle_make, vehicle_model, vehicle_year, submission_status, created_at
-     - **Form 3**: id, deal_id, form2_submission_id, base_premium, stamp_duty, gst, total_annual_premium, uw_quote_number, uw_name, submission_status, created_at
-     - **Form 4**: id, deal_id, form3_submission_id, customer_first_name, vehicle_rego, payment_method, submission_status, created_at
-   - Auto-refresh every 10 seconds so new records appear while testing from the other project
-   - Show record count badge on each tab
+**File: `src/pages/PDSPage.tsx`**
 
-2. **Add route in `src/App.tsx`**
-   - `/admin/submissions` → `AdminSubmissions`
+Update the Section 7 content (lines 211-223) to insert a new subsection:
 
-3. **Add nav link on AdminPage**
-   - Button/link to navigate to `/admin/submissions`
+#### Current Structure:
+```
+Section 7 — Complaints
+├── Intro paragraphs
+└── 7.1 External dispute resolution
+```
 
-### Files
-- **Create**: `src/pages/AdminSubmissions.tsx`
-- **Edit**: `src/App.tsx` (add route)
-- **Edit**: `src/pages/AdminPage.tsx` (add link)
+#### New Structure:
+```
+Section 7 — Complaints
+├── Intro paragraphs
+├── 7.1 Internal Dispute Resolution (NEW)
+│   ├── Statutory obligation statement (s912A(1)(g))
+│   └── 4-Step IDR Process
+│       ├── Step 1: Lodge Your Complaint
+│       ├── Step 2: Acknowledgement
+│       ├── Step 3: Investigation
+│       └── Step 4: Resolution & Outcome
+└── 7.2 External dispute resolution (renumbered from 7.1)
+```
+
+### Content to Add
+
+**7.1 Internal Dispute Resolution**
+
+The subsection will include:
+
+1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
+
+2. **4-Step IDR Process** (summarised from the screenshot):
+
+   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
+
+   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
+
+   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
+
+   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
+
+### Technical Details
+
+- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
+- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
+- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
+- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
+
+### Optional Enhancement
+
+Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
 
