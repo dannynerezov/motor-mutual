@@ -6,6 +6,9 @@ import { ManualQuoteRequestsCard } from "@/components/admin/ManualQuoteRequestsC
 import { QuoteWidgetCard } from "@/components/admin/QuoteWidgetCard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { FileText } from "lucide-react";
 
 const AdminPage = () => {
 
