@@ -17,6 +17,8 @@ import BenefitsPage from "./pages/BenefitsPage";
 import ThirdPartyBulk from "./pages/ThirdPartyBulk";
 import PDSPage from "./pages/PDSPage";
 import QuoteApplicationPage from "./pages/QuoteApplicationPage";
+import RetrieveQuotePage from "./pages/RetrieveQuotePage";
+import AdminMemberships from "./pages/AdminMemberships";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
