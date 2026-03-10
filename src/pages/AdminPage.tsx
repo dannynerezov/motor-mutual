@@ -20,6 +20,9 @@ const AdminPage = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+            <Button variant="outline" onClick={() => navigate("/admin/memberships")}>
+              <Award className="mr-2 h-4 w-4" /> Memberships
+            </Button>
             <Button variant="outline" onClick={() => navigate("/admin/submissions")}>
               <FileText className="mr-2 h-4 w-4" /> Submissions Viewer
             </Button>
