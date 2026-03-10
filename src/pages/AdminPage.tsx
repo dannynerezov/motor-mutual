@@ -8,7 +8,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { FileText } from "lucide-react";
+import { FileText, Award } from "lucide-react";
 
 const AdminPage = () => {
   const navigate = useNavigate();
