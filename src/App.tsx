@@ -9,6 +9,7 @@ import QuotePage from "./pages/QuotePage";
 import AdminPage from "./pages/AdminPage";
 import AdminPricingAnalysis from "./pages/AdminPricingAnalysis";
 import AdminPricingSchemes from "./pages/AdminPricingSchemes";
+import AdminSubmissions from "./pages/AdminSubmissions";
 import PricingAnalysisPage from "./pages/PricingAnalysisPage";
 import WidgetPage from "./pages/WidgetPage";
 import ClaimsPage from "./pages/ClaimsPage";
