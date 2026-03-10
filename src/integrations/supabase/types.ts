@@ -1051,6 +1051,118 @@ export type Database = {
         }
         Relationships: []
       }
+      memberships: {
+        Row: {
+          base_premium: number | null
+          coverage_level: string | null
+          created_at: string
+          deal_id: string | null
+          form1_submission_id: string | null
+          form2_submission_id: string | null
+          form3_submission_id: string | null
+          id: string
+          member_address: string | null
+          member_dob: string | null
+          member_email: string | null
+          member_first_name: string
+          member_last_name: string
+          member_phone: string | null
+          membership_end_date: string
+          membership_number: string
+          membership_start_date: string
+          quote_number: string | null
+          status: string
+          total_annual_premium: number | null
+          total_monthly_premium: number | null
+          updated_at: string
+          vehicle_description: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_registration: string | null
+          vehicle_year: string | null
+        }
+        Insert: {
+          base_premium?: number | null
+          coverage_level?: string | null
+          created_at?: string
+          deal_id?: string | null
+          form1_submission_id?: string | null
+          form2_submission_id?: string | null
+          form3_submission_id?: string | null
+          id?: string
+          member_address?: string | null
+          member_dob?: string | null
+          member_email?: string | null
+          member_first_name: string
+          member_last_name: string
+          member_phone?: string | null
+          membership_end_date: string
+          membership_number: string
+          membership_start_date: string
+          quote_number?: string | null
+          status?: string
+          total_annual_premium?: number | null
+          total_monthly_premium?: number | null
+          updated_at?: string
+          vehicle_description?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_registration?: string | null
+          vehicle_year?: string | null
+        }
+        Update: {
+          base_premium?: number | null
+          coverage_level?: string | null
+          created_at?: string
+          deal_id?: string | null
+          form1_submission_id?: string | null
+          form2_submission_id?: string | null
+          form3_submission_id?: string | null
+          id?: string
+          member_address?: string | null
+          member_dob?: string | null
+          member_email?: string | null
+          member_first_name?: string
+          member_last_name?: string
+          member_phone?: string | null
+          membership_end_date?: string
+          membership_number?: string
+          membership_start_date?: string
+          quote_number?: string | null
+          status?: string
+          total_annual_premium?: number | null
+          total_monthly_premium?: number | null
+          updated_at?: string
+          vehicle_description?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_registration?: string | null
+          vehicle_year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_form1_submission_id_fkey"
+            columns: ["form1_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form1_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_form2_submission_id_fkey"
+            columns: ["form2_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form2_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_form3_submission_id_fkey"
+            columns: ["form3_submission_id"]
+            isOneToOne: false
+            referencedRelation: "form3_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       named_drivers: {
         Row: {
           address_latitude: string | null
@@ -1826,6 +1938,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_membership_number: { Args: never; Returns: string }
       generate_quote_number: { Args: never; Returns: string }
       get_active_pds: {
         Args: never
