@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     // Fetch vehicle info from source form3_submissions
     const dealIds = sourceQuotes.map((q) => q.deal_id).filter(Boolean);
-    let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null }> = {};
+    let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null; comp_benchmark_price: number | null }> = {};
 
     if (dealIds.length > 0) {
       // Fetch in batches to avoid URL length limits
