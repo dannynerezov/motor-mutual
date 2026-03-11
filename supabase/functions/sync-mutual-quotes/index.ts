@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const { data: sourceQuotes, error: sourceError } = await source
       .from("mutual_quotes")
       .select(
-        "deal_id, comp_total_annual, mutual_target_price, mutual_membership_price, tppd_winning_premium, tppd_winning_quote_ref, tppd_winning_insurer, tppd_status, vehicle_state, created_at, updated_at"
+        "deal_id, comp_total_annual, comp_insurer, mutual_target_price, mutual_membership_price, tppd_winning_premium, tppd_winning_quote_ref, tppd_winning_insurer, tppd_status, vehicle_state, created_at, updated_at"
       )
       .not("tppd_winning_quote_ref", "is", null)
       .order("created_at", { ascending: false })
@@ -45,12 +45,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch vehicle info from source form3_submissions
+    // Fetch vehicle info + comp_benchmark_price from source form3_submissions
     const dealIds = sourceQuotes.map((q) => q.deal_id).filter(Boolean);
     let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null; comp_benchmark_price: number | null }> = {};
 
     if (dealIds.length > 0) {
-      // Fetch in batches to avoid URL length limits
       const FETCH_BATCH = 100;
       for (let i = 0; i < dealIds.length; i += FETCH_BATCH) {
         const batch = dealIds.slice(i, i + FETCH_BATCH);
@@ -74,10 +73,59 @@ Deno.serve(async (req) => {
       }
     }
 
+    // For deals missing comp_benchmark_price in form3, fallback to form_submissions.auto_quote_result JSON
+    const missingBenchmarkDeals = sourceQuotes.filter(
+      (q) => vehicleMap[q.deal_id]?.comp_benchmark_price == null && q.comp_insurer
+    );
+
+    const benchmarkFromJson: Record<string, number> = {};
+
+    if (missingBenchmarkDeals.length > 0) {
+      const insurerByDeal = new Map(missingBenchmarkDeals.map((q) => [q.deal_id, (q.comp_insurer || "").toLowerCase()]));
+      const missingDealIds = missingBenchmarkDeals.map((q) => q.deal_id);
+
+      const FETCH_BATCH = 50;
+      for (let i = 0; i < missingDealIds.length; i += FETCH_BATCH) {
+        const batch = missingDealIds.slice(i, i + FETCH_BATCH);
+        const { data: formSubs } = await source
+          .from("form_submissions")
+          .select("deal_id, auto_quote_result")
+          .in("deal_id", batch)
+          .eq("auto_quote_status", "completed");
+
+        if (formSubs) {
+          for (const row of formSubs) {
+            if (!row.deal_id || !row.auto_quote_result) continue;
+            const aqr = row.auto_quote_result as any;
+            const allQuotes = aqr?.allQuotes;
+            if (!Array.isArray(allQuotes)) continue;
+
+            const targetInsurer = insurerByDeal.get(row.deal_id) || "";
+            if (!targetInsurer) continue;
+
+            const match = allQuotes.find(
+              (q: any) =>
+                (q.addressIndex === null || q.addressIndex === undefined) &&
+                (q.excessType || "").toLowerCase() === "default" &&
+                (q.insurer || "").toLowerCase() === targetInsurer
+            );
+
+            if (match?.premium?.total != null) {
+              benchmarkFromJson[row.deal_id] = Number(match.premium.total);
+            }
+          }
+        }
+      }
+      console.log(`[sync-mutual-quotes] Resolved ${Object.keys(benchmarkFromJson).length}/${missingBenchmarkDeals.length} benchmarks from auto_quote_result JSON`);
+    }
+
     const records = sourceQuotes.map((q) => ({
       deal_id: q.deal_id,
       comp_total_annual: q.comp_total_annual,
-      comp_benchmark_price: vehicleMap[q.deal_id]?.comp_benchmark_price ?? q.comp_total_annual,
+      comp_benchmark_price:
+        vehicleMap[q.deal_id]?.comp_benchmark_price ??
+        benchmarkFromJson[q.deal_id] ??
+        q.comp_total_annual,
       mutual_target_price: q.mutual_target_price,
       mutual_membership_price: q.mutual_membership_price,
       tppd_winning_premium: q.tppd_winning_premium,
