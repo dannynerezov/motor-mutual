@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         const batch = dealIds.slice(i, i + FETCH_BATCH);
         const { data: form3 } = await source
           .from("form3_submissions")
-          .select("deal_id, vehicle_make, vehicle_model, vehicle_year")
+          .select("deal_id, vehicle_make, vehicle_model, vehicle_year, comp_benchmark_price")
           .in("deal_id", batch);
 
         if (form3) {
@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
                 vehicle_make: f.vehicle_make,
                 vehicle_model: f.vehicle_model,
                 vehicle_year: f.vehicle_year,
+                comp_benchmark_price: f.comp_benchmark_price,
               };
             }
           });
