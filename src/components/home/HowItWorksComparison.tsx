@@ -8,13 +8,13 @@ type ColumnType = 'mutual' | 'traditional' | 'clubs';
 export const HowItWorksComparison = () => {
   const [activeColumn, setActiveColumn] = useState<ColumnType>('mutual');
   return (
-    <div className="mt-16">
+    <div>
       <div className="text-center mb-12">
-        <h3 className="text-3xl md:text-4xl font-bold mb-4">
-          Why Choose the Mutual Over Traditional Insurance or Rideshare Clubs?
+        <h3 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">
+          Why Choose the Mutual?
         </h3>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-          Compare what you <span className="font-semibold text-accent">get</span> with The Mutual vs what you <span className="font-semibold text-muted-foreground">miss</span> with others
+        <p className="text-lg text-primary-foreground/70 max-w-3xl mx-auto">
+          Compare what you <span className="font-semibold text-accent">get</span> with The Mutual vs what you <span className="font-semibold text-primary-foreground/50">miss</span> with others
         </p>
       </div>
 
