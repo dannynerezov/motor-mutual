@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
     const records = sourceQuotes.map((q) => ({
       deal_id: q.deal_id,
       comp_total_annual: q.comp_total_annual,
-      comp_benchmark_price: q.comp_total_annual,
+      comp_benchmark_price: q.comp_benchmark_price ?? q.comp_total_annual,
       mutual_target_price: q.mutual_target_price,
       mutual_membership_price: q.mutual_membership_price,
       tppd_winning_premium: q.tppd_winning_premium,
