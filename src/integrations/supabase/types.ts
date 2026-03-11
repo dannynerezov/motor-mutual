@@ -1163,6 +1163,54 @@ export type Database = {
           },
         ]
       }
+      mutual_quotes: {
+        Row: {
+          comp_benchmark_price: number | null
+          comp_total_annual: number | null
+          created_at: string
+          deal_id: string
+          id: string
+          mutual_membership_price: number | null
+          mutual_target_price: number | null
+          tppd_status: string | null
+          tppd_winning_insurer: string | null
+          tppd_winning_premium: number | null
+          tppd_winning_quote_ref: string | null
+          updated_at: string
+          vehicle_state: string | null
+        }
+        Insert: {
+          comp_benchmark_price?: number | null
+          comp_total_annual?: number | null
+          created_at?: string
+          deal_id: string
+          id?: string
+          mutual_membership_price?: number | null
+          mutual_target_price?: number | null
+          tppd_status?: string | null
+          tppd_winning_insurer?: string | null
+          tppd_winning_premium?: number | null
+          tppd_winning_quote_ref?: string | null
+          updated_at?: string
+          vehicle_state?: string | null
+        }
+        Update: {
+          comp_benchmark_price?: number | null
+          comp_total_annual?: number | null
+          created_at?: string
+          deal_id?: string
+          id?: string
+          mutual_membership_price?: number | null
+          mutual_target_price?: number | null
+          tppd_status?: string | null
+          tppd_winning_insurer?: string | null
+          tppd_winning_premium?: number | null
+          tppd_winning_quote_ref?: string | null
+          updated_at?: string
+          vehicle_state?: string | null
+        }
+        Relationships: []
+      }
       named_drivers: {
         Row: {
           address_latitude: string | null

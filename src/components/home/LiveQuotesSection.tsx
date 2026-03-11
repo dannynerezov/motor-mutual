@@ -1,35 +1,135 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrendingDown, Database, BarChart3, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingDown, Database, BarChart3, Shield, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
-const mockQuotes = [
-  { vehicle: "2022 Toyota Camry", state: "NSW", market: 2850, mutual: 1890, saving: 960 },
-  { vehicle: "2021 Hyundai Tucson", state: "VIC", market: 3100, mutual: 2150, saving: 950 },
-  { vehicle: "2020 Kia Sportage", state: "QLD", market: 2700, mutual: 1750, saving: 950 },
-  { vehicle: "2023 Mazda CX-5", state: "SA", market: 3200, mutual: 2280, saving: 920 },
-  { vehicle: "2019 Toyota Corolla", state: "WA", market: 2200, mutual: 1450, saving: 750 },
-  { vehicle: "2021 Nissan X-Trail", state: "NSW", market: 2950, mutual: 2050, saving: 900 },
-];
+interface QuoteRow {
+  deal_id: string;
+  created_at: string;
+  comp_benchmark_price: number | null;
+  comp_total_annual: number | null;
+  mutual_target_price: number | null;
+  vehicle_state: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: string | null;
+}
 
-const stats = [
-  { icon: Database, label: "Quotes Compared", value: "12,847" },
-  { icon: TrendingDown, label: "Avg Annual Saving", value: "$905" },
-  { icon: BarChart3, label: "Below Market Rate", value: "94%" },
-  { icon: Shield, label: "APRA Cover Included", value: "100%" },
-];
+const PAGE_SIZE = 20;
 
 export const LiveQuotesSection = () => {
+  const [data, setData] = useState<QuoteRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [makeFilter, setMakeFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
+  const [page, setPage] = useState(0);
+  const [totalCompleted, setTotalCompleted] = useState(0);
 
-  const filtered = mockQuotes.filter((q) => {
-    if (stateFilter !== "all" && q.state !== stateFilter) return false;
-    if (makeFilter !== "all" && !q.vehicle.toLowerCase().includes(makeFilter)) return false;
-    return true;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+
+      // Fetch mutual_quotes joined with form3 vehicle details
+      const { data: quotes, error } = await supabase
+        .from("mutual_quotes")
+        .select("deal_id, created_at, comp_benchmark_price, comp_total_annual, mutual_target_price, vehicle_state")
+        .not("tppd_winning_quote_ref", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (error || !quotes) {
+        setLoading(false);
+        return;
+      }
+
+      // Get deal_ids to fetch vehicle info from form3
+      const dealIds = quotes.map((q) => q.deal_id).filter(Boolean);
+
+      let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null }> = {};
+
+      if (dealIds.length > 0) {
+        const { data: form3 } = await supabase
+          .from("form3_submissions")
+          .select("deal_id, vehicle_make, vehicle_model, vehicle_year")
+          .in("deal_id", dealIds);
+
+        if (form3) {
+          form3.forEach((f) => {
+            if (f.deal_id) {
+              vehicleMap[f.deal_id] = {
+                vehicle_make: f.vehicle_make,
+                vehicle_model: f.vehicle_model,
+                vehicle_year: f.vehicle_year,
+              };
+            }
+          });
+        }
+      }
+
+      const merged: QuoteRow[] = quotes.map((q) => ({
+        ...q,
+        vehicle_make: vehicleMap[q.deal_id]?.vehicle_make ?? null,
+        vehicle_model: vehicleMap[q.deal_id]?.vehicle_model ?? null,
+        vehicle_year: vehicleMap[q.deal_id]?.vehicle_year ?? null,
+      }));
+
+      setData(merged);
+      setTotalCompleted(merged.length);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const filtered = useMemo(() => {
+    return data.filter((q) => {
+      if (stateFilter !== "all" && q.vehicle_state !== stateFilter) return false;
+      if (makeFilter !== "all" && q.vehicle_make?.toLowerCase() !== makeFilter) return false;
+      return true;
+    });
+  }, [data, stateFilter, makeFilter]);
+
+  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  // Dynamic filter options
+  const makes = useMemo(() => [...new Set(data.map((q) => q.vehicle_make).filter(Boolean))].sort() as string[], [data]);
+  const states = useMemo(() => [...new Set(data.map((q) => q.vehicle_state).filter(Boolean))].sort() as string[], [data]);
+
+  // Stats
+  const stats = useMemo(() => {
+    const withPrices = data.filter((q) => {
+      const benchmark = q.comp_benchmark_price ?? q.comp_total_annual;
+      return benchmark && q.mutual_target_price;
+    });
+
+    const savings = withPrices.map((q) => {
+      const benchmark = (q.comp_benchmark_price ?? q.comp_total_annual) as number;
+      return benchmark - (q.mutual_target_price as number);
+    });
+
+    const avgSaving = savings.length > 0 ? savings.reduce((a, b) => a + b, 0) / savings.length : 0;
+    const belowMarket = withPrices.filter((q) => {
+      const benchmark = (q.comp_benchmark_price ?? q.comp_total_annual) as number;
+      return (q.mutual_target_price as number) < benchmark;
+    }).length;
+    const belowPct = withPrices.length > 0 ? Math.round((belowMarket / withPrices.length) * 100) : 0;
+
+    return [
+      { icon: Database, label: "Quotes Compared", value: totalCompleted.toLocaleString() },
+      { icon: TrendingDown, label: "Avg Annual Saving", value: `$${Math.round(avgSaving).toLocaleString()}` },
+      { icon: BarChart3, label: "Below Market Rate", value: `${belowPct}%` },
+      { icon: Shield, label: "APRA Cover Included", value: "100%" },
+    ];
+  }, [data, totalCompleted]);
+
+  const getBenchmark = (q: QuoteRow) => q.comp_benchmark_price ?? q.comp_total_annual ?? 0;
+  const getSaving = (q: QuoteRow) => getBenchmark(q) - (q.mutual_target_price ?? 0);
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -48,74 +148,116 @@ export const LiveQuotesSection = () => {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-8 justify-center">
-          <Select value={makeFilter} onValueChange={setMakeFilter}>
+          <Select value={makeFilter} onValueChange={(v) => { setMakeFilter(v); setPage(0); }}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by make" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Makes</SelectItem>
-              <SelectItem value="toyota">Toyota</SelectItem>
-              <SelectItem value="hyundai">Hyundai</SelectItem>
-              <SelectItem value="kia">Kia</SelectItem>
-              <SelectItem value="mazda">Mazda</SelectItem>
-              <SelectItem value="nissan">Nissan</SelectItem>
+              {makes.map((m) => (
+                <SelectItem key={m} value={m.toLowerCase()}>{m}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <Select value={stateFilter} onValueChange={setStateFilter}>
+          <Select value={stateFilter} onValueChange={(v) => { setStateFilter(v); setPage(0); }}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by state" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All States</SelectItem>
-              <SelectItem value="NSW">NSW</SelectItem>
-              <SelectItem value="VIC">VIC</SelectItem>
-              <SelectItem value="QLD">QLD</SelectItem>
-              <SelectItem value="SA">SA</SelectItem>
-              <SelectItem value="WA">WA</SelectItem>
+              {states.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         {/* Table */}
-        <Card className="border-2 mb-12 max-w-5xl mx-auto">
+        <Card className="border-2 mb-8 max-w-6xl mx-auto">
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead>Vehicle</TableHead>
-                  <TableHead>State</TableHead>
-                  <TableHead className="text-right">Market Price</TableHead>
-                  <TableHead className="text-right font-bold text-accent">Mutual Price</TableHead>
-                  <TableHead className="text-right">Annual Saving</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((q, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="font-medium">{q.vehicle}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="text-xs">{q.state}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground line-through">${q.market.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-bold text-accent">${q.mutual.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge className="bg-accent/10 text-accent border-accent/30 hover:bg-accent/20">
-                        −${q.saving.toLocaleString()}
-                      </Badge>
-                    </TableCell>
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-6 h-6 animate-spin text-accent mr-2" />
+                <span className="text-muted-foreground">Loading quotes...</span>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead>Date</TableHead>
+                    <TableHead>Vehicle</TableHead>
+                    <TableHead>State</TableHead>
+                    <TableHead className="text-right">Benchmark Price</TableHead>
+                    <TableHead className="text-right font-bold text-accent">Mutual Target</TableHead>
+                    <TableHead className="text-right">Annual Saving</TableHead>
                   </TableRow>
-                ))}
-                {filtered.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      No matching quotes found. Try adjusting filters.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paged.map((q) => (
+                    <TableRow key={q.deal_id}>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {q.created_at ? format(new Date(q.created_at), "dd MMM yyyy") : "—"}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {[q.vehicle_year, q.vehicle_make, q.vehicle_model].filter(Boolean).join(" ") || "—"}
+                      </TableCell>
+                      <TableCell>
+                        {q.vehicle_state ? (
+                          <Badge variant="secondary" className="text-xs">{q.vehicle_state}</Badge>
+                        ) : "—"}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground line-through">
+                        ${getBenchmark(q).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-accent">
+                        ${(q.mutual_target_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge className="bg-accent/10 text-accent border-accent/30 hover:bg-accent/20">
+                          −${getSaving(q).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {paged.length === 0 && !loading && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        {data.length === 0
+                          ? "No completed quotes available yet. Data syncs daily."
+                          : "No matching quotes found. Try adjusting filters."}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === 0}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page {page + 1} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
