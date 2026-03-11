@@ -1,0 +1,1 @@
+ALTER TABLE public.mutual_quotes ADD COLUMN vehicle_make text, ADD COLUMN vehicle_model text, ADD COLUMN vehicle_year text;
