@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -6,7 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, Search, X } from "lucide-react";
 
 const AUTO_REFRESH_MS = 10000;
 
@@ -27,27 +29,51 @@ const AdminSubmissions = () => {
   const [form4, setForm4] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [searchInput, setSearchInput] = useState("");
+  const [activeDealId, setActiveDealId] = useState("");
 
-  const fetchAll = async () => {
-    const [r1, r2, r3, r4] = await Promise.all([
-      supabase.from("form1_submissions").select("*").order("created_at", { ascending: false }).limit(100),
-      supabase.from("form2_submissions").select("*").order("created_at", { ascending: false }).limit(100),
-      supabase.from("form3_submissions").select("*").order("created_at", { ascending: false }).limit(100),
-      supabase.from("form4_submissions").select("*").order("created_at", { ascending: false }).limit(100),
-    ]);
+  const fetchAll = useCallback(async () => {
+    const filter = activeDealId.trim();
+
+    let q1 = supabase.from("form1_submissions").select("*").order("created_at", { ascending: false }).limit(100);
+    let q2 = supabase.from("form2_submissions").select("*").order("created_at", { ascending: false }).limit(100);
+    let q3 = supabase.from("form3_submissions").select("*").order("created_at", { ascending: false }).limit(100);
+    let q4 = supabase.from("form4_submissions").select("*").order("created_at", { ascending: false }).limit(100);
+
+    if (filter) {
+      q1 = q1.ilike("deal_id", `%${filter}%`);
+      q2 = q2.ilike("deal_id", `%${filter}%`);
+      q3 = q3.ilike("deal_id", `%${filter}%`);
+      q4 = q4.ilike("deal_id", `%${filter}%`);
+    }
+
+    const [r1, r2, r3, r4] = await Promise.all([q1, q2, q3, q4]);
     if (r1.data) setForm1(r1.data);
     if (r2.data) setForm2(r2.data);
     if (r3.data) setForm3(r3.data);
     if (r4.data) setForm4(r4.data);
     setLoading(false);
     setLastRefresh(new Date());
-  };
+  }, [activeDealId]);
 
   useEffect(() => {
     fetchAll();
     const interval = setInterval(fetchAll, AUTO_REFRESH_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchAll]);
+
+  const handleSearch = () => {
+    setActiveDealId(searchInput);
+  };
+
+  const handleClear = () => {
+    setSearchInput("");
+    setActiveDealId("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSearch();
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -66,6 +92,34 @@ const AdminSubmissions = () => {
               onClick={fetchAll}
             />
           </div>
+
+          {/* Search */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by Deal ID…"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="pl-9"
+              />
+            </div>
+            <Button size="sm" onClick={handleSearch}>Search</Button>
+            {activeDealId && (
+              <Button size="sm" variant="ghost" onClick={handleClear}>
+                <X className="h-4 w-4 mr-1" /> Clear
+              </Button>
+            )}
+          </div>
+
+          {activeDealId && (
+            <div className="mb-4">
+              <Badge variant="secondary" className="text-sm">
+                Filtered: Deal ID contains "{activeDealId}"
+              </Badge>
+            </div>
+          )}
 
           <Tabs defaultValue="form1">
             <TabsList className="mb-4">
