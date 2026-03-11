@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const { data: sourceQuotes, error: sourceError } = await source
       .from("mutual_quotes")
       .select(
-        "deal_id, comp_total_annual, comp_benchmark_price, mutual_target_price, mutual_membership_price, tppd_winning_premium, tppd_winning_quote_ref, tppd_winning_insurer, tppd_status, vehicle_state, created_at, updated_at"
+        "deal_id, comp_total_annual, mutual_target_price, mutual_membership_price, tppd_winning_premium, tppd_winning_quote_ref, tppd_winning_insurer, tppd_status, vehicle_state, created_at, updated_at"
       )
       .not("tppd_winning_quote_ref", "is", null)
       .order("created_at", { ascending: false })
