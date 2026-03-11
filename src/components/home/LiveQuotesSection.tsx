@@ -28,61 +28,22 @@ export const LiveQuotesSection = () => {
   const [makeFilter, setMakeFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("all");
   const [page, setPage] = useState(0);
-  const [totalCompleted, setTotalCompleted] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-
-      // Fetch mutual_quotes joined with form3 vehicle details
       const { data: quotes, error } = await supabase
         .from("mutual_quotes")
-        .select("deal_id, created_at, comp_benchmark_price, comp_total_annual, mutual_target_price, vehicle_state")
+        .select("deal_id, created_at, comp_benchmark_price, comp_total_annual, mutual_target_price, vehicle_state, vehicle_make, vehicle_model, vehicle_year")
         .not("tppd_winning_quote_ref", "is", null)
         .order("created_at", { ascending: false })
         .limit(500);
 
-      if (error || !quotes) {
-        setLoading(false);
-        return;
+      if (!error && quotes) {
+        setData(quotes as QuoteRow[]);
       }
-
-      // Get deal_ids to fetch vehicle info from form3
-      const dealIds = quotes.map((q) => q.deal_id).filter(Boolean);
-
-      let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null }> = {};
-
-      if (dealIds.length > 0) {
-        const { data: form3 } = await supabase
-          .from("form3_submissions")
-          .select("deal_id, vehicle_make, vehicle_model, vehicle_year")
-          .in("deal_id", dealIds);
-
-        if (form3) {
-          form3.forEach((f) => {
-            if (f.deal_id) {
-              vehicleMap[f.deal_id] = {
-                vehicle_make: f.vehicle_make,
-                vehicle_model: f.vehicle_model,
-                vehicle_year: f.vehicle_year,
-              };
-            }
-          });
-        }
-      }
-
-      const merged: QuoteRow[] = quotes.map((q) => ({
-        ...q,
-        vehicle_make: vehicleMap[q.deal_id]?.vehicle_make ?? null,
-        vehicle_model: vehicleMap[q.deal_id]?.vehicle_model ?? null,
-        vehicle_year: vehicleMap[q.deal_id]?.vehicle_year ?? null,
-      }));
-
-      setData(merged);
-      setTotalCompleted(merged.length);
       setLoading(false);
     };
-
     fetchData();
   }, []);
 
@@ -97,22 +58,18 @@ export const LiveQuotesSection = () => {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
-  // Dynamic filter options
   const makes = useMemo(() => [...new Set(data.map((q) => q.vehicle_make).filter(Boolean))].sort() as string[], [data]);
   const states = useMemo(() => [...new Set(data.map((q) => q.vehicle_state).filter(Boolean))].sort() as string[], [data]);
 
-  // Stats
   const stats = useMemo(() => {
     const withPrices = data.filter((q) => {
       const benchmark = q.comp_benchmark_price ?? q.comp_total_annual;
       return benchmark && q.mutual_target_price;
     });
-
     const savings = withPrices.map((q) => {
       const benchmark = (q.comp_benchmark_price ?? q.comp_total_annual) as number;
       return benchmark - (q.mutual_target_price as number);
     });
-
     const avgSaving = savings.length > 0 ? savings.reduce((a, b) => a + b, 0) / savings.length : 0;
     const belowMarket = withPrices.filter((q) => {
       const benchmark = (q.comp_benchmark_price ?? q.comp_total_annual) as number;
@@ -121,12 +78,12 @@ export const LiveQuotesSection = () => {
     const belowPct = withPrices.length > 0 ? Math.round((belowMarket / withPrices.length) * 100) : 0;
 
     return [
-      { icon: Database, label: "Quotes Compared", value: totalCompleted.toLocaleString() },
+      { icon: Database, label: "Quotes Compared", value: data.length.toLocaleString() },
       { icon: TrendingDown, label: "Avg Annual Saving", value: `$${Math.round(avgSaving).toLocaleString()}` },
       { icon: BarChart3, label: "Below Market Rate", value: `${belowPct}%` },
       { icon: Shield, label: "APRA Cover Included", value: "100%" },
     ];
-  }, [data, totalCompleted]);
+  }, [data]);
 
   const getBenchmark = (q: QuoteRow) => q.comp_benchmark_price ?? q.comp_total_annual ?? 0;
   const getSaving = (q: QuoteRow) => getBenchmark(q) - (q.mutual_target_price ?? 0);
@@ -138,9 +95,7 @@ export const LiveQuotesSection = () => {
           <Badge variant="outline" className="mb-4 border-accent text-accent">
             Live Data — Updated Daily
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Live Quotes Database
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Live Quotes Database</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Real comparisons showing how our pricing stacks up against the market
           </p>
@@ -149,25 +104,17 @@ export const LiveQuotesSection = () => {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-8 justify-center">
           <Select value={makeFilter} onValueChange={(v) => { setMakeFilter(v); setPage(0); }}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by make" />
-            </SelectTrigger>
+            <SelectTrigger className="w-48"><SelectValue placeholder="Filter by make" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Makes</SelectItem>
-              {makes.map((m) => (
-                <SelectItem key={m} value={m.toLowerCase()}>{m}</SelectItem>
-              ))}
+              {makes.map((m) => <SelectItem key={m} value={m.toLowerCase()}>{m}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={stateFilter} onValueChange={(v) => { setStateFilter(v); setPage(0); }}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by state" />
-            </SelectTrigger>
+            <SelectTrigger className="w-48"><SelectValue placeholder="Filter by state" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All States</SelectItem>
-              {states.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
+              {states.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -187,9 +134,10 @@ export const LiveQuotesSection = () => {
                     <TableHead>Date</TableHead>
                     <TableHead>Vehicle</TableHead>
                     <TableHead>State</TableHead>
-                    <TableHead className="text-right">Benchmark Price</TableHead>
-                    <TableHead className="text-right font-bold text-accent">Mutual Target</TableHead>
+                    <TableHead className="text-right">Market Price</TableHead>
+                    <TableHead className="text-right font-bold text-accent">Mutual Price</TableHead>
                     <TableHead className="text-right">Annual Saving</TableHead>
+                    <TableHead>Ref#</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -202,11 +150,9 @@ export const LiveQuotesSection = () => {
                         {[q.vehicle_year, q.vehicle_make, q.vehicle_model].filter(Boolean).join(" ") || "—"}
                       </TableCell>
                       <TableCell>
-                        {q.vehicle_state ? (
-                          <Badge variant="secondary" className="text-xs">{q.vehicle_state}</Badge>
-                        ) : "—"}
+                        {q.vehicle_state ? <Badge variant="secondary" className="text-xs">{q.vehicle_state}</Badge> : "—"}
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground line-through">
+                      <TableCell className="text-right text-muted-foreground">
                         ${getBenchmark(q).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </TableCell>
                       <TableCell className="text-right font-bold text-accent">
@@ -217,11 +163,14 @@ export const LiveQuotesSection = () => {
                           −${getSaving(q).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </Badge>
                       </TableCell>
+                      <TableCell className="text-muted-foreground text-xs font-mono">
+                        {q.deal_id || "—"}
+                      </TableCell>
                     </TableRow>
                   ))}
                   {paged.length === 0 && !loading && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                         {data.length === 0
                           ? "No completed quotes available yet. Data syncs daily."
                           : "No matching quotes found. Try adjusting filters."}
@@ -237,23 +186,11 @@ export const LiveQuotesSection = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 mb-12">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 0}
-              onClick={() => setPage((p) => p - 1)}
-            >
+            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
               <ChevronLeft className="w-4 h-4 mr-1" /> Previous
             </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {page + 1} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages - 1}
-              onClick={() => setPage((p) => p + 1)}
-            >
+            <span className="text-sm text-muted-foreground">Page {page + 1} of {totalPages}</span>
+            <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>
               Next <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>

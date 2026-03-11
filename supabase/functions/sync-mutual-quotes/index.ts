@@ -45,12 +45,38 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Also fetch comp_benchmark_price by computing it as comp_total_annual
-    // (the source schema uses comp_total_annual as the benchmark)
+    // Fetch vehicle info from source form3_submissions
+    const dealIds = sourceQuotes.map((q) => q.deal_id).filter(Boolean);
+    let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null }> = {};
+
+    if (dealIds.length > 0) {
+      // Fetch in batches to avoid URL length limits
+      const FETCH_BATCH = 100;
+      for (let i = 0; i < dealIds.length; i += FETCH_BATCH) {
+        const batch = dealIds.slice(i, i + FETCH_BATCH);
+        const { data: form3 } = await source
+          .from("form3_submissions")
+          .select("deal_id, vehicle_make, vehicle_model, vehicle_year")
+          .in("deal_id", batch);
+
+        if (form3) {
+          form3.forEach((f: any) => {
+            if (f.deal_id) {
+              vehicleMap[f.deal_id] = {
+                vehicle_make: f.vehicle_make,
+                vehicle_model: f.vehicle_model,
+                vehicle_year: f.vehicle_year,
+              };
+            }
+          });
+        }
+      }
+    }
+
     const records = sourceQuotes.map((q) => ({
       deal_id: q.deal_id,
       comp_total_annual: q.comp_total_annual,
-      comp_benchmark_price: q.comp_total_annual, // benchmark = comp total annual
+      comp_benchmark_price: q.comp_total_annual,
       mutual_target_price: q.mutual_target_price,
       mutual_membership_price: q.mutual_membership_price,
       tppd_winning_premium: q.tppd_winning_premium,
@@ -58,6 +84,9 @@ Deno.serve(async (req) => {
       tppd_winning_insurer: q.tppd_winning_insurer,
       tppd_status: q.tppd_status,
       vehicle_state: q.vehicle_state,
+      vehicle_make: vehicleMap[q.deal_id]?.vehicle_make ?? null,
+      vehicle_model: vehicleMap[q.deal_id]?.vehicle_model ?? null,
+      vehicle_year: vehicleMap[q.deal_id]?.vehicle_year ?? null,
       created_at: q.created_at,
       updated_at: q.updated_at,
     }));

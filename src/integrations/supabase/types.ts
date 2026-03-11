@@ -1177,7 +1177,10 @@ export type Database = {
           tppd_winning_premium: number | null
           tppd_winning_quote_ref: string | null
           updated_at: string
+          vehicle_make: string | null
+          vehicle_model: string | null
           vehicle_state: string | null
+          vehicle_year: string | null
         }
         Insert: {
           comp_benchmark_price?: number | null
@@ -1192,7 +1195,10 @@ export type Database = {
           tppd_winning_premium?: number | null
           tppd_winning_quote_ref?: string | null
           updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
           vehicle_state?: string | null
+          vehicle_year?: string | null
         }
         Update: {
           comp_benchmark_price?: number | null
@@ -1207,7 +1213,10 @@ export type Database = {
           tppd_winning_premium?: number | null
           tppd_winning_quote_ref?: string | null
           updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
           vehicle_state?: string | null
+          vehicle_year?: string | null
         }
         Relationships: []
       }
