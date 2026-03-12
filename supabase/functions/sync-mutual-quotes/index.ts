@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
       vehicle_make: vehicleMap[q.deal_id]?.vehicle_make ?? null,
       vehicle_model: vehicleMap[q.deal_id]?.vehicle_model ?? null,
       vehicle_year: vehicleMap[q.deal_id]?.vehicle_year ?? null,
-      vehicle_value: q.vehicle_value ?? vehicleMap[q.deal_id]?.vehicle_value ?? null,
+      vehicle_value: q.vehicle_value ?? vehicleMap[q.deal_id]?.vehicle_value ?? vehicleValueMap[q.deal_id] ?? null,
       created_at: q.created_at,
       updated_at: q.updated_at,
     }));
