@@ -68,8 +68,10 @@ export const Header = () => {
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center gap-2 border border-border/50"
           >
             <Shield className="w-4 h-4" />
-            <span className="hidden lg:inline">Verify Licence</span>
-            <span className="lg:hidden">Licence</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-semibold text-sm">Verify Licence</span>
+              <span className="text-xs text-muted-foreground">AFSL 239926</span>
+            </div>
             <ExternalLink className="w-3 h-3 opacity-70" />
           </a>
         </nav>
