@@ -42,7 +42,7 @@ export const HeroSection = () => {
                 <Shield className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-lg font-bold">APRA Backed</p>
-                  <p className="text-sm text-primary-foreground/70">$20M third-party liability included at no extra cost</p>
+                  <p className="text-sm text-primary-foreground/70"><p className="text-sm text-primary-foreground/70">$20M third-party liability included in the price</p></p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-accent/20 rounded-xl px-5 py-4 border border-accent/40">
