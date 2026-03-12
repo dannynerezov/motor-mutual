@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
                 vehicle_model: f.vehicle_model,
                 vehicle_year: f.vehicle_year,
                 comp_benchmark_price: f.comp_benchmark_price,
+                vehicle_value: f.vehicle_value,
               };
             }
           });
