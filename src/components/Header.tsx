@@ -18,21 +18,21 @@ export const Header = () => {
         
         <nav className="hidden md:flex items-center gap-2 ml-8">
           <a 
-            href="#how-it-works" 
+            href="/#how-it-works" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             How It Works
           </a>
 
           <a 
-            href="#live-quotes" 
+            href="/#live-quotes" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Pricing
           </a>
 
           <a 
-            href="#why-choose-mutual" 
+            href="/#why-choose-mutual" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Benefits
@@ -105,7 +105,7 @@ export const Header = () => {
               
               <nav className="flex flex-col gap-4 mt-8 min-h-[calc(100vh-8rem)] pb-4">
                 <a 
-                  href="#how-it-works" 
+                  href="/#how-it-works" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Lightbulb className="w-5 h-5" />
@@ -113,7 +113,7 @@ export const Header = () => {
                 </a>
                 
                 <a 
-                  href="#live-quotes" 
+                  href="/#live-quotes" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <TrendingDown className="w-5 h-5" />
@@ -121,7 +121,7 @@ export const Header = () => {
                 </a>
                 
                 <a 
-                  href="#why-choose-mutual" 
+                  href="/#why-choose-mutual" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Gift className="w-5 h-5" />
