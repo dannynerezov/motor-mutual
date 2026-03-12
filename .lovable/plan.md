@@ -1,63 +1,34 @@
 
 
-## Plan: Add Internal Dispute Resolution Subsection to Section 7
+## Plan: Update Price Analytics with Live Database Data
 
-### Overview
-Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
+### Problem
+The Price Analytics section uses hardcoded data. We need to replace it with real aggregated data from `mutual_quotes`. For the "By Value" tab, we need vehicle value data which exists on the source project's `form3_submissions.vehicle_value` but isn't synced yet.
 
-### Changes Required
+### Changes
 
-**File: `src/pages/PDSPage.tsx`**
+**1. Database Migration — Add `vehicle_value` to `mutual_quotes`**
+Add a nullable numeric `vehicle_value` column.
 
-Update the Section 7 content (lines 211-223) to insert a new subsection:
+**2. Update `sync-mutual-quotes` Edge Function**
+Include `vehicle_value` in the `form3_submissions` SELECT and map it into each record. The existing `vehicleMap` already fetches from source form3 — just add the column.
 
-#### Current Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-└── 7.1 External dispute resolution
-```
+**3. Re-sync data**
+Trigger the sync function to backfill vehicle values for all 500 records.
 
-#### New Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-├── 7.1 Internal Dispute Resolution (NEW)
-│   ├── Statutory obligation statement (s912A(1)(g))
-│   └── 4-Step IDR Process
-│       ├── Step 1: Lodge Your Complaint
-│       ├── Step 2: Acknowledgement
-│       ├── Step 3: Investigation
-│       └── Step 4: Resolution & Outcome
-└── 7.2 External dispute resolution (renumbered from 7.1)
-```
+**4. Update `PriceAnalyticsSection.tsx`**
+Replace hardcoded arrays with a `useEffect` that queries `mutual_quotes` and aggregates:
+- **By Make**: Top 5 makes by count, showing avg `comp_benchmark_price` vs avg `mutual_target_price`
+- **By Value**: Group by vehicle value ranges ($10k–15k, $15k–25k, etc.), avg market vs mutual
+- **By State**: Group by `vehicle_state`, avg market vs mutual
 
-### Content to Add
+Add loading state. Keep the existing bar chart UI unchanged.
 
-**7.1 Internal Dispute Resolution**
+### Files Changed
 
-The subsection will include:
-
-1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
-
-2. **4-Step IDR Process** (summarised from the screenshot):
-
-   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
-
-   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
-
-   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
-
-   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
-
-### Technical Details
-
-- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
-- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
-- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
-- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
-
-### Optional Enhancement
-
-Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
+| File | Change |
+|------|--------|
+| Migration SQL | Add `vehicle_value` numeric column to `mutual_quotes` |
+| `supabase/functions/sync-mutual-quotes/index.ts` | Add `vehicle_value` to form3 SELECT and record mapping |
+| `src/components/home/PriceAnalyticsSection.tsx` | Fetch + aggregate from `mutual_quotes`, replace hardcoded data |
 
