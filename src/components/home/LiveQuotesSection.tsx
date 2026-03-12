@@ -140,8 +140,8 @@ export const LiveQuotesSection = () => {
                     <TableHead>Vehicle</TableHead>
                     <TableHead>State</TableHead>
                     <TableHead className="text-right">Market Price</TableHead>
-                    <TableHead className="text-right font-bold text-accent">Mutual Price</TableHead>
-                    <TableHead className="text-right">Annual Saving</TableHead>
+                     <TableHead className="text-right font-bold text-accent">The Mutual's Price</TableHead>
+                     <TableHead className="text-right">Annual Saving</TableHead>
                     <TableHead>Ref#</TableHead>
                   </TableRow>
                 </TableHeader>
