@@ -161,7 +161,12 @@ export const LiveQuotesSection = () => {
                         ${getBenchmark(q).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </TableCell>
                       <TableCell className="text-right font-bold text-accent">
-                        ${(q.mutual_target_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        <span className="inline-flex items-center gap-1.5">
+                          ${(q.mutual_target_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          {(q.mutual_target_price ?? 0) < getBenchmark(q) && (
+                            <Badge className="bg-green-500/15 text-green-600 border-green-500/30 text-[10px] px-1.5 py-0">Best Value</Badge>
+                          )}
+                        </span>
                       </TableCell>
                       <TableCell className="text-right">
                         <Badge className="bg-accent/10 text-accent border-accent/30 hover:bg-accent/20">

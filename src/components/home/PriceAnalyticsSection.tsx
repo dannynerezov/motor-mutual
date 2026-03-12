@@ -165,7 +165,7 @@ export const PriceAnalyticsSection = () => {
           </p>
         </div>
 
-        <Card className="max-w-3xl mx-auto border-2">
+        <Card className="max-w-6xl mx-auto border-2">
           <CardContent className="p-6 md:p-8">
             {loading ? (
               <div className="space-y-4">
