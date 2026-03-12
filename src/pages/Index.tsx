@@ -18,7 +18,7 @@ const Index = () => {
       <CompetitivePricingSection />
 
       {/* Comparison Table */}
-      <section className="py-16 md:py-24 bg-primary">
+      <section id="why-choose-mutual" className="py-16 md:py-24 bg-primary">
         <div className="container mx-auto px-4 md:px-6">
           <HowItWorksComparison />
         </div>
