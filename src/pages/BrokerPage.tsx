@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Shield, Phone, MapPin, ExternalLink, ArrowRight, Star, Building2 } from "lucide-react";
-import Header from "@/components/Header";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import nationalCoverLogo from "@/assets/national-cover-logo.png";
 

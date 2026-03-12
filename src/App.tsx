@@ -47,6 +47,7 @@ const App = () => (
           <Route path="/apply/:form1Id" element={<QuoteApplicationPage />} />
           <Route path="/retrieve" element={<RetrieveQuotePage />} />
           <Route path="/admin/memberships" element={<AdminMemberships />} />
+          <Route path="/broker" element={<BrokerPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
