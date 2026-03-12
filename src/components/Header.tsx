@@ -17,26 +17,26 @@ export const Header = () => {
         </Link>
         
         <nav className="hidden md:flex items-center gap-2 ml-8">
-          <Link 
-            to="/#how-it-works" 
+          <a 
+            href="#how-it-works" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             How It Works
-          </Link>
+          </a>
 
-          <Link 
-            to="/#live-quotes" 
+          <a 
+            href="#live-quotes" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Pricing
-          </Link>
+          </a>
 
-          <Link 
-            to="/benefits" 
+          <a 
+            href="#why-choose-mutual" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Benefits
-          </Link>
+          </a>
 
           <Link 
             to="/claims" 
