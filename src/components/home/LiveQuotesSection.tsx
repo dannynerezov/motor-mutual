@@ -89,7 +89,7 @@ export const LiveQuotesSection = () => {
   const getSaving = (q: QuoteRow) => getBenchmark(q) - (q.mutual_target_price ?? 0);
 
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="live-quotes" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4 border-accent text-accent">

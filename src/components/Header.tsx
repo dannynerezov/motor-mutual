@@ -1,16 +1,8 @@
 import { Link } from "react-router-dom";
 import fullLogo from "@/assets/mcm-logo-new-large-stylised.webp";
-import iconLogo from "@/assets/mcm-logo-new-small.png";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Shield, ExternalLink, Menu, Lightbulb, Heart, Gift, FileText } from "lucide-react";
+import { Shield, ExternalLink, Menu, Lightbulb, Gift, FileText, TrendingDown, Handshake } from "lucide-react";
 
 export const Header = () => {
   return (
@@ -32,50 +24,18 @@ export const Header = () => {
             How It Works
           </Link>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center gap-1">
-              Values
-              <ChevronDown className="w-4 h-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem asChild>
-                <Link to="/#fairness" className="w-full cursor-pointer">
-                  <div className="flex flex-col gap-1">
-                    <div className="font-semibold">Fair</div>
-                    <div className="text-sm text-muted-foreground">
-                      Transparent pricing for everyone
-                    </div>
-                  </div>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/#transparency" className="w-full cursor-pointer">
-                  <div className="flex flex-col gap-1">
-                    <div className="font-semibold">Transparent</div>
-                    <div className="text-sm text-muted-foreground">
-                      Open and honest processes
-                    </div>
-                  </div>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/#reliability" className="w-full cursor-pointer">
-                  <div className="flex flex-col gap-1">
-                    <div className="font-semibold">Reliable</div>
-                    <div className="text-sm text-muted-foreground">
-                      Dependable protection always
-                    </div>
-                  </div>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Link 
+            to="/#live-quotes" 
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
+          >
+            Pricing
+          </Link>
 
           <Link 
             to="/benefits" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
-            Benefits
+            Why Choose the Mutual?
           </Link>
 
           <Link 
@@ -85,36 +45,36 @@ export const Header = () => {
             Claims
           </Link>
 
-              <a 
-                href="https://www.google.com/search?q=motor+cover+mutual+reviews"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 text-lg font-medium border border-primary/20 hover:bg-accent hover:border-accent transition-colors rounded-md h-14 flex items-center gap-2 whitespace-nowrap"
-              >
-                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                  <span className="text-primary font-bold text-sm">G</span>
-                </div>
-                <div className="hidden lg:flex items-center gap-1">
-                  <span className="text-yellow-500">★</span>
-                  <span>5.0</span>
-                </div>
-              </a>
+          <a 
+            href="https://getbirdeye.com.au/national-cover-insurance-brokers-169994241801236"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 text-sm font-medium border border-primary/20 hover:bg-accent/10 hover:border-accent transition-colors rounded-md h-14 flex items-center gap-2 whitespace-nowrap"
+          >
+            <Handshake className="w-4 h-4 text-accent" />
+            <div className="flex flex-col leading-tight">
+              <span className="text-xs text-muted-foreground">Brokered by</span>
+              <span className="font-semibold text-sm">National Cover</span>
+            </div>
+            <ExternalLink className="w-3 h-3 opacity-50" />
+          </a>
 
-              <a 
-                href="https://connectonline.asic.gov.au/RegistrySearch/faces/landing/SearchRegisters.jspx" 
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Verify our ASIC licence (opens in new window)"
-                className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center gap-2 border border-border/50"
-              >
-                <Shield className="w-4 h-4" />
-                <span className="hidden lg:inline">Verify Licence</span>
-                <span className="lg:hidden">Licence</span>
-                <ExternalLink className="w-3 h-3 opacity-70" />
-              </a>
+          <a 
+            href="https://service.asic.gov.au/search/EntityDetail?LicenceNumber=239926&PermissionType=Australian%20financial%20services%20licensees&licenceName=ASIA%20MIDEAST%20INSURANCE%20AND%20REINSURANCE%20PTY%20LTD" 
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Verify AFSL 239926 on ASIC (opens in new window)"
+            title="AFSL 239926 — Asia Mideast Insurance and Reinsurance Pty Ltd"
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center gap-2 border border-border/50"
+          >
+            <Shield className="w-4 h-4" />
+            <span className="hidden lg:inline">Verify Licence</span>
+            <span className="lg:hidden">Licence</span>
+            <ExternalLink className="w-3 h-3 opacity-70" />
+          </a>
         </nav>
 
-        {/* Mobile menu - hamburger sidebar */}
+        {/* Mobile menu */}
         <div className="flex md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -143,34 +103,20 @@ export const Header = () => {
                   How It Works
                 </Link>
                 
-                {/* Values Submenu */}
-                <Collapsible className="space-y-2">
-                  <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1">
-                    <div className="flex items-center gap-3">
-                      <Heart className="w-5 h-5" />
-                      Values
-                    </div>
-                    <ChevronDown className="w-4 h-4" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-2 pl-12">
-                    <Link to="/#fairness" className="block px-4 py-2 text-base hover:bg-accent/50 rounded-md">
-                      Fair
-                    </Link>
-                    <Link to="/#transparency" className="block px-4 py-2 text-base hover:bg-accent/50 rounded-md">
-                      Transparent
-                    </Link>
-                    <Link to="/#reliability" className="block px-4 py-2 text-base hover:bg-accent/50 rounded-md">
-                      Reliable
-                    </Link>
-                  </CollapsibleContent>
-                </Collapsible>
+                <Link 
+                  to="/#live-quotes" 
+                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
+                >
+                  <TrendingDown className="w-5 h-5" />
+                  Pricing
+                </Link>
                 
                 <Link 
                   to="/benefits" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Gift className="w-5 h-5" />
-                  Benefits
+                  Why Choose the Mutual?
                 </Link>
                 
                 <Link 
@@ -184,28 +130,32 @@ export const Header = () => {
                 <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-2"></div>
                 
                 <a 
-                  href="https://www.google.com/search?q=motor+cover+mutual+reviews"
+                  href="https://getbirdeye.com.au/national-cover-insurance-brokers-169994241801236"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium border border-primary/20 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
-                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-primary font-bold text-sm">G</span>
+                  <Handshake className="w-5 h-5 text-accent" />
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-xs text-muted-foreground">Brokered by</span>
+                    <span className="font-semibold">National Cover</span>
                   </div>
-                  <span>Google Reviews (5.0★)</span>
                   <ExternalLink className="w-4 h-4 ml-auto" />
                 </a>
                 
                 <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-2"></div>
                 
                 <a 
-                  href="https://connectonline.asic.gov.au/RegistrySearch/faces/landing/SearchRegisters.jspx" 
+                  href="https://service.asic.gov.au/search/EntityDetail?LicenceNumber=239926&PermissionType=Australian%20financial%20services%20licensees&licenceName=ASIA%20MIDEAST%20INSURANCE%20AND%20REINSURANCE%20PTY%20LTD" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium border border-border/50 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Shield className="w-5 h-5" />
-                  <span>Verify ASIC Licence</span>
+                  <div className="flex flex-col leading-tight">
+                    <span className="font-semibold">Verify Licence</span>
+                    <span className="text-xs text-muted-foreground">AFSL 239926</span>
+                  </div>
                   <ExternalLink className="w-4 h-4 ml-auto" />
                 </a>
                 
