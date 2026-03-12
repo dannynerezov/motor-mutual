@@ -74,7 +74,33 @@ Deno.serve(async (req) => {
       }
     }
 
-    // For deals missing comp_benchmark_price in form3, fallback to form_submissions.auto_quote_result JSON
+    // Fetch vehicle_value from form2_submissions for deals missing it
+    const missingValueDeals = dealIds.filter(
+      (d) => vehicleMap[d]?.vehicle_value == null
+    );
+    const vehicleValueMap: Record<string, number> = {};
+
+    if (missingValueDeals.length > 0) {
+      const FETCH_BATCH = 100;
+      for (let i = 0; i < missingValueDeals.length; i += FETCH_BATCH) {
+        const batch = missingValueDeals.slice(i, i + FETCH_BATCH);
+        const { data: form2 } = await source
+          .from("form2_submissions")
+          .select("deal_id, agreed_value, market_value, retail_value")
+          .in("deal_id", batch);
+
+        if (form2) {
+          form2.forEach((f: any) => {
+            if (f.deal_id) {
+              const val = f.agreed_value ?? f.market_value ?? f.retail_value;
+              if (val != null) vehicleValueMap[f.deal_id] = Number(val);
+            }
+          });
+        }
+      }
+      console.log(`[sync-mutual-quotes] Resolved ${Object.keys(vehicleValueMap).length}/${missingValueDeals.length} vehicle values from form2_submissions`);
+    }
+
     const missingBenchmarkDeals = sourceQuotes.filter(
       (q) => vehicleMap[q.deal_id]?.comp_benchmark_price == null && q.comp_insurer
     );
