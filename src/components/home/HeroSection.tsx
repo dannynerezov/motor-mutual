@@ -35,7 +35,7 @@ export const HeroSection = () => {
                 <TrendingDown className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-lg font-bold">Beat Market Prices</p>
-                  <p className="text-sm text-primary-foreground/70">The Mutual is avg 15–30% below traditional insurers</p>
+                  <p className="text-sm text-primary-foreground/70">Benchmarked to beat market prices through smart price engineering</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-accent/20 rounded-xl px-5 py-4 border border-accent/40">
