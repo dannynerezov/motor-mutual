@@ -40,7 +40,7 @@ export const QuoteForm = () => {
       }).select("id").single();
 
       if (error) throw error;
-      navigate(`/apply/${data.id}`);
+      navigate('/broker', { state: { firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim(), email: email.trim().toLowerCase() } });
     } catch (error: any) {
       console.error("Submission error:", error);
       toast.error("Something went wrong. Please try again.");

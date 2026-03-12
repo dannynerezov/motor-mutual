@@ -1,54 +1,63 @@
 
 
-## Plan: Create /broker page as quote handoff to National Cover
+## Plan: Add Internal Dispute Resolution Subsection to Section 7
 
 ### Overview
-Replace the current `/apply/:form1Id` redirect with a new `/broker` page that serves as a trust-building intermediary before handing the user off to National Cover's website with prefilled URL parameters.
+Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
 
-### Changes
+### Changes Required
 
-**1. Update `src/components/QuoteForm.tsx`**
-- After successful DB insert, navigate to `/broker` instead of `/apply/${data.id}`
-- Pass form data via URL search params or route state: `navigate('/broker', { state: { firstName, lastName, phone, email } })`
+**File: `src/pages/PDSPage.tsx`**
 
-**2. Create `src/pages/BrokerPage.tsx`**
-- Read user data from `location.state`
-- Professional layout with:
-  - **Header section**: "Your Appointed Broker" with National Cover logo (loaded from `https://home.nationalcover.com.au/assets/national-cover-logo-CJHWuDVY.png`)
-  - **About blurb**: Concise professional description of National Cover Pty Ltd as the appointed broker and manager for Motor Cover Mutual
-  - **Legal details**: National Cover Pty Ltd ABN 74 639 621 480, Australian Financial Services Representative
-  - **Contact info**: Phone 07 5346 0149, Address 298 Musgrave Road, Coopers Plains, QLD 4108
-  - **Website link**: Link to nationalcover.com.au
-  - **Google Reviews widget**: Embed the Birdeye script via `useEffect` to dynamically inject the `<script>` tag and render div
-  - **"Proceed to National Cover" button**: Redirects to `https://nationalcover.com.au/quote?fname={firstName}&lname={lastName}&phone={phone}&email={email}&type=Rideshare`
-- If no state data (direct navigation), redirect back to `/`
+Update the Section 7 content (lines 211-223) to insert a new subsection:
 
-**3. Update `src/App.tsx`**
-- Import `BrokerPage` and add route: `<Route path="/broker" element={<BrokerPage />} />`
-
-### Birdeye Widget Embedding
-Use a `useEffect` to create and append the script element dynamically since third-party scripts can't be embedded directly in JSX:
-```tsx
-useEffect(() => {
-  const script = document.createElement('script');
-  script.src = 'https://getbirdeye.com.au/embed/v7/169994241801236/11/9876543213011151831216912';
-  script.async = true;
-  document.body.appendChild(script);
-  return () => { document.body.removeChild(script); };
-}, []);
+#### Current Structure:
+```
+Section 7 — Complaints
+├── Intro paragraphs
+└── 7.1 External dispute resolution
 ```
 
-### URL Parameter Handoff
-The "Proceed" button constructs:
+#### New Structure:
 ```
-https://nationalcover.com.au/quote?fname=John&lname=Smith&phone=0412345678&email=john@example.com&type=Rideshare
+Section 7 — Complaints
+├── Intro paragraphs
+├── 7.1 Internal Dispute Resolution (NEW)
+│   ├── Statutory obligation statement (s912A(1)(g))
+│   └── 4-Step IDR Process
+│       ├── Step 1: Lodge Your Complaint
+│       ├── Step 2: Acknowledgement
+│       ├── Step 3: Investigation
+│       └── Step 4: Resolution & Outcome
+└── 7.2 External dispute resolution (renumbered from 7.1)
 ```
-All values encoded with `encodeURIComponent`.
 
-### Files
-| File | Action |
-|------|--------|
-| `src/pages/BrokerPage.tsx` | Create |
-| `src/components/QuoteForm.tsx` | Change navigate target to `/broker` with state |
-| `src/App.tsx` | Add `/broker` route |
+### Content to Add
+
+**7.1 Internal Dispute Resolution**
+
+The subsection will include:
+
+1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
+
+2. **4-Step IDR Process** (summarised from the screenshot):
+
+   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
+
+   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
+
+   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
+
+   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
+
+### Technical Details
+
+- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
+- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
+- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
+- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
+
+### Optional Enhancement
+
+Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
 
