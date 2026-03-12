@@ -1,4 +1,4 @@
-import { BarChart3, Shield, Layers, Heart } from "lucide-react";
+import { BarChart3, Shield, Layers, Lightbulb } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const features = [
