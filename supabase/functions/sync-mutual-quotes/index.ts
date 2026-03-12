@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     // Fetch vehicle info + comp_benchmark_price from source form3_submissions
     const dealIds = sourceQuotes.map((q) => q.deal_id).filter(Boolean);
-    let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null; comp_benchmark_price: number | null }> = {};
+    let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null; comp_benchmark_price: number | null; vehicle_value: number | null }> = {};
 
     if (dealIds.length > 0) {
       const FETCH_BATCH = 100;
