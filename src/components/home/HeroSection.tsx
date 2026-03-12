@@ -31,25 +31,25 @@ export const HeroSection = () => {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-              <div className="flex items-center gap-3 bg-primary-foreground/5 rounded-lg px-4 py-3 border border-primary-foreground/10">
-                <TrendingDown className="w-5 h-5 text-accent flex-shrink-0" />
+              <div className="flex items-start gap-3 bg-accent/20 rounded-xl px-5 py-4 border border-accent/40">
+                <TrendingDown className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold">Beat Market Prices</p>
-                  <p className="text-xs text-primary-foreground/60">Avg 15-30% below</p>
+                  <p className="text-lg font-bold">Beat Market Prices</p>
+                  <p className="text-sm text-primary-foreground/70">The Mutual is avg 15–30% below traditional insurers</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 bg-primary-foreground/5 rounded-lg px-4 py-3 border border-primary-foreground/10">
-                <Shield className="w-5 h-5 text-accent flex-shrink-0" />
+              <div className="flex items-start gap-3 bg-accent/20 rounded-xl px-5 py-4 border border-accent/40">
+                <Shield className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold">APRA Backed</p>
-                  <p className="text-xs text-primary-foreground/60">Third-party included</p>
+                  <p className="text-lg font-bold">APRA Backed</p>
+                  <p className="text-sm text-primary-foreground/70">$20M third-party liability included at no extra cost</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 bg-primary-foreground/5 rounded-lg px-4 py-3 border border-primary-foreground/10">
-                <Building2 className="w-5 h-5 text-accent flex-shrink-0" />
+              <div className="flex items-start gap-3 bg-accent/20 rounded-xl px-5 py-4 border border-accent/40">
+                <Building2 className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold">AFCA Member</p>
-                  <p className="text-xs text-primary-foreground/60">Full dispute access</p>
+                  <p className="text-lg font-bold">AFCA Member</p>
+                  <p className="text-sm text-primary-foreground/70">Full independent dispute resolution access</p>
                 </div>
               </div>
             </div>

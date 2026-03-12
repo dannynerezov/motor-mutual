@@ -41,7 +41,7 @@ export const CompetitivePricingSection = () => {
             Our Competitive Pricing Philosophy
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            We believe rideshare drivers deserve fair, transparent pricing backed by real regulatory protection
+            The Mutual believes rideshare drivers deserve fair, transparent pricing backed by real regulatory protection
           </p>
         </div>
 

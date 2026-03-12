@@ -164,6 +164,15 @@ export const QuoteForm = () => {
             <div className="absolute inset-0 rounded-md border-4 border-accent animate-ping opacity-20 pointer-events-none"></div>
           )}
         </div>
+
+        {/* Urgency line */}
+        <div className="flex items-center justify-center gap-2 mt-4 text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+          </span>
+          <span className="text-xs md:text-sm">Rates reviewed daily — lock in today's price</span>
+        </div>
       </div>
     </Card>
   );
