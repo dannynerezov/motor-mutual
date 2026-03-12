@@ -86,8 +86,42 @@ export const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center text-sm opacity-90">
-          <p>&copy; {new Date().getFullYear()} Motor Cover Mutual. All rights reserved.</p>
+        {/* Legal & Licence Details */}
+        <div className="border-t border-primary-foreground/20 mt-8 pt-8">
+          <div className="space-y-4 text-xs opacity-80 leading-relaxed">
+            <div>
+              <h4 className="font-semibold text-sm mb-2 opacity-100">General Advice Warning</h4>
+              <p>
+                The information provided on this website is general advice only and has been prepared without taking into account your particular objectives, financial situation or needs. Before acting on any advice, you should consider the appropriateness of the advice, having regard to your objectives, financial situation and needs. You should read the relevant Product Disclosure Statement (PDS) before making a decision about whether to acquire a product. Past performance is not indicative of future performance.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4 pt-2">
+              <div>
+                <p className="font-semibold text-sm opacity-100">Product Issuer</p>
+                <p>Motor Cover Mutual Ltd</p>
+                <p>ACN 692 709 649</p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm opacity-100">AFSL Holder &amp; Underwriter</p>
+                <p>Asia Mideast Insurance and Reinsurance Pty Ltd</p>
+                <p>ACN 079 924 851 | AFSL 239926</p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm opacity-100">Insurance Broker</p>
+                <p>National Cover Pty Ltd</p>
+                <p>ABN 74 639 621 480</p>
+              </div>
+            </div>
+
+            <p className="pt-2">
+              Motor Cover Mutual Ltd is not an insurer and does not issue insurance policies. Cover is arranged by National Cover Pty Ltd and underwritten by Asia Mideast Insurance and Reinsurance Pty Ltd (AFSL 239926). Disputes may be referred to the Australian Financial Complaints Authority (AFCA).
+            </p>
+          </div>
+
+          <div className="border-t border-primary-foreground/10 mt-6 pt-4 text-center text-sm opacity-90">
+            <p>&copy; {new Date().getFullYear()} Motor Cover Mutual Ltd. All rights reserved.</p>
+          </div>
         </div>
       </div>
     </footer>
