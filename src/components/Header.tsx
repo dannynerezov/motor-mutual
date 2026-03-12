@@ -25,7 +25,7 @@ export const Header = () => {
           </a>
 
           <a 
-            href="#live-quotes" 
+            href="/#live-quotes" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Pricing
