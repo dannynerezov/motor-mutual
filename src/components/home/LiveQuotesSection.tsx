@@ -95,10 +95,15 @@ export const LiveQuotesSection = () => {
           <Badge variant="outline" className="mb-4 border-accent text-accent">
             Live Data — Updated Daily
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Live Quotes Database</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Live Market Comparisons</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real comparisons showing how our pricing stacks up against the market
+            Real comparisons showing how The Mutual's pricing stacks up against the market
           </p>
+          {stats[2] && (
+            <p className="mt-3 text-sm font-semibold text-accent">
+              The Mutual beat the market in {stats[2].value} of comparisons
+            </p>
+          )}
         </div>
 
         {/* Filters */}
