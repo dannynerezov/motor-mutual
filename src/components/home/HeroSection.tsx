@@ -27,8 +27,7 @@ export const HeroSection = () => {
             </h1>
 
             <p className="text-lg md:text-xl text-primary-foreground/80 max-w-xl leading-relaxed">
-              We monitor the market daily and price our cover to consistently beat traditional insurers — 
-              backed by <span className="font-semibold text-accent">APRA-regulated third-party protection</span> included at no extra cost.
+              The Mutual monitors the market daily and prices its cover to remain competitive with traditional insurers. With regulated third-party protection incorporated into the price and operating under the <span className="font-semibold text-accent">Corporations Act 2001</span>, the model delivers comprehensive-level protection at a lower cost.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
