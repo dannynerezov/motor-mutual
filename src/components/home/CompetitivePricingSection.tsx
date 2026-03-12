@@ -5,7 +5,7 @@ const features = [
   {
     icon: BarChart3,
     title: "Daily Competitor Monitoring",
-    description: "We check competitor prices every day to ensure our members always get below-market rates.",
+    description: "The Mutual checks competitor prices every day to ensure members always get below-market rates.",
     bullets: ["Real-time market data", "Automated price adjustments", "Transparent methodology"],
     featured: false,
   },
