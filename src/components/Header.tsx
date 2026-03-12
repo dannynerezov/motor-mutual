@@ -35,7 +35,7 @@ export const Header = () => {
             to="/benefits" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
-            Why Choose the Mutual?
+            Benefits
           </Link>
 
           <Link 
@@ -116,7 +116,7 @@ export const Header = () => {
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Gift className="w-5 h-5" />
-                  Why Choose the Mutual?
+                  Benefits
                 </Link>
                 
                 <Link 
