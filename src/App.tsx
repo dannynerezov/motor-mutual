@@ -19,6 +19,7 @@ import PDSPage from "./pages/PDSPage";
 import QuoteApplicationPage from "./pages/QuoteApplicationPage";
 import RetrieveQuotePage from "./pages/RetrieveQuotePage";
 import AdminMemberships from "./pages/AdminMemberships";
+import BrokerPage from "./pages/BrokerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
