@@ -113,7 +113,7 @@ export const Header = () => {
                 </a>
                 
                 <a 
-                  href="#live-quotes" 
+                  href="/#live-quotes" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <TrendingDown className="w-5 h-5" />
