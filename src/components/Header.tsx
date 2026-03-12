@@ -104,29 +104,29 @@ export const Header = () => {
               </SheetHeader>
               
               <nav className="flex flex-col gap-4 mt-8 min-h-[calc(100vh-8rem)] pb-4">
-                <Link 
-                  to="/#how-it-works" 
+                <a 
+                  href="#how-it-works" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Lightbulb className="w-5 h-5" />
                   How It Works
-                </Link>
+                </a>
                 
-                <Link 
-                  to="/#live-quotes" 
+                <a 
+                  href="#live-quotes" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <TrendingDown className="w-5 h-5" />
                   Pricing
-                </Link>
+                </a>
                 
-                <Link 
-                  to="/benefits" 
+                <a 
+                  href="#why-choose-mutual" 
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
                 >
                   <Gift className="w-5 h-5" />
                   Benefits
-                </Link>
+                </a>
                 
                 <Link 
                   to="/claims" 
