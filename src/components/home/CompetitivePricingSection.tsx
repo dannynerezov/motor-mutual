@@ -1,4 +1,4 @@
-import { BarChart3, Shield, Layers, Heart } from "lucide-react";
+import { BarChart3, Shield, Layers, Lightbulb } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const features = [
@@ -24,10 +24,10 @@ const features = [
     featured: false,
   },
   {
-    icon: Heart,
-    title: "No Discrimination",
-    description: "We don't penalise you for your postcode, age, or gender. Your price is based on your vehicle value — full stop.",
-    bullets: ["Vehicle value-based only", "No postcode loading", "No demographic penalties"],
+    icon: Lightbulb,
+    title: "Lower Price through Smarter Structure",
+    description: "Third Party Property Damage costs significantly less than traditional comprehensive cover. By pairing APRA-regulated third-party protection with the Mutual's own damage cover, we deliver comprehensive-level protection at a fraction of the cost.",
+    bullets: ["Third Party + Mutual cover combined", "APRA-regulated base layer", "Comprehensive protection, lower cost"],
     featured: false,
   },
 ];
