@@ -45,6 +45,13 @@ export const Header = () => {
             Claims
           </Link>
 
+          <Link 
+            to="/pds" 
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
+          >
+            PDS
+          </Link>
+
           <a 
             href="https://getbirdeye.com.au/national-cover-insurance-brokers-169994241801236"
             target="_blank"
