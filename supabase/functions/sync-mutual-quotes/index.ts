@@ -79,6 +79,7 @@ Deno.serve(async (req) => {
       (d) => vehicleMap[d]?.vehicle_value == null
     );
     const vehicleValueMap: Record<string, number> = {};
+    console.log(`[sync-mutual-quotes] Missing vehicle values: ${missingValueDeals.length}/${dealIds.length}`);
 
     if (missingValueDeals.length > 0) {
       const FETCH_BATCH = 100;
