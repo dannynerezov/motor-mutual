@@ -45,6 +45,13 @@ export const Header = () => {
             Claims
           </Link>
 
+          <Link 
+            to="/pds" 
+            className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
+          >
+            PDS
+          </Link>
+
           <a 
             href="https://getbirdeye.com.au/national-cover-insurance-brokers-169994241801236"
             target="_blank"
@@ -127,6 +134,14 @@ export const Header = () => {
                 >
                   <FileText className="w-5 h-5" />
                   Claims
+                </Link>
+                
+                <Link 
+                  to="/pds" 
+                  className="flex items-center gap-3 px-4 py-3 text-lg font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
+                >
+                  <FileText className="w-5 h-5" />
+                  PDS
                 </Link>
                 
                 <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-2"></div>
