@@ -8,7 +8,7 @@ type ColumnType = 'mutual' | 'traditional' | 'clubs';
 const rows = [
   {
     aspect: "Pricing",
-    mutual: { icon: "check", text: "Simple vehicle value-based — same price everywhere" },
+    mutual: { icon: "check", text: "Benchmarked to beat market prices through smart price engineering" },
     traditional: { icon: "x", text: "Complex location-based, can be 6× higher in metro areas" },
     clubs: { icon: "warn", text: "Variable, opaque fee structures" },
   },
