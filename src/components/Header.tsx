@@ -18,7 +18,7 @@ export const Header = () => {
         
         <nav className="hidden md:flex items-center gap-2 ml-8">
           <a 
-            href="#how-it-works" 
+            href="/#how-it-works" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             How It Works
