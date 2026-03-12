@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const { data: sourceQuotes, error: sourceError } = await source
       .from("mutual_quotes")
       .select(
-        "deal_id, comp_total_annual, comp_insurer, mutual_target_price, mutual_membership_price, tppd_winning_premium, tppd_winning_quote_ref, tppd_winning_insurer, tppd_status, vehicle_state, created_at, updated_at"
+        "deal_id, comp_total_annual, comp_insurer, mutual_target_price, mutual_membership_price, tppd_winning_premium, tppd_winning_quote_ref, tppd_winning_insurer, tppd_status, vehicle_state, vehicle_value, created_at, updated_at"
       )
       .not("tppd_winning_quote_ref", "is", null)
       .order("created_at", { ascending: false })
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     // Fetch vehicle info + comp_benchmark_price from source form3_submissions
     const dealIds = sourceQuotes.map((q) => q.deal_id).filter(Boolean);
-    let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null; comp_benchmark_price: number | null }> = {};
+    let vehicleMap: Record<string, { vehicle_make: string | null; vehicle_model: string | null; vehicle_year: string | null; comp_benchmark_price: number | null; vehicle_value: number | null }> = {};
 
     if (dealIds.length > 0) {
       const FETCH_BATCH = 100;
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         const batch = dealIds.slice(i, i + FETCH_BATCH);
         const { data: form3 } = await source
           .from("form3_submissions")
-          .select("deal_id, vehicle_make, vehicle_model, vehicle_year, comp_benchmark_price")
+          .select("deal_id, vehicle_make, vehicle_model, vehicle_year, comp_benchmark_price, vehicle_value")
           .in("deal_id", batch);
 
         if (form3) {
@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
                 vehicle_model: f.vehicle_model,
                 vehicle_year: f.vehicle_year,
                 comp_benchmark_price: f.comp_benchmark_price,
+                vehicle_value: f.vehicle_value,
               };
             }
           });
@@ -73,7 +74,34 @@ Deno.serve(async (req) => {
       }
     }
 
-    // For deals missing comp_benchmark_price in form3, fallback to form_submissions.auto_quote_result JSON
+    // Fetch vehicle_value from form2_submissions for deals missing it
+    const missingValueDeals = dealIds.filter(
+      (d) => vehicleMap[d]?.vehicle_value == null
+    );
+    const vehicleValueMap: Record<string, number> = {};
+    console.log(`[sync-mutual-quotes] Missing vehicle values: ${missingValueDeals.length}/${dealIds.length}`);
+
+    if (missingValueDeals.length > 0) {
+      const FETCH_BATCH = 100;
+      for (let i = 0; i < missingValueDeals.length; i += FETCH_BATCH) {
+        const batch = missingValueDeals.slice(i, i + FETCH_BATCH);
+        const { data: form2 } = await source
+          .from("form2_submissions")
+          .select("deal_id, agreed_value, market_value, retail_value")
+          .in("deal_id", batch);
+
+        if (form2) {
+          form2.forEach((f: any) => {
+            if (f.deal_id) {
+              const val = f.agreed_value ?? f.market_value ?? f.retail_value;
+              if (val != null) vehicleValueMap[f.deal_id] = Number(val);
+            }
+          });
+        }
+      }
+      console.log(`[sync-mutual-quotes] Resolved ${Object.keys(vehicleValueMap).length}/${missingValueDeals.length} vehicle values from form2_submissions`);
+    }
+
     const missingBenchmarkDeals = sourceQuotes.filter(
       (q) => vehicleMap[q.deal_id]?.comp_benchmark_price == null && q.comp_insurer
     );
@@ -136,6 +164,7 @@ Deno.serve(async (req) => {
       vehicle_make: vehicleMap[q.deal_id]?.vehicle_make ?? null,
       vehicle_model: vehicleMap[q.deal_id]?.vehicle_model ?? null,
       vehicle_year: vehicleMap[q.deal_id]?.vehicle_year ?? null,
+      vehicle_value: q.vehicle_value ?? vehicleMap[q.deal_id]?.vehicle_value ?? vehicleValueMap[q.deal_id] ?? null,
       created_at: q.created_at,
       updated_at: q.updated_at,
     }));

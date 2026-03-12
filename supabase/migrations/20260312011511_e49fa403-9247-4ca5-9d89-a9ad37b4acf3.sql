@@ -1,0 +1,1 @@
+ALTER TABLE public.mutual_quotes ADD COLUMN vehicle_value numeric NULL;
