@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,43 +17,54 @@ const VALUE_RANGES = [
 
 const BarChart = ({ data }: { data: ChartItem[] }) => {
   const maxVal = Math.max(...data.flatMap((d) => [d.market, d.mutual]));
+  const totalSavings = data.reduce((sum, d) => sum + (d.market - d.mutual), 0);
+  const avgSavingPct = data.length > 0 ? Math.round((totalSavings / data.reduce((s, d) => s + d.market, 0)) * 100) : 0;
 
   return (
-    <div className="space-y-5">
-      {data.map((item) => (
-        <div key={item.label} className="space-y-1.5">
-          <div className="flex justify-between text-sm">
-            <span className="font-medium">{item.label}</span>
-            <span className="text-muted-foreground text-xs">
-              Save ${(item.market - item.mutual).toLocaleString()}/yr
-            </span>
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div
-                className="h-6 rounded bg-muted-foreground/20 transition-all duration-500"
-                style={{ width: `${(item.market / maxVal) * 100}%` }}
-              />
-              <span className="text-xs text-muted-foreground whitespace-nowrap">${item.market.toLocaleString()}</span>
+    <div className="space-y-6">
+      <div className="text-center pb-2 border-b border-border/50">
+        <p className="text-2xl md:text-3xl font-bold text-accent">{avgSavingPct}% average savings</p>
+        <p className="text-sm text-muted-foreground">across {data.length} categories shown</p>
+      </div>
+      <div className="space-y-6">
+        {data.map((item) => {
+          const savePct = item.market > 0 ? Math.round(((item.market - item.mutual) / item.market) * 100) : 0;
+          return (
+            <div key={item.label} className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-base">{item.label}</span>
+                <Badge variant="outline" className="border-accent text-accent text-xs">
+                  Save {savePct}% (${(item.market - item.mutual).toLocaleString()}/yr)
+                </Badge>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-8 rounded-md bg-muted-foreground/20 transition-all duration-500"
+                    style={{ width: `${(item.market / maxVal) * 100}%` }}
+                  />
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">${item.market.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-8 rounded-md bg-accent transition-all duration-500"
+                    style={{ width: `${(item.mutual / maxVal) * 100}%` }}
+                  />
+                  <span className="text-sm font-bold text-accent whitespace-nowrap">${item.mutual.toLocaleString()}</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-6 rounded bg-accent transition-all duration-500"
-                style={{ width: `${(item.mutual / maxVal) * 100}%` }}
-              />
-              <span className="text-xs font-semibold text-accent whitespace-nowrap">${item.mutual.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      ))}
-      <div className="flex items-center gap-6 pt-4 text-xs text-muted-foreground">
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-muted-foreground/20" />
           <span>Market Average</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-accent" />
-          <span>Mutual Price</span>
+          <span>The Mutual's Price</span>
         </div>
       </div>
     </div>
@@ -147,14 +159,14 @@ export const PriceAnalyticsSection = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Price Analytics
+            The Mutual's Price Analytics
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            See how our pricing compares across different vehicles, values, and states
+            See how The Mutual's pricing compares across different vehicles, values, and states
           </p>
         </div>
 
-        <Card className="max-w-3xl mx-auto border-2">
+        <Card className="max-w-6xl mx-auto border-2">
           <CardContent className="p-6 md:p-8">
             {loading ? (
               <div className="space-y-4">

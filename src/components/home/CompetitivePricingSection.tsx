@@ -5,7 +5,7 @@ const features = [
   {
     icon: BarChart3,
     title: "Daily Competitor Monitoring",
-    description: "We check competitor prices every day to ensure our members always get below-market rates.",
+    description: "The Mutual checks competitor prices every day to ensure members always get below-market rates.",
     bullets: ["Real-time market data", "Automated price adjustments", "Transparent methodology"],
     featured: false,
   },
@@ -19,7 +19,7 @@ const features = [
   {
     icon: Layers,
     title: "Best of Both Worlds",
-    description: "Mutual community pricing combined with institutional-grade regulatory protection you can trust.",
+    description: "The Mutual's community pricing combined with institutional-grade regulatory protection you can trust.",
     bullets: ["Community-powered pricing", "Institutional backing", "Professional claims handling"],
     featured: false,
   },
@@ -41,7 +41,7 @@ export const CompetitivePricingSection = () => {
             Our Competitive Pricing Philosophy
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            We believe rideshare drivers deserve fair, transparent pricing backed by real regulatory protection
+            The Mutual believes rideshare drivers deserve fair, transparent pricing backed by real regulatory protection
           </p>
         </div>
 

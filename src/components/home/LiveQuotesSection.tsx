@@ -95,10 +95,15 @@ export const LiveQuotesSection = () => {
           <Badge variant="outline" className="mb-4 border-accent text-accent">
             Live Data — Updated Daily
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Live Quotes Database</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Live Market Comparisons</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real comparisons showing how our pricing stacks up against the market
+            Real comparisons showing how The Mutual's pricing stacks up against the market
           </p>
+          {stats[2] && (
+            <p className="mt-3 text-sm font-semibold text-accent">
+              The Mutual beat the market in {stats[2].value} of comparisons
+            </p>
+          )}
         </div>
 
         {/* Filters */}
@@ -135,8 +140,8 @@ export const LiveQuotesSection = () => {
                     <TableHead>Vehicle</TableHead>
                     <TableHead>State</TableHead>
                     <TableHead className="text-right">Market Price</TableHead>
-                    <TableHead className="text-right font-bold text-accent">Mutual Price</TableHead>
-                    <TableHead className="text-right">Annual Saving</TableHead>
+                     <TableHead className="text-right font-bold text-accent">The Mutual's Price</TableHead>
+                     <TableHead className="text-right">Annual Saving</TableHead>
                     <TableHead>Ref#</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -156,7 +161,12 @@ export const LiveQuotesSection = () => {
                         ${getBenchmark(q).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </TableCell>
                       <TableCell className="text-right font-bold text-accent">
-                        ${(q.mutual_target_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        <span className="inline-flex items-center gap-1.5">
+                          ${(q.mutual_target_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          {(q.mutual_target_price ?? 0) < getBenchmark(q) && (
+                            <Badge className="bg-green-500/15 text-green-600 border-green-500/30 text-[10px] px-1.5 py-0">Best Value</Badge>
+                          )}
+                        </span>
                       </TableCell>
                       <TableCell className="text-right">
                         <Badge className="bg-accent/10 text-accent border-accent/30 hover:bg-accent/20">
