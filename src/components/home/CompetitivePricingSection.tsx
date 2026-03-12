@@ -19,7 +19,7 @@ const features = [
   {
     icon: Layers,
     title: "Best of Both Worlds",
-    description: "Mutual community pricing combined with institutional-grade regulatory protection you can trust.",
+    description: "The Mutual's community pricing combined with institutional-grade regulatory protection you can trust.",
     bullets: ["Community-powered pricing", "Institutional backing", "Professional claims handling"],
     featured: false,
   },
