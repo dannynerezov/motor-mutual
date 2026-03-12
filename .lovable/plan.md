@@ -1,63 +1,48 @@
 
 
-## Plan: Add Internal Dispute Resolution Subsection to Section 7
+## Plan: Redesign /broker page based on HTML reference
 
-### Overview
-Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
+The uploaded HTML has several strong design ideas worth adopting. Here's what I'll implement, keeping the existing Header and Footer:
 
-### Changes Required
+### 1. Dark hero band at top
+Replace the current plain text header with a dark navy gradient hero band featuring:
+- Orange pill badge "Your Appointed Broker"
+- Headline: "You're in good hands with **National Cover**" (orange emphasis)
+- Subtitle paragraph
+- Decorative radial gradient orbs (CSS pseudo-elements via inline styles or Tailwind)
 
-**File: `src/pages/PDSPage.tsx`**
+### 2. Elevated broker card overlapping the hero
+Restructure the broker info into a single card that overlaps the hero (negative margin-top):
+- **Top section**: Logo box + company name + description + colored regulation tags (ABN in green, AFSL Rep in blue, AFCA Member in orange)
+- **Bottom section**: 2-column grid with Phone/Address and Website cells, styled with uppercase labels
 
-Update the Section 7 content (lines 211-223) to insert a new subsection:
+### 3. Reviews section with rating summary + review cards grid
+Replace the Birdeye widget embed with a styled reviews block:
+- Large "5.0" rating number + stars + review count + Google badge
+- 3-column grid of review cards (1-col on mobile) with avatar, name, platform, stars, text
+- Keep the Birdeye script for the actual widget, but add the visual summary header above it
 
-#### Current Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-└── 7.1 External dispute resolution
-```
+### 4. Security bar
+Add a blue-tinted security notice bar: "Your details will be securely passed to National Cover... No spam — ever." with a lock icon
 
-#### New Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-├── 7.1 Internal Dispute Resolution (NEW)
-│   ├── Statutory obligation statement (s912A(1)(g))
-│   └── 4-Step IDR Process
-│       ├── Step 1: Lodge Your Complaint
-│       ├── Step 2: Acknowledgement
-│       ├── Step 3: Investigation
-│       └── Step 4: Resolution & Outcome
-└── 7.2 External dispute resolution (renumbered from 7.1)
-```
+### 5. Dark CTA block with trust row
+Replace the current gradient button with a dark navy CTA block:
+- Persuasive copy line
+- Large orange rounded CTA button
+- Trust row underneath: "AFCA supervised", "No obligation quote", "256-bit encrypted", "Response within 2 hrs"
 
-### Content to Add
+### 6. Fade-in animations
+Add simple CSS animations (fadeUp) to the broker card, reviews block, and CTA block
 
-**7.1 Internal Dispute Resolution**
+### File Changes
+| File | Action |
+|------|--------|
+| `src/pages/BrokerPage.tsx` | Full rewrite of the page content (keep Header/Footer, keep state/redirect logic) |
 
-The subsection will include:
-
-1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
-
-2. **4-Step IDR Process** (summarised from the screenshot):
-
-   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
-
-   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
-
-   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
-
-   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
-
-### Technical Details
-
-- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
-- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
-- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
-- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
-
-### Optional Enhancement
-
-Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
+### Technical Approach
+- Use Tailwind classes for all styling (no raw CSS file needed)
+- Use existing UI primitives (Card, Button, Badge) where appropriate
+- Keep the `nationalCoverLogo` import and existing redirect logic
+- Responsive: stack broker card sections and review cards on mobile
+- The Birdeye widget script stays as-is for real reviews; the static review cards serve as visual fallback/complement
 
