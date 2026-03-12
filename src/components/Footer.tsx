@@ -103,7 +103,7 @@ export const Footer = () => {
                 <p>ACN 692 709 649</p>
               </div>
               <div>
-                <p className="font-semibold text-sm opacity-100">AFSL Holder &amp; Underwriter</p>
+                <p className="font-semibold text-sm opacity-100">AFSL Authorisation</p>
                 <p>Asia Mideast Insurance and Reinsurance Pty Ltd</p>
                 <p>ACN 079 924 851 | AFSL 239926</p>
               </div>
