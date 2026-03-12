@@ -1180,6 +1180,7 @@ export type Database = {
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_state: string | null
+          vehicle_value: number | null
           vehicle_year: string | null
         }
         Insert: {
@@ -1198,6 +1199,7 @@ export type Database = {
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_state?: string | null
+          vehicle_value?: number | null
           vehicle_year?: string | null
         }
         Update: {
@@ -1216,6 +1218,7 @@ export type Database = {
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_state?: string | null
+          vehicle_value?: number | null
           vehicle_year?: string | null
         }
         Relationships: []
