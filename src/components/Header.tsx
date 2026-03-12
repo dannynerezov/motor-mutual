@@ -32,7 +32,7 @@ export const Header = () => {
           </a>
 
           <a 
-            href="#why-choose-mutual" 
+            href="/#why-choose-mutual" 
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center"
           >
             Benefits
