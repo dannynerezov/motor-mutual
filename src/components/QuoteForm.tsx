@@ -27,7 +27,7 @@ export const QuoteForm = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.from("form1_submissions").insert({
+      const { error } = await supabase.from("form1_submissions").insert({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         phone: phone.trim(),
@@ -37,7 +37,7 @@ export const QuoteForm = () => {
         channel: "website",
         submission_status: "received",
         user_agent: navigator.userAgent,
-      }).select("id").single();
+      });
 
       if (error) throw error;
       navigate('/broker', { state: { firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim(), email: email.trim().toLowerCase() } });
