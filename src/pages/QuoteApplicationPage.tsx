@@ -38,13 +38,11 @@ const QuoteApplicationPage = () => {
   useEffect(() => {
     if (!form1Id) return;
     const fetchForm1 = async () => {
-      const { data, error } = await supabase
-        .from("form1_submissions")
-        .select("first_name, last_name, phone, email, quote_number")
-        .eq("id", form1Id)
-        .single();
+      const { data, error } = await supabase.functions.invoke("retrieve-form1", {
+        body: { form1_id: form1Id },
+      });
 
-      if (error || !data) {
+      if (error || data?.error) {
         toast.error("Could not load your quote. Please try again.");
         navigate("/");
         return;

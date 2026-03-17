@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.mcm-quote-api]
 verify_jwt = false
+
+[functions.retrieve-quote]
+verify_jwt = false
+
+[functions.retrieve-form1]
+verify_jwt = false
