@@ -40,62 +40,32 @@ const RetrieveQuotePage = () => {
     setBound(false);
 
     try {
-      // Find form1 by quote_number
-      const { data: form1Data, error: form1Error } = await supabase
-        .from("form1_submissions")
-        .select("*")
-        .eq("quote_number", quoteNumber.trim())
-        .maybeSingle();
+      const { data: result, error } = await supabase.functions.invoke("retrieve-quote", {
+        body: {
+          quote_number: quoteNumber.trim(),
+          dob_day: dobDay,
+          dob_month: dobMonth,
+          dob_year: dobYear,
+        },
+      });
 
-      if (form1Error || !form1Data) {
-        toast({ title: "Quote not found", description: "No quote found with that number.", variant: "destructive" });
+      if (error || result?.error) {
+        const msg = result?.error || "Something went wrong.";
+        const title = msg.includes("not found") ? "Quote not found" 
+          : msg.includes("does not match") ? "Verification failed"
+          : msg.includes("Incomplete") ? "Incomplete quote"
+          : "Error";
+        toast({ title, description: msg, variant: "destructive" });
         setLoading(false);
         return;
       }
 
-      // Find form2 linked to form1
-      const { data: form2Data } = await supabase
-        .from("form2_submissions")
-        .select("*")
-        .eq("form1_submission_id", form1Data.id)
-        .maybeSingle();
-
-      if (!form2Data) {
-        toast({ title: "Incomplete quote", description: "No vehicle/driver details found for this quote.", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-
-      // Verify DOB
-      const enteredDob = `${dobDay.padStart(2, "0")}/${dobMonth.padStart(2, "0")}/${dobYear}`;
-      const storedDob = `${form2Data.dob_day?.padStart(2, "0")}/${form2Data.dob_month?.padStart(2, "0")}/${form2Data.dob_year}`;
-      
-      if (enteredDob !== storedDob) {
-        toast({ title: "Verification failed", description: "Date of birth does not match our records.", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-
-      // Find form3 linked to form2
-      const { data: form3Data } = await supabase
-        .from("form3_submissions")
-        .select("*")
-        .eq("form2_submission_id", form2Data.id)
-        .maybeSingle();
-
-      // Check if already bound
-      const { data: existingMembership } = await supabase
-        .from("memberships")
-        .select("membership_number")
-        .eq("quote_number", quoteNumber.trim())
-        .maybeSingle();
-
-      if (existingMembership) {
+      if (result.membership) {
         setBound(true);
-        setMembershipNumber(existingMembership.membership_number);
+        setMembershipNumber(result.membership.membership_number);
       }
 
-      setFormData({ form1: form1Data, form2: form2Data, form3: form3Data });
+      setFormData({ form1: result.form1, form2: result.form2, form3: result.form3 });
     } catch (err) {
       toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
     } finally {
