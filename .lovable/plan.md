@@ -1,63 +1,63 @@
 
 
-## Plan: Add Internal Dispute Resolution Subsection to Section 7
+## Security Issue: Public RLS Policies Expose All Data
 
-### Overview
-Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
+### The Problem
 
-### Changes Required
+The anon key is **not** the vulnerability -- it's always public (embedded in your frontend JavaScript bundle). Anyone can extract it from browser dev tools. This is by design.
 
-**File: `src/pages/PDSPage.tsx`**
+The real issue is your **Row-Level Security (RLS) policies**. Every sensitive table currently has:
 
-Update the Section 7 content (lines 211-223) to insert a new subsection:
-
-#### Current Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-└── 7.1 External dispute resolution
+```sql
+Policy: "Public select form1"
+Command: SELECT
+Using Expression: true   -- ← This means ANYONE can read ALL rows
 ```
 
-#### New Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-├── 7.1 Internal Dispute Resolution (NEW)
-│   ├── Statutory obligation statement (s912A(1)(g))
-│   └── 4-Step IDR Process
-│       ├── Step 1: Lodge Your Complaint
-│       ├── Step 2: Acknowledgement
-│       ├── Step 3: Investigation
-│       └── Step 4: Resolution & Outcome
-└── 7.2 External dispute resolution (renumbered from 7.1)
-```
+This applies to: `form1_submissions`, `form2_submissions`, `form3_submissions`, `form4_submissions`, `memberships`, `mutual_quotes`, `quotes`, `customers`, and more.
 
-### Content to Add
+With `true` as the policy expression, any anonymous user with the public key can read every record.
 
-**7.1 Internal Dispute Resolution**
+### The Fix
 
-The subsection will include:
+We need to lock down SELECT policies on sensitive tables so only **authenticated** users can read data, while keeping INSERT open for the public-facing forms.
 
-1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
+**Tables that need SELECT restricted to authenticated users:**
+- `form1_submissions` — contains customer PII (name, email, phone)
+- `form2_submissions` — contains detailed personal + vehicle data
+- `form3_submissions` — contains pricing/quote details
+- `form4_submissions` — contains confirmation + payment info
+- `memberships` — contains member PII
+- `customers` — contains customer PII
+- `mutual_quotes` — contains deal data
+- `quotes` — contains quote data
+- `suncorp_quote_details` — contains quote details
+- `third_party_quotes` — contains quote data
 
-2. **4-Step IDR Process** (summarised from the screenshot):
+**Tables that can stay public SELECT** (non-sensitive reference data):
+- `insurance_pricing_data` — public pricing index data
+- `pricing_schemes` — public pricing config
+- `sample_vehicle_quotes` — sample/demo data
+- `product_disclosure_statements` — public PDS documents
 
-   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
+**Frontend changes needed:**
+- `RetrieveQuotePage.tsx` queries form1/form2/form3 by quote number — this needs to work for unauthenticated users retrieving their own quote. We'll solve this by creating a **backend function** (edge function) that looks up a quote by quote number and returns only that specific record, rather than giving broad table access.
+- `QuoteForm.tsx` only does INSERT (no change needed)
+- `QuoteApplicationPage.tsx` reads form1 by ID — same approach, use edge function or pass data via URL params
+- `AdminSubmissions.tsx` — admin page, requires authentication (already should be behind auth)
 
-   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
+### Implementation Steps
 
-   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
+1. **Create a database migration** to replace the public SELECT policies on all sensitive tables with `auth.role() = 'authenticated'` policies
+2. **Create an edge function** `retrieve-quote` that accepts a quote number and returns the matching form1/form2/form3 data (so unauthenticated users can still retrieve their quote)
+3. **Update `RetrieveQuotePage.tsx`** to call the edge function instead of querying tables directly
+4. **Update `QuoteApplicationPage.tsx`** to use the edge function or pass form1 data through state rather than re-querying
 
-   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
-
-### Technical Details
-
-- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
-- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
-- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
-- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
-
-### Optional Enhancement
-
-Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
+### Files Changed
+| File | Action |
+|------|--------|
+| Database migration | Drop public SELECT, add authenticated-only SELECT on ~10 tables |
+| `supabase/functions/retrieve-quote/index.ts` | New edge function for quote lookup by number |
+| `src/pages/RetrieveQuotePage.tsx` | Call edge function instead of direct table queries |
+| `src/pages/QuoteApplicationPage.tsx` | Use edge function or route state for form1 data |
 
