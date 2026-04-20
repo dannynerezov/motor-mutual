@@ -24,7 +24,7 @@ const tocData: TOCItem[] = [
     label: "Part 1: Product Disclosure Statement",
     children: [
       { id: "section-1", label: "Section 1 — Introduction" },
-      { id: "section-2", label: "Section 2 — About Motor Cover Mutual Limited" },
+      { id: "section-2", label: "Section 2 — About MOTOR COVER MUTUAL AUSTRALIA LIMITED" },
       { id: "section-3", label: "Section 3 — Membership" },
       { id: "section-4", label: "Section 4 — Discretionary Risk Protection" },
       { id: "section-5", label: "Section 5 — Financial Information" },

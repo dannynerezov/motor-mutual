@@ -61,23 +61,23 @@ export const Header = () => {
             <Handshake className="w-4 h-4 text-accent" />
             <div className="flex flex-col leading-tight">
               <span className="text-xs text-muted-foreground">Brokered by</span>
-              <span className="font-semibold text-sm">National Cover</span>
+              <span className="font-semibold text-sm">MCMA Management</span>
             </div>
             <ExternalLink className="w-3 h-3 opacity-50" />
           </a>
 
           <a 
-            href="https://service.asic.gov.au/search/EntityDetail?LicenceNumber=239926&PermissionType=Australian%20financial%20services%20licensees&licenceName=ASIA%20MIDEAST%20INSURANCE%20AND%20REINSURANCE%20PTY%20LTD" 
+            href="https://service.asic.gov.au/search/EntityDetail?LicenceNumber=543696&PermissionType=Australian%20financial%20services%20licensees&licenceName=ASIA%20MIDEAST%20INSURANCE%20AND%20REINSURANCE%20PTY%20LTD" 
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Verify AFSL 239926 on ASIC (opens in new window)"
-            title="AFSL 239926 — Asia Mideast Insurance and Reinsurance Pty Ltd"
+            aria-label="Verify AFSL 543696 on ASIC (opens in new window)"
+            title="AFSL 543696 — Static Insurance Pty Ltd"
             className="px-6 py-2 text-lg font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors h-14 flex items-center gap-2 border border-border/50"
           >
             <Shield className="w-4 h-4" />
             <div className="flex flex-col leading-tight">
               <span className="font-semibold text-sm">Verify Licence</span>
-              <span className="text-xs text-muted-foreground">AFSL 239926</span>
+              <span className="text-xs text-muted-foreground">AFSL 543696</span>
             </div>
             <ExternalLink className="w-3 h-3 opacity-70" />
           </a>
@@ -155,7 +155,7 @@ export const Header = () => {
                   <Handshake className="w-5 h-5 text-accent" />
                   <div className="flex flex-col leading-tight">
                     <span className="text-xs text-muted-foreground">Brokered by</span>
-                    <span className="font-semibold">National Cover</span>
+                    <span className="font-semibold">MCMA Management</span>
                   </div>
                   <ExternalLink className="w-4 h-4 ml-auto" />
                 </a>
@@ -163,7 +163,7 @@ export const Header = () => {
                 <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-2"></div>
                 
                 <a 
-                  href="https://service.asic.gov.au/search/EntityDetail?LicenceNumber=239926&PermissionType=Australian%20financial%20services%20licensees&licenceName=ASIA%20MIDEAST%20INSURANCE%20AND%20REINSURANCE%20PTY%20LTD" 
+                  href="https://service.asic.gov.au/search/EntityDetail?LicenceNumber=543696&PermissionType=Australian%20financial%20services%20licensees&licenceName=ASIA%20MIDEAST%20INSURANCE%20AND%20REINSURANCE%20PTY%20LTD" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 text-lg font-medium border border-border/50 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:border-l-4 hover:border-accent rounded-md transition-all duration-300 hover:translate-x-1"
@@ -171,7 +171,7 @@ export const Header = () => {
                   <Shield className="w-5 h-5" />
                   <div className="flex flex-col leading-tight">
                     <span className="font-semibold">Verify Licence</span>
-                    <span className="text-xs text-muted-foreground">AFSL 239926</span>
+                    <span className="text-xs text-muted-foreground">AFSL 543696</span>
                   </div>
                   <ExternalLink className="w-4 h-4 ml-auto" />
                 </a>

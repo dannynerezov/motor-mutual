@@ -25,7 +25,7 @@ const StarRating = () => (
 const reviews = [
   {
     name: "Sarah M.",
-    text: "Incredibly smooth process. National Cover made switching rideshare insurance painless — had my policy sorted within 24 hours.",
+    text: "Incredibly smooth process. MCMA Management made switching rideshare insurance painless — had my policy sorted within 24 hours.",
     date: "2 weeks ago",
   },
   {
@@ -97,10 +97,10 @@ const BrokerPage = () => {
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground leading-tight">
             You're in good hands with{" "}
-            <span className="text-accent">National Cover</span>
+            <span className="text-accent">MCMA Management</span>
           </h1>
           <p className="text-primary-foreground/70 text-lg max-w-2xl mx-auto">
-            National Cover is the appointed insurance broker and scheme manager for Motor Cover Mutual, handling all policy quotes, binding, and ongoing administration on behalf of members.
+            MCMA Management is the appointed insurance broker and scheme manager for Motor Cover Mutual, handling all policy quotes, binding, and ongoing administration on behalf of members.
           </p>
         </div>
       </section>
@@ -113,14 +113,14 @@ const BrokerPage = () => {
               <div className="shrink-0 bg-card rounded-xl p-4 shadow-sm border border-border">
                 <img
                   src={nationalCoverLogo}
-                  alt="National Cover Pty Ltd logo"
+                  alt="MCMA Management Pty Ltd logo"
                   className="h-14 md:h-18 w-auto object-contain"
                 />
               </div>
               <div className="space-y-2 text-center sm:text-left">
-                <h2 className="text-xl font-bold text-foreground">National Cover Pty Ltd</h2>
+                <h2 className="text-xl font-bold text-foreground">MCMA Management Pty Ltd</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Licensed insurance brokerage specialising in motor vehicle cover across Australia. As the scheme manager for Motor Cover Mutual, National Cover ensures every member receives competitive, transparent quotes backed by APRA-regulated underwriters.
+                  Licensed insurance brokerage specialising in motor vehicle cover across Australia. As the scheme manager for Motor Cover Mutual, MCMA Management ensures every member receives competitive, transparent quotes backed by APRA-regulated underwriters.
                 </p>
               </div>
             </div>
@@ -213,7 +213,7 @@ const BrokerPage = () => {
           <div className="flex items-center gap-3 px-5 py-3 rounded-lg bg-blue-500/5 border border-blue-500/15">
             <Lock className="w-4 h-4 text-blue-600 shrink-0" />
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              Your details will be securely passed to National Cover to begin your rideshare insurance quote. <strong>No spam — ever.</strong>
+              Your details will be securely passed to MCMA Management to begin your rideshare insurance quote. <strong>No spam — ever.</strong>
             </p>
           </div>
         </div>
@@ -228,7 +228,7 @@ const BrokerPage = () => {
             className="px-10 py-7 text-lg font-bold rounded-full bg-accent hover:bg-accent/90 text-accent-foreground transition-all hover:shadow-xl hover:scale-[1.02] group"
           >
             <span className="flex items-center gap-3">
-              Proceed to National Cover
+              Proceed to MCMA Management
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </span>
           </Button>

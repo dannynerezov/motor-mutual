@@ -99,28 +99,28 @@ export const Footer = () => {
             <div className="grid md:grid-cols-3 gap-4 pt-2">
               <div>
                 <p className="font-semibold text-sm opacity-100">Product Issuer</p>
-                <p>Motor Cover Mutual Ltd</p>
+                <p>MOTOR COVER MUTUAL AUSTRALIA LIMITED</p>
                 <p>ACN 692 709 649</p>
               </div>
               <div>
                 <p className="font-semibold text-sm opacity-100">AFSL Authorisation</p>
-                <p>Asia Mideast Insurance and Reinsurance Pty Ltd</p>
-                <p>ACN 079 924 851 | AFSL 239926</p>
+                <p>Static Insurance Pty Ltd</p>
+                <p>ACN 079 924 851 | AFSL 543696</p>
               </div>
               <div>
                 <p className="font-semibold text-sm opacity-100">Insurance Broker</p>
-                <p>National Cover Pty Ltd</p>
+                <p>MCMA Management Pty Ltd</p>
                 <p>ABN 74 639 621 480</p>
               </div>
             </div>
 
             <p className="pt-2">
-              Motor Cover Mutual Ltd is not an insurer and does not issue insurance policies. Cover is arranged by National Cover Pty Ltd and underwritten by Asia Mideast Insurance and Reinsurance Pty Ltd (AFSL 239926). Disputes may be referred to the Australian Financial Complaints Authority (AFCA).
+              MOTOR COVER MUTUAL AUSTRALIA LIMITED is not an insurer and does not issue insurance policies. Cover is arranged by MCMA Management Pty Ltd and underwritten by Static Insurance Pty Ltd (AFSL 543696). Disputes may be referred to the Australian Financial Complaints Authority (AFCA).
             </p>
           </div>
 
           <div className="border-t border-primary-foreground/10 mt-6 pt-4 text-center text-sm opacity-90">
-            <p>&copy; {new Date().getFullYear()} Motor Cover Mutual Ltd. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} MOTOR COVER MUTUAL AUSTRALIA LIMITED. All rights reserved.</p>
           </div>
         </div>
       </div>
