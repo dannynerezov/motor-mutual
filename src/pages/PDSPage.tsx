@@ -22,6 +22,7 @@ const PDSPage = () => {
           image: { type: "jpeg", quality: 0.95 },
           html2canvas: { scale: 2, useCORS: true, logging: false },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          // @ts-expect-error - pagebreak is supported at runtime
           pagebreak: { mode: ["css", "legacy"], before: ".page-break-before" },
         })
         .from(documentRef.current)
