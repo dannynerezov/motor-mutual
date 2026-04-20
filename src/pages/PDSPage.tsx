@@ -1362,6 +1362,7 @@ const PDSPage = () => {
               <h3>21.7 Summary</h3>
               <p>Examples help Members understand typical outcomes, but every decision remains at the full discretion of the Board.</p>
             </section>
+            </div>
           </div>
         </div>
       </main>
