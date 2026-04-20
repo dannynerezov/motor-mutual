@@ -73,7 +73,7 @@ const PDSPage = () => {
             <section id="introduction">
               <h2>Introduction</h2>
               <p>This Product Disclosure Statement (PDS) and protection wording is an important legal document. It describes what you need to know about MOTOR COVER MUTUAL AUSTRALIA LIMITED (Mutual) and the Motor Plus+ protection (Protection) available to members of the Mutual (Members).</p>
-              <p>The Protection is a financial risk product offered by MCMA Management Pty Ltd (Manager) as an authorised representative of Static Insurance Pty Ltd AFSL no. 543696 (AMIR) on our behalf. We issue it on the terms contained in the PDS (subject to the operation of the Constitution and the Protection Wording).</p>
+              <p>The Protection is a financial risk product offered by MCMA Management Pty Ltd (Manager) as an authorised representative of Static Insurance Pty Ltd AFSL no. 543696 (Static) on our behalf. We issue it on the terms contained in the PDS (subject to the operation of the Constitution and the Protection Wording).</p>
               <p>Before you decide whether to become a Member of the Mutual or to purchase Protection, please read this document, the Financial Services Guide and the Constitution carefully and keep a copy in a safe place for future reference.</p>
               <p><strong>Part 1</strong> of this document is the PDS. It contains information about the Protection we offer and how to become a Member. It sets out the rights and entitlements of Members and explains the benefits and risks associated with purchasing the Protection.</p>
               <p><strong>Part 2</strong> of this document contains the Protection Wording for the Protection. These are the terms and conditions on which we provide the Protection (including exclusions and conditions) subject to our discretionary powers to accept or reject a claim in the interests of the Members and in accordance with the Constitution.</p>
@@ -86,7 +86,7 @@ const PDSPage = () => {
               <div className={styles.glossaryItem}><strong>AFCA</strong> Australian Financial Complaints Authority.</div>
               <div className={styles.glossaryItem}><strong>AFSL</strong> Australian financial services licence.</div>
               <div className={styles.glossaryItem}><strong>Agreed Value</strong> The value of the Vehicle as recorded in the Member Protection Schedule, representing the maximum consideration the Mutual may provide for a Total Loss.</div>
-              <div className={styles.glossaryItem}><strong>AMIR</strong> Static Insurance Pty Ltd AFSL no. 543696.</div>
+              <div className={styles.glossaryItem}><strong>Static</strong> Static Insurance Pty Ltd AFSL no. 543696.</div>
               <div className={styles.glossaryItem}><strong>APRA</strong> Australian Prudential Regulation Authority.</div>
               <div className={styles.glossaryItem}><strong>ASIC</strong> Australian Securities and Investments Commission.</div>
               <div className={styles.glossaryItem}><strong>Board</strong> The board of directors of the Mutual.</div>
@@ -128,7 +128,7 @@ const PDSPage = () => {
 
               <h3>2.3 Who manages it?</h3>
               <p>The Board has engaged the Manager to oversee the operation of the Mutual and manage the delivery of financial services. The Manager is responsible for offering Membership and the Protection, handling Membership enquiries, claims and performing other professional services.</p>
-              <p>The Manager is an authorised representative of AMIR. More information about the Manager and the services it provides on our behalf is contained in the FSG.</p>
+              <p>The Manager is an authorised representative of Static. More information about the Manager and the services it provides on our behalf is contained in the FSG.</p>
 
               <h3>2.4 How is the Mutual managed?</h3>
               <p>The Board manages the Mutual with the assistance of the Manager, who provides membership services and coordinates the delivery of certain functions such as payment of claims. The Manager is responsible for making offers of Membership and Protection to eligible applicants.</p>
@@ -159,7 +159,7 @@ const PDSPage = () => {
               <h3>4.2 Why does the Board have discretion to approve claims?</h3>
               <p>The Protection is 'discretionary protection', which is a legitimate solution allowing Members to manage their financial risk and the consequence of the various risks covered under the Protection Wording.</p>
               <p>To qualify as discretionary protection, the Board must have the absolute discretion to accept or reject a Member's claim. Otherwise, there is a risk that the product would be deemed an insurance product, and we would be required to be authorised under the Insurance Act 1973 (Cth) to operate an insurance business.</p>
-              <p>By offering discretionary protection, we can offer our Members a financial risk product without the need to set up an insurance company. ASIC supervises AMIR as the holder of the AFSL and regulates the issue and distribution of the discretionary protection.</p>
+              <p>By offering discretionary protection, we can offer our Members a financial risk product without the need to set up an insurance company. ASIC supervises Static as the holder of the AFSL and regulates the issue and distribution of the discretionary protection.</p>
               <p>Unlike insurance companies which are regulated by APRA and are subject to APRA's prudential standards and the provisions of the Insurance Act, discretionary mutuals such as the Mutual are not bound by these regulations. Also, the Protection is not classified as an insurance product and therefore is not subject to the Insurance Contracts Act 1984 (Cth).</p>
               <p>Importantly, the Federal Government's Financial Claims Scheme is not available in the event of the Mutual's insolvency.</p>
 
@@ -247,7 +247,7 @@ const PDSPage = () => {
               </ul>
 
               <h3 id="section-7-2">7.2 External Dispute Resolution</h3>
-              <p>If you are not satisfied with the decision or if your complaint remains unresolved after 30 days, you can refer the matter to the Australian Financial Complaints Authority (AFCA). AFCA is an independent body that provides its services free of charge. AMIR, as the AFSL holder, is a member of AFCA.</p>
+              <p>If you are not satisfied with the decision or if your complaint remains unresolved after 30 days, you can refer the matter to the Australian Financial Complaints Authority (AFCA). AFCA is an independent body that provides its services free of charge. Static, as the AFSL holder, is a member of AFCA.</p>
               <p><strong>AFCA Contact Details:</strong><br />
               Email: info@afca.org.au<br />
               Free call number: 1800 931 678<br />
@@ -807,7 +807,7 @@ const PDSPage = () => {
               <p>If the Member is dissatisfied with the IDR outcome, the Member may escalate the matter to the Australian Financial Complaints Authority (AFCA).</p>
               <p>AFCA can review:</p>
               <ul>
-                <li>Conduct of the AFSL holder (AMIR)</li>
+                <li>Conduct of the AFSL holder (Static)</li>
                 <li>Service and administrative issues</li>
                 <li>Delays or unfair treatment</li>
               </ul>
@@ -856,7 +856,7 @@ const PDSPage = () => {
               <p>The Australian Financial Complaints Authority, the external dispute resolution body established under Part 7.10A of the Corporations Act 2001 (Cth).</p>
 
               <h3>17.5 AFSL Holder</h3>
-              <p>STATIC INSURANCE PTY LTD (AMIR), AFSL 543 696, which authorises MCMA Management Pty Ltd to provide financial services to Members.</p>
+              <p>STATIC INSURANCE PTY LTD (Static), AFSL 543 696, which authorises MCMA Management Pty Ltd to provide financial services to Members.</p>
 
               <h3>17.6 Agreed Value</h3>
               <p>The value of the Vehicle as recorded in the Member Protection Schedule at the time of joining or renewal. The Agreed Value represents the maximum amount the Mutual may consider paying in the event of a Total Loss and is determined based on information provided by the Member.</p>
