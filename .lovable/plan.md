@@ -1,63 +1,60 @@
 
 
-## Plan: Add Internal Dispute Resolution Subsection to Section 7
+## Plan: Update Legal Entity Names and AFSL on PDS Page
 
 ### Overview
-Update Section 7 — Complaints to include a new subsection on Internal Dispute Resolution (IDR) before the existing External Dispute Resolution section. This will document the IDR process as required by Australian financial services law.
+Update all legal entity references across the PDS page and related components to reflect the new company structure and AFSL number.
 
-### Changes Required
+### Entity Changes
 
-**File: `src/pages/PDSPage.tsx`**
+| Old Name | New Name |
+|----------|----------|
+| Motor Cover Mutual Limited | MOTOR COVER MUTUAL AUSTRALIA LIMITED |
+| Motor Cover Mutual Ltd | MOTOR COVER MUTUAL AUSTRALIA LIMITED |
+| Asia Mideast Insurance and Reinsurance Pty Ltd | Static Insurance Pty Ltd |
+| National Cover Pty Ltd | MCMA Management Pty Ltd |
+| AFSL 239926 | AFSL 543696 |
 
-Update the Section 7 content (lines 211-223) to insert a new subsection:
+### Files to Update
 
-#### Current Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-└── 7.1 External dispute resolution
-```
+| File | Changes |
+|------|---------|
+| `src/pages/PDSPage.tsx` | Title page, Contact Details, Introduction, Glossary (AMIR, Manager, Mutual), Section 2, Section 9-10, Section 17-20, Remove all ACN numbers |
+| `src/components/Footer.tsx` | Product Issuer, AFSL Authorisation, Insurance Broker sections, Remove ACN numbers |
+| `src/components/Header.tsx` | AFSL badge text and ASIC verification link (239926 → 543696) |
+| `src/components/PDSTableOfContents.tsx` | Section 2 label |
+| `src/pages/BrokerPage.tsx` | National Cover → MCMA Management references |
 
-#### New Structure:
-```
-Section 7 — Complaints
-├── Intro paragraphs
-├── 7.1 Internal Dispute Resolution (NEW)
-│   ├── Statutory obligation statement (s912A(1)(g))
-│   └── 4-Step IDR Process
-│       ├── Step 1: Lodge Your Complaint
-│       ├── Step 2: Acknowledgement
-│       ├── Step 3: Investigation
-│       └── Step 4: Resolution & Outcome
-└── 7.2 External dispute resolution (renumbered from 7.1)
-```
+### Detailed Text Changes
 
-### Content to Add
+**PDSPage.tsx (1334 lines total):**
+- Line 28: Title "Motor Cover Mutual Limited" → "MOTOR COVER MUTUAL AUSTRALIA LIMITED"
+- Line 31: Remove "ACN [insert]"
+- Lines 62-68: Update AFSL Holder block (Asia Mideast → Static, 239926 → 543696, remove ACN)
+- Line 75: "Motor Cover Mutual Ltd ACN 692 709 649" → "MOTOR COVER MUTUAL AUSTRALIA LIMITED"
+- Line 76: Update Manager and AMIR references, remove ACN numbers
+- Line 89: "AMIR" definition (Asia Mideast → Static, 239926 → 543696, remove ACN)
+- Line 96: "Manager" definition (National Cover → MCMA Management, remove ACN)
+- Line 98: "Mutual" definition (Motor Cover Mutual Ltd ACN → MOTOR COVER MUTUAL AUSTRALIA LIMITED)
+- Line 118: Section 2 heading "About Motor Cover Mutual Limited" → "About MOTOR COVER MUTUAL AUSTRALIA LIMITED"
+- Line 859: Section 17.5 AFSL Holder (Asia Mideast → Static, 239926 → 543696)
+- Lines 279-925+: All remaining references throughout Protection Wording
 
-**7.1 Internal Dispute Resolution**
+**Footer.tsx:**
+- Line 102-103: Product Issuer (remove ACN 692 709 649)
+- Line 107-108: AFSL Authorisation (Asia Mideast → Static, 239926 → 543696, remove ACN)
+- Line 112-113: Insurance Broker (National Cover → MCMA Management, remove ABN)
+- Line 118: Bottom paragraph entity references
 
-The subsection will include:
+**Header.tsx:**
+- Line 70: ASIC verification URL (239926 → 543696)
+- Line 73-74: aria-label and title (Asia Mideast → Static)
+- Line 80: Badge text "AFSL 239926" → "AFSL 543696"
+- Lines 166-174: Mobile menu duplicate references
 
-1. **Statutory Acknowledgement**: A statement explaining that the Mutual maintains an internal dispute resolution procedure in compliance with section 912A(1)(g) of the Corporations Act 2001 (Cth), which requires financial services licensees to have adequate arrangements for handling complaints.
+**PDSTableOfContents.tsx:**
+- Line 27: "Section 2 — About Motor Cover Mutual Limited" → "Section 2 — About MOTOR COVER MUTUAL AUSTRALIA LIMITED"
 
-2. **4-Step IDR Process** (summarised from the screenshot):
-
-   - **Step 1 — Lodge Your Complaint**: Contact details required (name, contact info, clear explanation, desired outcome, supporting evidence). Available channels: phone, email, helpdesk, or in writing.
-
-   - **Step 2 — Acknowledgement**: Complaint acknowledged within one business day (verbally or in writing), with a reference number provided for tracking.
-
-   - **Step 3 — Investigation**: A dedicated Customer Relations Specialist will investigate, review policies and documentation, contact member if additional information is required, and consult with relevant departments or third parties as needed.
-
-   - **Step 4 — Resolution & Outcome**: Written decision with findings, clear reasons if complaint not upheld, details of any remedial action, and information about external dispute resolution options if unsatisfied.
-
-### Technical Details
-
-- **Location**: Insert between lines 216 and 217 (after the intro paragraphs, before current 7.1)
-- **Renumber**: Current "7.1 External dispute resolution" becomes "7.2 External dispute resolution"
-- **Styling**: Use existing h3 for main subsection heading, h4 for step headings, and ul/li for bullet points
-- **Add section ID**: `id="section-7-1"` for the IDR subsection to support TOC navigation
-
-### Optional Enhancement
-
-Consider updating the Table of Contents component (`PDSTableOfContents.tsx`) to include a reference to the new IDR subsection if granular navigation is desired.
+**BrokerPage.tsx:**
+- Lines 116-123: Update all National Cover Pty Ltd references to MCMA Management Pty Ltd
 
