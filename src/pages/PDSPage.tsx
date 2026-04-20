@@ -25,10 +25,10 @@ const PDSPage = () => {
           <div className={styles.pdsDocument}>
             {/* Title Page */}
             <section className={styles.titlePage}>
-              <h1>Motor Cover Mutual Limited</h1>
+              <h1>MOTOR COVER MUTUAL AUSTRALIA LIMITED</h1>
               <p className={styles.subtitle}>Product Disclosure Statement for Motor Plus+ Protection</p>
               <p className={styles.meta}>
-                This document was prepared on &lt;insert&gt; and issued by Motor Cover Mutual Ltd ACN [insert].<br />
+                This document was prepared on &lt;insert&gt; and issued by MOTOR COVER MUTUAL AUSTRALIA LIMITED.<br />
                 Version 1.0
               </p>
             </section>
@@ -60,20 +60,20 @@ const PDSPage = () => {
               </div>
               <div className={styles.contactBlock} style={{ marginTop: '15px' }}>
                 <h4>AFSL Holder</h4>
-                <p>Asia Mideast Insurance and Reinsurance Pty Ltd ACN 079 924 851</p>
-                <p>AFS Licence No. 239926</p>
+                <p>Static Insurance Pty Ltd</p>
+                <p>AFS Licence No. 543696</p>
                 <p>Email: info@amir.com.au | Post: PO Box 1678, North Sydney NSW 2059</p>
               </div>
               <p style={{ marginTop: '15px', fontSize: '9pt', fontStyle: 'italic' }}>
-                Distribution of this document has been authorised by Asia Mideast Insurance and Reinsurance Pty Ltd ACN 079 924 851 AFSL 239926.
+                Distribution of this document has been authorised by Static Insurance Pty Ltd AFSL 543696.
               </p>
             </section>
 
             {/* Introduction */}
             <section id="introduction">
               <h2>Introduction</h2>
-              <p>This Product Disclosure Statement (PDS) and protection wording is an important legal document. It describes what you need to know about Motor Cover Mutual Ltd ACN 692 709 649 (Mutual) and the Motor Plus+ protection (Protection) available to members of the Mutual (Members).</p>
-              <p>The Protection is a financial risk product offered by National Cover Pty Ltd ACN 639 621 480 (Manager) as an authorised representative of Asia Mideast Insurance and Reinsurance Pty Ltd 079 924 851 AFSL no. 239926 (AMIR) on our behalf. We issue it on the terms contained in the PDS (subject to the operation of the Constitution and the Protection Wording).</p>
+              <p>This Product Disclosure Statement (PDS) and protection wording is an important legal document. It describes what you need to know about MOTOR COVER MUTUAL AUSTRALIA LIMITED (Mutual) and the Motor Plus+ protection (Protection) available to members of the Mutual (Members).</p>
+              <p>The Protection is a financial risk product offered by MCMA Management Pty Ltd (Manager) as an authorised representative of Static Insurance Pty Ltd AFSL no. 543696 (AMIR) on our behalf. We issue it on the terms contained in the PDS (subject to the operation of the Constitution and the Protection Wording).</p>
               <p>Before you decide whether to become a Member of the Mutual or to purchase Protection, please read this document, the Financial Services Guide and the Constitution carefully and keep a copy in a safe place for future reference.</p>
               <p><strong>Part 1</strong> of this document is the PDS. It contains information about the Protection we offer and how to become a Member. It sets out the rights and entitlements of Members and explains the benefits and risks associated with purchasing the Protection.</p>
               <p><strong>Part 2</strong> of this document contains the Protection Wording for the Protection. These are the terms and conditions on which we provide the Protection (including exclusions and conditions) subject to our discretionary powers to accept or reject a claim in the interests of the Members and in accordance with the Constitution.</p>
@@ -86,16 +86,16 @@ const PDSPage = () => {
               <div className={styles.glossaryItem}><strong>AFCA</strong> Australian Financial Complaints Authority.</div>
               <div className={styles.glossaryItem}><strong>AFSL</strong> Australian financial services licence.</div>
               <div className={styles.glossaryItem}><strong>Agreed Value</strong> The value of the Vehicle as recorded in the Member Protection Schedule, representing the maximum consideration the Mutual may provide for a Total Loss.</div>
-              <div className={styles.glossaryItem}><strong>AMIR</strong> Asia Mideast Insurance and Reinsurance Pty Ltd 079 924 851 AFSL no. 239926.</div>
+              <div className={styles.glossaryItem}><strong>AMIR</strong> Static Insurance Pty Ltd AFSL no. 543696.</div>
               <div className={styles.glossaryItem}><strong>APRA</strong> Australian Prudential Regulation Authority.</div>
               <div className={styles.glossaryItem}><strong>ASIC</strong> Australian Securities and Investments Commission.</div>
               <div className={styles.glossaryItem}><strong>Board</strong> The board of directors of the Mutual.</div>
               <div className={styles.glossaryItem}><strong>Constitution</strong> The constitution of the Mutual, governing membership and protection offered by the Mutual.</div>
               <div className={styles.glossaryItem}><strong>Contribution</strong> The total amount of fees plus any taxes that a Member is required to pay to access the Protection for the duration of each Protection Period.</div>
               <div className={styles.glossaryItem}><strong>FSG</strong> The financial services guide for the financial services issued by the Manager.</div>
-              <div className={styles.glossaryItem}><strong>Manager</strong> National Cover Pty Ltd ACN 639 621 480.</div>
+              <div className={styles.glossaryItem}><strong>Manager</strong> MCMA Management Pty Ltd.</div>
               <div className={styles.glossaryItem}><strong>Member</strong> A current member of the Mutual.</div>
-              <div className={styles.glossaryItem}><strong>Mutual</strong> Motor Cover Mutual Ltd ACN 692 709 649.</div>
+              <div className={styles.glossaryItem}><strong>Mutual</strong> MOTOR COVER MUTUAL AUSTRALIA LIMITED.</div>
               <div className={styles.glossaryItem}><strong>Own Damage Protection</strong> Discretionary protection for damage to the Member's own Vehicle, as distinct from damage to third-party property or persons.</div>
               <div className={styles.glossaryItem}><strong>PDS</strong> The document named Product Disclosure Statement issued by us, which can be found in Part 1 of this document.</div>
               <div className={styles.glossaryItem}><strong>Protection</strong> The type and amount of protection that a Member is able to access, which will be provided to the Member as a discretionary risk product.</div>
@@ -115,7 +115,7 @@ const PDSPage = () => {
             </section>
 
             <section id="section-2">
-              <h2>Section 2 — About Motor Cover Mutual Limited</h2>
+              <h2>Section 2 — About MOTOR COVER MUTUAL AUSTRALIA LIMITED</h2>
 
               <h3>2.1 What is it?</h3>
               <p>The Mutual is a company limited by guarantee that has been established to operate as a discretionary mutual to provide financial risk protection for our Members.</p>
@@ -278,7 +278,7 @@ const PDSPage = () => {
               <h2>Section 9 — Nature of Discretionary Protection</h2>
 
               <h3>9.1 Overview</h3>
-              <p>Motor Cover Mutual Ltd provides discretionary protection. This means the Mutual may, but is not obliged to, provide benefits to a Member following an Incident. There is no contractual promise to indemnify the Member.</p>
+              <p>MOTOR COVER MUTUAL AUSTRALIA LIMITED provides discretionary protection. This means the Mutual may, but is not obliged to, provide benefits to a Member following an Incident. There is no contractual promise to indemnify the Member.</p>
 
               <h3>9.2 How Discretion Operates</h3>
               <p>When a claim is submitted, the Mutual considers the Incident, the Member's compliance with obligations, the protection guidelines, equity among Members, and the overall sustainability of the pool. The Board may approve, partially approve, conditionally approve, reduce, or decline benefits.</p>
@@ -311,7 +311,7 @@ const PDSPage = () => {
               <h2>Section 10 — Types of Cover</h2>
 
               <h3>10.1 Overview</h3>
-              <p>Motor Cover Mutual Ltd offers discretionary <strong>Own Damage Protection</strong> for damage to the Member's Vehicle, up to the limit specified in the Member Protection Schedule.</p>
+              <p>MOTOR COVER MUTUAL AUSTRALIA LIMITED offers discretionary <strong>Own Damage Protection</strong> for damage to the Member's Vehicle, up to the limit specified in the Member Protection Schedule.</p>
               <p>Own Damage Protection remains entirely discretionary and subject to the Board's decision at all times.</p>
               <p>In addition, the Mutual may arrange Third Party Property Damage (TPPD) insurance from an APRA-authorised insurer to provide cover for damage caused to other people's vehicles and property. See Section 10.4 for details.</p>
 
@@ -856,13 +856,13 @@ const PDSPage = () => {
               <p>The Australian Financial Complaints Authority, the external dispute resolution body established under Part 7.10A of the Corporations Act 2001 (Cth).</p>
 
               <h3>17.5 AFSL Holder</h3>
-              <p>ASIA MIDEAST INSURANCE AND REINSURANCE PTY LTD (AMIR), AFSL 239 926, which authorises National Cover Pty Ltd to provide financial services to Members.</p>
+              <p>STATIC INSURANCE PTY LTD (AMIR), AFSL 543 696, which authorises MCMA Management Pty Ltd to provide financial services to Members.</p>
 
               <h3>17.6 Agreed Value</h3>
               <p>The value of the Vehicle as recorded in the Member Protection Schedule at the time of joining or renewal. The Agreed Value represents the maximum amount the Mutual may consider paying in the event of a Total Loss and is determined based on information provided by the Member.</p>
 
               <h3>17.7 Board</h3>
-              <p>The Board of Directors of Motor Cover Mutual Ltd, responsible for the governance, oversight, and discretionary decision-making of the Mutual.</p>
+              <p>The Board of Directors of MOTOR COVER MUTUAL AUSTRALIA LIMITED, responsible for the governance, oversight, and discretionary decision-making of the Mutual.</p>
 
               <h3>17.8 Claim</h3>
               <p>A request by a Member seeking discretionary consideration of benefits in relation to an Incident.</p>
@@ -895,7 +895,7 @@ const PDSPage = () => {
               <p>A schedule issued to each Member specifying the Agreed Value, applicable limits, Excesses, protection details, and Add-On Covers.</p>
 
               <h3>17.18 Mutual</h3>
-              <p>Motor Cover Mutual Ltd.</p>
+              <p>MOTOR COVER MUTUAL AUSTRALIA LIMITED.</p>
 
               <h3>17.19 Optional Cover Schedule</h3>
               <p>A schedule that outlines details, limits, Excesses, and conditions of Add-On Covers purchased by the Member.</p>
@@ -922,7 +922,7 @@ const PDSPage = () => {
             <section id="section-18">
               <h2>Section 18 — Glossary of Statutory References</h2>
 
-              <p>This Glossary summarises key Australian legislation and regulatory instruments relevant to the operation of Motor Cover Mutual Ltd and the provision of discretionary protection.</p>
+              <p>This Glossary summarises key Australian legislation and regulatory instruments relevant to the operation of MOTOR COVER MUTUAL AUSTRALIA LIMITED and the provision of discretionary protection.</p>
 
               <h3>18.1 Corporations Act 2001 (Cth)</h3>
               <p>The primary statute governing financial services, financial products, licensing, disclosure obligations, and conduct requirements. Discretionary mutual products fall under Chapter 7 as "miscellaneous financial risk products".</p>
@@ -958,7 +958,7 @@ const PDSPage = () => {
               <p>Contained in Schedule 2 to the Competition and Consumer Act 2010 (Cth). Prohibits unfair contract terms, misleading or deceptive conduct, and sets consumer guarantees.</p>
 
               <h3>18.10 Mutual's Constitution</h3>
-              <p>The governing document of Motor Cover Mutual Ltd, establishing:</p>
+              <p>The governing document of MOTOR COVER MUTUAL AUSTRALIA LIMITED, establishing:</p>
               <ul>
                 <li>Membership rules</li>
                 <li>Powers of the Board</li>
@@ -1068,7 +1068,7 @@ const PDSPage = () => {
               <h2>Section 20 — Detailed Member Obligations</h2>
 
               <h3>20.1 Overview</h3>
-              <p>Membership of Motor Cover Mutual Ltd requires adherence to a range of obligations designed to protect the integrity of the Mutual, ensure fairness to all Members, and assist the Board in exercising its discretion responsibly.</p>
+              <p>Membership of MOTOR COVER MUTUAL AUSTRALIA LIMITED requires adherence to a range of obligations designed to protect the integrity of the Mutual, ensure fairness to all Members, and assist the Board in exercising its discretion responsibly.</p>
 
               <h3>20.2 Duty to Provide Accurate Information</h3>
               <p>Members must provide complete and accurate information when:</p>
