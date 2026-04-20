@@ -127,9 +127,6 @@ const BrokerPage = () => {
 
             {/* Regulation tags */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-                <CheckCircle className="w-3 h-3" /> ABN 74 639 621 480
-              </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-700 border border-blue-500/20">
                 <Shield className="w-3 h-3" /> AFSL Representative
               </span>
