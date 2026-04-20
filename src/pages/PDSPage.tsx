@@ -1,28 +1,79 @@
+import { useRef, useState } from "react";
+import { Download, Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PDSTableOfContents } from "@/components/PDSTableOfContents";
+import { Button } from "@/components/ui/button";
 import styles from "./PDSPage.module.css";
 
 const PDSPage = () => {
+  const documentRef = useRef<HTMLDivElement>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (!documentRef.current || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const html2pdf = (await import("html2pdf.js")).default;
+      await html2pdf()
+        .set({
+          margin: 10,
+          filename: "Motor-Cover-Mutual-Australia-PDS.pdf",
+          image: { type: "jpeg", quality: 0.95 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          // @ts-expect-error - pagebreak is supported at runtime
+          pagebreak: { mode: ["css", "legacy"], before: ".page-break-before" },
+        })
+        .from(documentRef.current)
+        .save();
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      
+
       <main className="flex-1">
         {/* Mobile TOC - Accordion */}
         <div className="lg:hidden px-4 py-4">
           <PDSTableOfContents mobile />
         </div>
-        
+
         {/* Desktop Layout with Sidebar */}
         <div className="lg:flex lg:gap-8 max-w-[1400px] mx-auto px-4">
           {/* Desktop TOC - Sticky Sidebar */}
           <aside className="hidden lg:block lg:w-[280px] lg:shrink-0">
             <PDSTableOfContents />
           </aside>
-          
+
           {/* Main Content */}
-          <div className={styles.pdsDocument}>
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-end pt-4 pb-2">
+              <Button
+                onClick={handleDownloadPDF}
+                disabled={isGenerating}
+                size="sm"
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    <Download />
+                    Download PDF
+                  </>
+                )}
+              </Button>
+            </div>
+            <div ref={documentRef} className={styles.pdsDocument}>
             {/* Title Page */}
             <section className={styles.titlePage}>
               <h1>MOTOR COVER MUTUAL AUSTRALIA LIMITED</h1>
@@ -1312,6 +1363,7 @@ const PDSPage = () => {
               <h3>21.7 Summary</h3>
               <p>Examples help Members understand typical outcomes, but every decision remains at the full discretion of the Board.</p>
             </section>
+            </div>
           </div>
         </div>
       </main>
