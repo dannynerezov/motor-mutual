@@ -14,19 +14,60 @@ const PDSPage = () => {
     if (!documentRef.current || isGenerating) return;
     setIsGenerating(true);
     try {
-      const html2pdf = (await import("html2pdf.js")).default;
-      await html2pdf()
-        .set({
-          margin: 10,
-          filename: "Motor-Cover-Mutual-Australia-PDS.pdf",
-          image: { type: "jpeg", quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, logging: false },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          // @ts-expect-error - pagebreak is supported at runtime
-          pagebreak: { mode: ["css", "legacy"], before: ".page-break-before" },
-        })
-        .from(documentRef.current)
-        .save();
+      // Use the browser's native print-to-PDF for reliable, properly paginated output.
+      // html2pdf.js + html2canvas struggles with HSL CSS variables and long flex layouts,
+      // producing blank pages. window.print() respects all CSS and pagination natively.
+      const printWindow = window.open("", "_blank", "width=900,height=1000");
+      if (!printWindow) {
+        alert("Please allow pop-ups to download the PDF.");
+        return;
+      }
+
+      // Collect existing stylesheets so the printed document looks identical
+      const styleTags = Array.from(
+        document.querySelectorAll('link[rel="stylesheet"], style')
+      )
+        .map((node) => node.outerHTML)
+        .join("\n");
+
+      const contentHTML = documentRef.current.outerHTML;
+
+      printWindow.document.open();
+      printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Motor Cover Mutual Australia – PDS</title>
+  ${styleTags}
+  <style>
+    @page { size: A4; margin: 14mm; }
+    html, body { background: #fff !important; margin: 0; padding: 0; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h1, h2, h3, h4 { page-break-after: avoid; break-after: avoid; }
+    section, table, ul, ol, .schedule, .example, .important,
+    .exampleWarning, .exampleError {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  </style>
+</head>
+<body>${contentHTML}</body>
+</html>`);
+      printWindow.document.close();
+
+      // Wait for stylesheets/fonts to load before triggering print
+      const triggerPrint = () => {
+        printWindow.focus();
+        printWindow.print();
+        // Close after print dialog is dismissed
+        setTimeout(() => printWindow.close(), 500);
+      };
+
+      if (printWindow.document.readyState === "complete") {
+        setTimeout(triggerPrint, 400);
+      } else {
+        printWindow.onload = () => setTimeout(triggerPrint, 400);
+      }
     } catch (err) {
       console.error("PDF generation failed:", err);
     } finally {
