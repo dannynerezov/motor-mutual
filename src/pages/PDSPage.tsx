@@ -62,7 +62,6 @@ const PDSPage = () => {
                 <h4>AFSL Holder</h4>
                 <p>Static Insurance Pty Ltd</p>
                 <p>AFS Licence No. 543696</p>
-                <p>Email: info@amir.com.au | Post: PO Box 1678, North Sydney NSW 2059</p>
               </div>
               <p style={{ marginTop: '15px', fontSize: '9pt', fontStyle: 'italic' }}>
                 Distribution of this document has been authorised by Static Insurance Pty Ltd AFSL 543696.
