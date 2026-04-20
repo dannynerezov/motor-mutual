@@ -723,58 +723,49 @@ const PDSPage = () => {
             <section id="section-15">
               <h2>Section 15 — Excess Structure</h2>
 
-              <h3>15.1 Overview</h3>
-              <p>An Excess is the amount the Member must pay before the Mutual will consider a claim. The Excess applies to every Incident unless otherwise specified. Non-payment of the Excess may result in the Mutual refusing to consider the claim.</p>
+              <h3>15.1 What an Excess Is</h3>
+              <p>An Excess is the amount payable by the Member per Incident before the Mutual will consider a claim or pay any benefits.</p>
+              <p>Each separate Incident requires its own claim and its own Excess (for example, damage to the rear of the Vehicle from one event and damage to the front from a separate event are two Incidents, each requiring its own Excess).</p>
 
-              <h3>15.2 Types of Excess</h3>
-
-              <h4>15.2.1 Basic Excess</h4>
-              <p>A Basic Excess applies to most Incidents. The amount is specified in the Member Protection Schedule and may vary based on risk factors including Vehicle type and usage.</p>
-
-              <h4>15.2.2 Age or Inexperienced Driver Excess</h4>
-              <p>An additional Excess may apply where the driver:</p>
+              <h3>15.2 Amount Payable</h3>
               <ul>
-                <li>Is under 25 years of age</li>
-                <li>Has held a licence for less than 2 years</li>
-              </ul>
-              <p>This Excess is cumulative with the Basic Excess.</p>
-
-              <h4>15.2.3 Undeclared Driver Excess</h4>
-              <p>If the driver at the time of the Incident was not declared to the Mutual as a regular or permitted driver, an additional Excess may apply or the claim may be refused.</p>
-
-              <h4>15.2.4 Late Lodgement Excess</h4>
-              <p>Where a Member lodges a claim outside the required 30-day notification period, a Late Lodgement Excess may apply. This reflects increased risk of fraud, evidentiary gaps, or compromised assessment.</p>
-
-              <h4>15.2.5 Add-On Cover Excess</h4>
-              <p>Certain Optional Add-On Covers, including Downtime / Loss of Income, may carry their own additional Excess amounts. These are stated in the Optional Cover Schedule.</p>
-
-              <h3>15.3 Payment of Excess</h3>
-              <p>The Excess must be paid:</p>
-              <ul>
-                <li>Before the Mutual considers a claim; or</li>
-                <li>Deducted from any discretionary payment, where permitted.</li>
+                <li>The Basic Excess amount is shown on the Member's Certificate of Cover.</li>
+                <li><strong>Young driver loading:</strong> an additional <strong>$1,000</strong> applies if the driver was under 25 years of age at the time of the Incident.</li>
+                <li><strong>Hail or flood:</strong> an additional <strong>$2,000</strong> applies on top of the Basic Excess for Hail or Flood Incidents.</li>
               </ul>
 
-              <h3>15.4 Non-Payment of Excess</h3>
-              <p>If the Member refuses or fails to pay any applicable Excess:</p>
+              <h3>15.3 Late-Reporting Excess Penalties</h3>
+              <p>Where a claim is lodged after the Incident, the Excess is multiplied as follows:</p>
               <ul>
-                <li>The Mutual may decline to consider the claim</li>
-                <li>The claim may be delayed indefinitely</li>
-                <li>Membership may be suspended until payment is made</li>
+                <li>More than 30 days after the Incident → <strong>3× the Certificate Excess</strong></li>
+                <li>6 to 12 months after the Incident → <strong>5× the Certificate Excess</strong></li>
+                <li>More than 12 months after the Incident → <strong>10× the Certificate Excess</strong></li>
+              </ul>
+              <p>Late notification may also result in increased Excesses being applied if the claim is accepted.</p>
+
+              <h3>15.4 How and When the Excess Is Paid</h3>
+              <ul>
+                <li>The Excess is payable regardless of fault.</li>
+                <li>It must be paid in full before any claim is considered or any benefits (including repair costs, legal costs, and associated costs) are paid.</li>
+                <li>It is usually collected when the claim is first lodged.</li>
+                <li>If the claim is not accepted, the Excess is refunded.</li>
+                <li>The Mutual may refuse to cover legal or other costs that arise from delay in paying the Excess.</li>
               </ul>
 
-              <h3>15.5 Multiple Excesses</h3>
-              <p>Multiple Excesses may apply concurrently. These include but are not limited to:</p>
-              <ul>
-                <li>Basic Excess</li>
-                <li>Age Excess</li>
-                <li>Undeclared Driver Excess</li>
-                <li>Late Lodgement Excess</li>
-                <li>Add-On Excess</li>
-              </ul>
+              <h3>15.5 Not-At-Fault Refunds</h3>
+              <p>Where the Member is not at fault, the Excess may be refunded once all of the Mutual's costs have been recovered from the at-fault party. Any such refund is at the <strong>Board's absolute discretion</strong> and is not automatic.</p>
 
-              <h3>15.6 Discretion to Waive Excess</h3>
-              <p>The Board may waive, reduce, or alter an Excess at its absolute discretion. This does not create any precedent or entitlement for future claims.</p>
+              <h3>15.6 Effect of Excess on Contribution</h3>
+              <p>The chosen Excess level affects the Member's Contribution: a higher Excess generally results in a lower Contribution, and a lower Excess in a higher Contribution.</p>
+
+              <h3>15.7 Excess and Total Loss Settlements</h3>
+              <p>Where a claim is settled as a Total Loss, any unpaid Excess will be deducted from the settlement amount, alongside any unpaid Contribution.</p>
+
+              <h3>15.8 Contribution to Repair Costs (Separate from Excess)</h3>
+              <p>Separate from the Excess, Members may also be asked to contribute to repair costs for items affected by wear and tear, neglect, rust, corrosion, or pre-existing damage. This is an additional out-of-pocket payment that sits alongside the Excess.</p>
+
+              <h3>15.9 Discretion to Waive or Vary</h3>
+              <p>The Board may waive, reduce, or vary any Excess at its absolute discretion. No waiver creates a precedent or entitlement for future claims.</p>
             </section>
 
             <section id="section-16">
